@@ -13,18 +13,18 @@ import java.util.concurrent.Future
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-/** Persistent breadcrumbs, native traces and optional generated-audio captures for Kokoro diagnostics. */
+/** Persistent breadcrumbs, native traces and optional generated-audio captures for Emma diagnostics. */
 object DiagnosticStore {
-    private const val FILE_NAME = "kokoro-diagnostics.txt"
+    private const val FILE_NAME = "emma-diagnostics.txt"
     private const val MAX_BYTES = 256 * 1024
-    private const val TRACE_DIR = "kokoro-traces"
+    private const val TRACE_DIR = "emma-traces"
     private const val MAX_TRACE_BYTES = 8L * 1024L * 1024L
     private const val MAX_TRACE_FILES = 6
-    private const val AUDIO_DIR = "kokoro-audio"
+    private const val AUDIO_DIR = "emma-audio"
     private const val AUDIO_MANIFEST = "manifest.txt"
     private const val MAX_AUDIO_FILES = 40
     private val traceExecutor = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "kokoro-trace-capture").apply { isDaemon = true }
+        Thread(runnable, "emma-trace-capture").apply { isDaemon = true }
     }
     @Volatile private var captureFuture: Future<*>? = null
 
@@ -69,7 +69,7 @@ object DiagnosticStore {
                 .removeSuffix(".wav")
                 .replace(Regex("[^A-Za-z0-9._-]"), "_")
                 .take(96)
-                .ifBlank { "kokoro" }
+                .ifBlank { "emma" }
             val file = directory.resolve("$safeStem.wav")
             file.outputStream().buffered().use { output ->
                 PcmWav.writeMono16(output, samples, sampleRate)
@@ -128,7 +128,7 @@ object DiagnosticStore {
             exits.filter { it.reason == ApplicationExitInfo.REASON_CRASH_NATIVE || it.reason == ApplicationExitInfo.REASON_CRASH }
                 .forEach { exit ->
                     val stamp = exit.timestamp
-                    val stem = "kokoro-${stamp}-${reasonName(exit.reason)}"
+                    val stem = "emma-${stamp}-${reasonName(exit.reason)}"
                     val marker = directory.resolve("$stem.done")
                     if (marker.exists()) return@forEach
                     val traceFile = directory.resolve("$stem.trace")
@@ -188,12 +188,12 @@ object DiagnosticStore {
             ?.forEach { it.delete() }
     }
 
-    /** Writes a ZIP containing logs, native traces and any captured Kokoro WAV/report files. */
+    /** Writes a ZIP containing logs, native traces and any captured generated-audio WAV/report files. */
     fun writeDetailsZip(context: Context, output: OutputStream) {
         runCatching { captureFuture?.get() }
         ZipOutputStream(output.buffered()).use { zip ->
             val log = read(context).toByteArray(Charsets.UTF_8)
-            zip.putNextEntry(ZipEntry("kokoro-diagnostics.txt")); zip.write(log); zip.closeEntry()
+            zip.putNextEntry(ZipEntry("emma-diagnostics.txt")); zip.write(log); zip.closeEntry()
             val traceDirectory = context.getDir(TRACE_DIR, Context.MODE_PRIVATE)
             traceDirectory.listFiles()?.filter { it.extension == "trace" || it.extension == "txt" }?.sortedBy { it.name }?.forEach { file ->
                 zip.putNextEntry(ZipEntry("traces/${file.name}"))
@@ -241,7 +241,7 @@ object DiagnosticStore {
     fun read(context: Context): String {
         val file = context.getFileStreamPath(FILE_NAME)
         return runCatching {
-            if (file.isFile) file.readText() else "Kokoro diagnostics are empty.\n"
-        }.getOrDefault("Kokoro diagnostics could not be read.\n")
+            if (file.isFile) file.readText() else "Emma diagnostics are empty.\n"
+        }.getOrDefault("Emma diagnostics could not be read.\n")
     }
 }
