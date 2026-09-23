@@ -36,7 +36,6 @@ import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.ui.EmmaTheme
 import com.eltnegcellist.emma.ui.EmmaVisualState
-import kotlin.math.abs
 
 private const val NONVERBAL_RESPONSE_COOLDOWN_MS = 15_000L
 private const val BABY_VOCAL_CONTEXT = "赤ちゃんが声を出している"
@@ -92,22 +91,6 @@ private fun ProductionEmmaApp() {
     }
     var engineMode by remember { mutableStateOf(initialEngineMode) }
     var onboardingMode by remember { mutableStateOf(initialEngineMode) }
-    val initialRate = remember {
-        val stored = preferences.getFloat("rate", 1.00f).coerceIn(0.70f, 1.10f)
-        if (!preferences.getBoolean("rate_migrated_v121", false)) {
-            val wasOldDefault = abs(stored - 0.72f) < 0.005f || abs(stored - 0.80f) < 0.005f
-            val migrated = if (wasOldDefault) 1.00f else stored
-            preferences.edit()
-                .putFloat("rate", migrated)
-                .putBoolean("rate_migrated_v12", true)
-                .putBoolean("rate_migrated_v121", true)
-                .apply()
-            migrated
-        } else {
-            stored
-        }
-    }
-    var speechRate by remember { mutableStateOf(initialRate) }
     var latestTranscript by remember { mutableStateOf("") }
     var autoRespond by remember { mutableStateOf(preferences.getBoolean("auto_respond", true)) }
     var keepScreenOn by remember { mutableStateOf(preferences.getBoolean("keep_screen_on", true)) }
@@ -376,7 +359,7 @@ private fun ProductionEmmaApp() {
                         modelPresent = true
                         loadModel()
                     }.onFailure { error ->
-                        modelPresent = GemmaModelStore.hasUsableModel(context)
+                        modelPresent = modeModelsPresent(ConversationEngineMode.FULL)
                         status = ProductionEmmaStatus.ERROR
                         statusMessage = "モデルの取り込みに失敗しました: ${error.message ?: error.javaClass.simpleName}"
                     }
@@ -1095,7 +1078,6 @@ private fun ProductionEmmaApp() {
     } else if (settingsOpen) {
         EmmaSettingsScreen(
             level = englishLevel,
-            rate = speechRate,
             enabled = !busy && !recording,
             previewing = !recording && status == ProductionEmmaStatus.SPEAKING,
             modelReady = modelReady,
@@ -1126,7 +1108,6 @@ private fun ProductionEmmaApp() {
                 }
             },
             onLevel = { englishLevel = it; preferences.edit().putString("level", it.name).apply() },
-            onRate = { speechRate = it; preferences.edit().putFloat("rate", it).apply() },
             onPreview = {
                 status = ProductionEmmaStatus.SPEAKING
                 voiceError = null
