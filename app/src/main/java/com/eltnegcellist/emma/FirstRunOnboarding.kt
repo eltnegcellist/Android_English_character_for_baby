@@ -2,11 +2,8 @@ package com.eltnegcellist.emma
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,17 +19,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.eltnegcellist.emma.ai.ConversationEngineMode
 
 @Composable
 internal fun FirstRunOnboardingScreen(
+    selectedMode: ConversationEngineMode,
     busy: Boolean,
     ready: Boolean,
     phase: String,
     progressPercent: Int?,
     errorMessage: String?,
-    usingAndroidVoice: Boolean,
-    onPrepareRecommended: () -> Unit,
-    onUseAndroidVoice: () -> Unit,
+    onModeSelected: (ConversationEngineMode) -> Unit,
+    onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
     onStartEmma: () -> Unit,
 ) {
@@ -56,7 +54,7 @@ internal fun FirstRunOnboardingScreen(
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                "単なる日本語→英語の翻訳ではありません。お風呂、ミルク、ねんね、遊びなど、今この瞬間に合う短くリズミカルな英語を返します。",
+                "単なる日本語→英語の翻訳ではありません。使い方に合わせてLite・Standard・Fullから選べます。",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -68,20 +66,46 @@ internal fun FirstRunOnboardingScreen(
                 Text("なぜこの設計？ Emmaとは？")
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(9.dp),
-                ) {
-                    Text("Emmaのしくみ", style = MaterialTheme.typography.titleMedium)
-                    Text("① 親の日本語を聞き取る", style = MaterialTheme.typography.bodyMedium)
-                    Text("② その場面に合う赤ちゃん向け英語を選ぶ", style = MaterialTheme.typography.bodyMedium)
-                    Text("③ Emmaの温かい声で話す", style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                        "準備後の聞き取り・返答選択・音声生成は端末内で行います。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            Text(
+                "Emmaを選ぶ",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            ConversationEngineMode.entries.forEach { option ->
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text("Emma ${option.label}", style = MaterialTheme.typography.titleMedium)
+                        Text(option.description, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            when (option) {
+                                ConversationEngineMode.LITE ->
+                                    "Moonshine Tiny + Kitten TTS Nano / 約64MB / 完全ローカル"
+                                ConversationEngineMode.STANDARD ->
+                                    "ReazonSpeech + Supertonic 3 / 約298MB / 完全ローカル"
+                                ConversationEngineMode.FULL ->
+                                    "Gemma + Supertonic 3 / 2GB超 / 完全ローカル"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (selectedMode == option) {
+                            Button(
+                                onClick = {},
+                                enabled = !busy,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("選択中") }
+                        } else {
+                            OutlinedButton(
+                                onClick = { onModeSelected(option) },
+                                enabled = !busy,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("このモードを選ぶ") }
+                        }
+                    }
                 }
             }
 
@@ -97,18 +121,17 @@ internal fun FirstRunOnboardingScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text("初回だけ準備します", style = MaterialTheme.typography.titleMedium)
-                    Text("日本語聞き取りデータ：約169MB", style = MaterialTheme.typography.bodyMedium)
-                    Text("Emmaの音声データ：約129MB", style = MaterialTheme.typography.bodyMedium)
+                    Text("選択中：Emma ${selectedMode.label}", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "合計約298MBです。Wi-Fiでの準備をおすすめします。日本語の聞き取りデータはEmmaに必要です。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        "Supertonic 3 F3の自然な声をおすすめします。使わない場合はAndroid標準の英語音声でも始められます。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        when (selectedMode) {
+                            ConversationEngineMode.LITE ->
+                                "Web版Liteと同じMoonshine日本語TinyとKitten TTS Nano / KikiをAndroid上で動かします。"
+                            ConversationEngineMode.STANDARD ->
+                                "Android向けにReazonSpeechとSupertonic 3 F3を使います。通常はこちらがおすすめです。"
+                            ConversationEngineMode.FULL ->
+                                "Gemmaが応答を生成します。ダウンロード量が大きいためWi-Fiでの準備をおすすめします。"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
@@ -120,7 +143,7 @@ internal fun FirstRunOnboardingScreen(
                         Text("$it%", style = MaterialTheme.typography.titleMedium)
                     }
                     Text(
-                        phase.ifBlank { "Emmaを準備しています…" },
+                        phase.ifBlank { "Emma ${selectedMode.label}を準備しています…" },
                         style = MaterialTheme.typography.titleSmall,
                     )
                     Text(
@@ -138,11 +161,7 @@ internal fun FirstRunOnboardingScreen(
                         ) {
                             Text("準備できました", style = MaterialTheme.typography.titleMedium)
                             Text(
-                                if (usingAndroidVoice) {
-                                    "日本語の聞き取り準備が完了しました。音声はAndroid標準を使います。Supertonic 3は後から設定できます。"
-                                } else {
-                                    "準備が完了しました。Emmaを始められます。"
-                                },
+                                "Emma ${selectedMode.label}を始められます。",
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
@@ -157,22 +176,11 @@ internal fun FirstRunOnboardingScreen(
 
                 else -> {
                     Button(
-                        onClick = onPrepareRecommended,
+                        onClick = onPrepare,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(if (errorMessage == null) "Emmaを準備する" else "もう一度準備する")
+                        Text(if (errorMessage == null) "Emma ${selectedMode.label}を準備する" else "もう一度準備する")
                     }
-                    OutlinedButton(
-                        onClick = onUseAndroidVoice,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text("標準音声で始める")
-                    }
-                    Text(
-                        "標準音声を選んでも、日本語の聞き取りに必要なデータは自動で準備します。Supertonic 3だけを省略します。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                     errorMessage?.let {
                         Text(
                             it,
@@ -182,8 +190,6 @@ internal fun FirstRunOnboardingScreen(
                     }
                 }
             }
-
-            Spacer(Modifier.height(8.dp))
         }
     }
 }

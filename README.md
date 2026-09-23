@@ -6,84 +6,97 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta9** (`versionCode 61`).
+The current public baseline is **v1.4.0-beta10** (`versionCode 62`).
 
-This beta replaces the standard-mode speech stack:
+Android Emma now contains three editions. They share the same family settings, avatar, endpoint detection, baby-name handling, and local-first design. Lite and Standard also share the same `LiteResponseEngine`; their main difference is the speech stack.
 
-- Japanese ASR: Whisper tiny → **ReazonSpeech K2 v2 (INT8 Zipformer)**
-- Emma voice: Kokoro → **Supertonic 3 F3**
-- Android TTS remains available as a fallback.
+## Emma Lite
 
-## Two modes
-
-### Standard Emma
-
-Standard Emma does not require Gemma at runtime.
+The lightest edition, aligned with Emma Web Lite.
 
 ```text
 Microphone
   ↓
-Voice activity / endpoint detection
-  ↓
-ReazonSpeech K2 v2 INT8 (Japanese ASR)
+Moonshine Japanese Tiny Streaming
   ↓
 LiteResponseEngine
   ↓
-Short pre-generated English response
-  ↓
-Supertonic 3 F3 (or Android TTS fallback)
+Kitten TTS Nano 0.8 INT8 / Kiki
   ↓
 Emma avatar
 ```
 
-The Lite response bank is intentionally compact: typically three very short baby-directed sentences, with repetition and rhythm prioritized over long explanations.
+- Japanese ASR: Moonshine Tiny Streaming
+- TTS: Kitten TTS Nano 0.8 INT8, Kiki
+- Approximate model download: about 64 MB
+- Processing after setup: on-device
+- Response logic: same LiteResponseEngine as Standard
 
-Baby-name pronunciation can optionally add the Japanese-style `-chan` suffix. It is enabled by default in both Standard and Full modes, matching Emma Web.
+The Web edition uses the same model families through browser/WASM runtimes; Android Lite uses native Android runtimes.
 
-### Emma Full
+## Emma Standard
 
-Emma Full is optional and uses a local Gemma model for more flexible responses and parent conversation.
+The Android-oriented default edition.
 
 ```text
 Microphone
   ↓
-Voice activity / endpoint detection
+ReazonSpeech K2 v2 INT8
   ↓
-Local Gemma ASR
+LiteResponseEngine
   ↓
-Gemma 4 E2B
-  ↓
-English response
-  ↓
-Supertonic 3 F3 (or Android TTS fallback)
+Supertonic 3 F3
   ↓
 Emma avatar
 ```
 
-Emma Full requires an additional local model download of more than 2 GB.
+- Japanese ASR: ReazonSpeech K2 v2 INT8
+- TTS: Supertonic 3 F3
+- Approximate model download: about 298 MB
+- Processing after setup: on-device
+- Response logic: same LiteResponseEngine as Lite
+
+## Emma Full
+
+Emma Full adds a local Gemma model for more flexible responses and parent conversation.
+
+```text
+Microphone
+  ↓
+Local Gemma speech/context processing
+  ↓
+Gemma response generation
+  ↓
+Supertonic 3 F3
+  ↓
+Emma avatar
+```
+
+Full requires more than 2 GB of additional local model data.
 
 ## First-run experience
 
-On first launch Emma:
+On first launch, the family chooses one of:
 
-- explains that it is not a literal translation app,
-- lets the family configure optional baby settings,
-- downloads the ReazonSpeech Japanese ASR files (about 169 MB),
-- recommends Supertonic 3 F3 (about 129 MB),
-- allows Android TTS as a fallback,
-- keeps recognition, response selection/generation, and speech synthesis on-device after model setup.
+- **Lite** — lightest; Moonshine + Kitten TTS Nano, about 64 MB
+- **Standard** — Android default; ReazonSpeech + Supertonic 3, about 298 MB
+- **Full** — Gemma-powered; more than 2 GB
 
-The standard recommended setup is about 298 MB of downloaded speech models.
+The selected edition is prepared automatically. The edition can also be changed later from Settings.
 
-## ASR
+Existing installations from beta9 and earlier that stored the old Android `LITE` mode are migrated to **Standard**, because that old mode used ReazonSpeech + Supertonic and corresponds to the new Standard edition.
 
-Standard Emma uses ReazonSpeech K2 v2, a Japanese RNN-T/Zipformer model. Emma downloads only the files needed for INT8 inference (INT8 encoder and joiner, decoder, and tokens) from a pinned model revision instead of downloading the larger package containing unused full-precision variants.
+## Shared behavior
 
-## Voice
+Lite and Standard intentionally share:
 
-Supertonic 3 F3 is the recommended voice backend. Emma runs it locally through sherpa-onnx using the official INT8 conversion package. The Android implementation uses 8 generation steps and keeps PCM amplitude-driven lip sync.
-
-Android TTS remains available as a fallback.
+- the same LiteResponseEngine scene/reply logic,
+- baby name pronunciation and optional `-chan` suffix,
+- family/gender settings,
+- appearance settings,
+- automatic endpoint detection and reply flow,
+- non-verbal baby response behavior,
+- screen-awake preference.
 
 ## Privacy
 
@@ -96,12 +109,11 @@ This public repository does **not** intentionally contain signing keys, keystore
 - Android 9 (API 28) or later
 - Microphone permission
 - Internet access for initial model downloads
-- Sufficient free storage for speech and voice models
-- Additional storage if Emma Full is enabled
+- Sufficient free storage for the selected edition
 
 ## Building
 
-The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, and sherpa-onnx 1.13.7.
+The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, sherpa-onnx 1.13.7, and Moonshine Voice 0.1.5.
 
 The sherpa-onnx Android runtime is intentionally not committed to this repository. Download the pinned AAR before building:
 
@@ -120,10 +132,12 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ## Models and major dependencies
 
+- Moonshine Voice / Moonshine Japanese Tiny Streaming — MIT
+- Kitten TTS Nano 0.8 — Apache-2.0
 - ReazonSpeech K2 v2 — Apache-2.0
 - sherpa-onnx — Apache-2.0
 - Supertonic 3 model — OpenRAIL-M
-- LiteRT-LM — used for optional local Gemma mode
+- LiteRT-LM / Gemma — used for optional Full mode
 
 Model files are downloaded separately and are not committed to this repository.
 

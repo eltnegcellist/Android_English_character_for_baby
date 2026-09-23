@@ -1,15 +1,15 @@
 package com.eltnegcellist.emma.ai
 
 import android.content.Context
-import com.eltnegcellist.emma.asr.MoonshineJapaneseAsr
+import com.eltnegcellist.emma.asr.ReazonSpeechJapaneseAsr
 import com.eltnegcellist.emma.tts.DiagnosticStore
 
-class LiteEmmaClient(
+class StandardEmmaClient(
     context: Context,
 ) {
     private val appContext = context.applicationContext
     private val preferences = appContext.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
-    private val asr = MoonshineJapaneseAsr(appContext)
+    private val asr = ReazonSpeechJapaneseAsr(appContext)
     private val responses = LiteResponseEngine()
 
     fun isReady(): Boolean = asr.isReady()
@@ -20,13 +20,21 @@ class LiteEmmaClient(
         wavAudio: ByteArray,
         level: EnglishLevel,
         onTranscript: (String) -> Unit,
+    ): Result<String> = createResponse(wavAudio, level, onTranscript)
+
+    fun close() = asr.close()
+
+    private fun createResponse(
+        wavAudio: ByteArray,
+        level: EnglishLevel,
+        onTranscript: (String) -> Unit,
     ): Result<String> = runCatching {
         val transcript = asr.transcribe(wavAudio).getOrThrow()
         onTranscript(transcript)
 
         val audience = AudienceMode.fromSaved(preferences.getString("audience_mode", null))
         require(audience == AudienceMode.BABY) {
-            "Emma Liteは「赤ちゃんへ」専用です。親との自由会話にはFullを使ってください。"
+            "Emma Standardは現在「赤ちゃんへ」モード専用です。親との自由会話にはFullを使ってください。"
         }
 
         val babyName = preferences.getString("baby_name", "").orEmpty()
@@ -41,13 +49,11 @@ class LiteEmmaClient(
 
         DiagnosticStore.mark(
             appContext,
-            "lite_response_selected",
+            "standard_response_selected",
             "scene=${selected.scene} score=${selected.score} level=${level.name} transcript=${transcript.take(80)}",
         )
         adjusted
     }
-
-    fun close() = asr.close()
 
     private fun fitLevel(text: String, level: EnglishLevel): String {
         val maxWords = when (level) {

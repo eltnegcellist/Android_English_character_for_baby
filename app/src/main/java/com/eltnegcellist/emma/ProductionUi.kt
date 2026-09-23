@@ -218,7 +218,7 @@ private fun AudienceSelector(
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
     var mode by remember(engineMode) {
         mutableStateOf(
-            if (engineMode == ConversationEngineMode.LITE) {
+            if (engineMode != ConversationEngineMode.FULL) {
                 AudienceMode.BABY
             } else {
                 AudienceMode.fromSaved(preferences.getString("audience_mode", null))
@@ -240,7 +240,7 @@ private fun AudienceSelector(
                 AudienceMode.entries.forEach { option ->
                     val selected = option == mode
                     val onClick = {
-                        if (engineMode == ConversationEngineMode.LITE && option == AudienceMode.PARENT) {
+                        if (engineMode != ConversationEngineMode.FULL && option == AudienceMode.PARENT) {
                             onRequestParentFull()
                         } else {
                             mode = option
@@ -263,8 +263,8 @@ private fun AudienceSelector(
                 }
             }
             Text(
-                if (engineMode == ConversationEngineMode.LITE) {
-                    "現在の標準モードは「赤ちゃんへ」専用です。親との自由会話や、より柔軟な応答はFullで利用できます。"
+                if (engineMode != ConversationEngineMode.FULL) {
+                    "Emma ${engineMode.label}は「赤ちゃんへ」専用です。親との自由会話や、より柔軟な応答はFullで利用できます。"
                 } else {
                     mode.description
                 },
@@ -319,6 +319,7 @@ internal fun EmmaSettingsScreen(
     previewing: Boolean,
     modelReady: Boolean,
     modelPresent: Boolean,
+    kittenInstalled: Boolean,
     supertonicInstalled: Boolean,
     voiceBackend: VoiceBackend,
     lastSpeechMillis: Long?,
@@ -333,7 +334,8 @@ internal fun EmmaSettingsScreen(
     onStopPreview: () -> Unit,
     onDownloadGemma: () -> Unit,
     onSelectGemma: () -> Unit,
-    onDownloadLiteAsr: () -> Unit,
+    onPrepareLite: () -> Unit,
+    onPrepareStandard: () -> Unit,
     onLoadGemma: () -> Unit,
     onDownloadSupertonic: () -> Unit,
     onKeepScreenOn: (Boolean) -> Unit,
@@ -366,7 +368,6 @@ internal fun EmmaSettingsScreen(
             }
 
             ProductionFamilySettings(enabled = enabled)
-
             AppearanceSettings(enabled = enabled)
 
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -393,20 +394,20 @@ internal fun EmmaSettingsScreen(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Emmaの話し方", style = MaterialTheme.typography.titleMedium)
+                    Text("Emmaのエディション", style = MaterialTheme.typography.titleMedium)
                     ConversationEngineMode.entries.forEach { option ->
                         if (engineMode == option) {
                             Button(
                                 onClick = {},
                                 enabled = enabled,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text(option.label) }
+                            ) { Text("Emma ${option.label}") }
                         } else {
                             OutlinedButton(
                                 onClick = { onEngineMode(option) },
                                 enabled = enabled,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text(option.label) }
+                            ) { Text("Emma ${option.label}") }
                         }
                         Text(
                             option.description,
@@ -419,55 +420,75 @@ internal fun EmmaSettingsScreen(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        if (engineMode == ConversationEngineMode.LITE) "Emma" else "Emma Full",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    if (modelReady && (supertonicInstalled || voiceBackend == VoiceBackend.ANDROID)) {
+                    Text("Emma ${engineMode.label}", style = MaterialTheme.typography.titleMedium)
+
+                    val editionReady = when (engineMode) {
+                        ConversationEngineMode.LITE -> modelReady && kittenInstalled
+                        ConversationEngineMode.STANDARD ->
+                            modelReady && (supertonicInstalled || voiceBackend == VoiceBackend.ANDROID)
+                        ConversationEngineMode.FULL ->
+                            modelReady && (supertonicInstalled || voiceBackend == VoiceBackend.ANDROID)
+                    }
+
+                    if (editionReady) {
                         Text("準備完了", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                         Text(
-                            if (engineMode == ConversationEngineMode.LITE) {
-                                if (voiceBackend == VoiceBackend.SUPERTONIC) {
-                                    "親の日本語を聞き取り、その場に合う赤ちゃん向け英語を選び、Emmaの温かい声で話します。"
-                                } else {
-                                    "親の日本語を聞き取り、その場に合う赤ちゃん向け英語を選び、Android標準の英語音声で話します。"
-                                }
-                            } else {
-                                if (voiceBackend == VoiceBackend.SUPERTONIC) {
-                                    "会話・聞き取り・EmmaのSupertonic 3 F3音声はこの端末の中で処理されます。"
-                                } else {
-                                    "会話処理は端末内で行い、音声はAndroid標準TTSを使います。"
-                                }
+                            when (engineMode) {
+                                ConversationEngineMode.LITE ->
+                                    "Moonshine 日本語Tinyで聞き取り、Web版Liteと同じKitten TTS Nano / Kikiで話します。"
+                                ConversationEngineMode.STANDARD ->
+                                    if (voiceBackend == VoiceBackend.SUPERTONIC) {
+                                        "ReazonSpeechで聞き取り、Supertonic 3 F3で話します。"
+                                    } else {
+                                        "ReazonSpeechで聞き取り、Android標準の英語音声で話します。"
+                                    }
+                                ConversationEngineMode.FULL ->
+                                    if (voiceBackend == VoiceBackend.SUPERTONIC) {
+                                        "Gemmaが会話に合わせて英語を考え、Supertonic 3 F3で話します。"
+                                    } else {
+                                        "Gemmaが会話に合わせて英語を考え、Android標準の英語音声で話します。"
+                                    }
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     } else {
-                        Text(
-                            "初回だけ、会話と音声に必要なデータを準備します。",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
+                        Text("初回だけ、このエディションに必要なデータを準備します。", style = MaterialTheme.typography.bodyMedium)
 
-                        if (!modelReady) {
-                            Text(
-                                if (engineMode == ConversationEngineMode.LITE) "日本語の聞き取り" else "Full用AI",
-                                style = MaterialTheme.typography.titleSmall,
-                            )
-                            Text(
-                                when {
-                                    modelPresent -> "導入済み。読み込みが必要です。"
-                                    engineMode == ConversationEngineMode.LITE -> "未導入です。約116MBのデータを自動で取得し、準備が終わるとそのままEmmaを起動します。"
-                                    else -> "未導入です。"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                            if (!modelPresent) {
-                                if (engineMode == ConversationEngineMode.LITE) {
-                                    Button(
-                                        onClick = onDownloadLiteAsr,
+                        when (engineMode) {
+                            ConversationEngineMode.LITE -> {
+                                Text(
+                                    "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano 約31MB。合計約64MBです。",
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                                Button(
+                                    onClick = onPrepareLite,
+                                    enabled = enabled,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) { Text("Emma Liteを準備") }
+                            }
+
+                            ConversationEngineMode.STANDARD -> {
+                                Text(
+                                    "ReazonSpeech 約169MB + Supertonic 3 約129MB。合計約298MBです。",
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                                Button(
+                                    onClick = onPrepareStandard,
+                                    enabled = enabled,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) { Text("Emma Standardを準備") }
+                                if (!supertonicInstalled) {
+                                    OutlinedButton(
+                                        onClick = onUseAndroidVoice,
                                         enabled = enabled,
                                         modifier = Modifier.fillMaxWidth(),
-                                    ) { Text("日本語の聞き取りを準備") }
-                                } else {
+                                    ) { Text("Android標準音声を使う") }
+                                }
+                            }
+
+                            ConversationEngineMode.FULL -> {
+                                if (!modelPresent) {
+                                    Text("Gemmaは2GB超の追加データが必要です。", style = MaterialTheme.typography.bodySmall)
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -483,36 +504,27 @@ internal fun EmmaSettingsScreen(
                                             modifier = Modifier.weight(1f),
                                         ) { Text("選択する") }
                                     }
+                                } else {
+                                    Button(
+                                        onClick = onLoadGemma,
+                                        enabled = enabled,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("Emma Fullを起動") }
                                 }
-                            } else {
-                                Button(onClick = onLoadGemma, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                    Text(if (engineMode == ConversationEngineMode.LITE) "Emmaを準備" else "Fullを準備")
-                                }
-                            }
-                        }
 
-                        if (!supertonicInstalled) {
-                            Text("Emmaの声（Supertonic 3）", style = MaterialTheme.typography.titleSmall)
-                            Text(
-                                "Emmaは声の温かみを重視するためSupertonic 3 F3をおすすめします。約129MBを自動で取得・設定できます。使わない場合はAndroid標準音声でも利用できます。",
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                            Button(
-                                onClick = onDownloadSupertonic,
-                                enabled = enabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Supertonic 3を自動で準備") }
-                            OutlinedButton(
-                                onClick = onUseAndroidVoice,
-                                enabled = enabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Supertonic 3を使わずAndroid標準音声を使う") }
-                            if (voiceBackend == VoiceBackend.ANDROID) {
-                                Text(
-                                    "現在はAndroid標準音声を使用しています。Supertonic 3は後からいつでも追加できます。",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                                if (!supertonicInstalled) {
+                                    Text("Emmaの声（Supertonic 3 F3）", style = MaterialTheme.typography.titleSmall)
+                                    Button(
+                                        onClick = onDownloadSupertonic,
+                                        enabled = enabled,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("Supertonic 3を準備") }
+                                    OutlinedButton(
+                                        onClick = onUseAndroidVoice,
+                                        enabled = enabled,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("Android標準音声を使う") }
+                                }
                             }
                         }
                     }
@@ -520,10 +532,13 @@ internal fun EmmaSettingsScreen(
             }
 
             Text(
-                if (engineMode == ConversationEngineMode.LITE) {
-                    "標準のEmmaは、赤ちゃん向けの短い英語をすばやく選んで話します。より自由に、あなたの話や会話の流れに合わせてAIがその場で言葉を選ぶFull版も利用できます。"
-                } else {
-                    "Fullでは、より自由に、あなたの話や直前の会話に合わせてAIがその場で英語を考えて話します。処理は端末内で行います。"
+                when (engineMode) {
+                    ConversationEngineMode.LITE ->
+                        "Liteは最も軽く、Web版Liteと同じ音声モデルを使います。返答内容はStandardと同じLiteResponseEngineです。"
+                    ConversationEngineMode.STANDARD ->
+                        "StandardはLiteと同じ返答エンジンを使いながら、Android向けの高精度ASRと自然な音声を使います。"
+                    ConversationEngineMode.FULL ->
+                        "FullはGemmaが直前の会話も踏まえて、その場で英語を生成します。"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -546,7 +561,7 @@ internal fun LiteModelInstallDialog(
             dismissOnClickOutside = false,
         ),
         title = {
-            Text("ReazonSpeechを準備しています")
+            Text("Emmaを準備しています")
         },
         text = {
             Column(
