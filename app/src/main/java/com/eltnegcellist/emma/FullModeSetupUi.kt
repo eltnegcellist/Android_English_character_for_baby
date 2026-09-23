@@ -48,7 +48,7 @@ internal fun FullModeSetupScreen(
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "親との自由な会話にはEmma Fullを使います。\nFullでは、あなたの話や直前の会話を理解して、AIがその場で英語を考えて返します。\n初回のみ2GB超のAIモデルを準備します。",
+                "「親へ」はEmma Fullの機能です。\n標準Emmaは赤ちゃん向けの短い返答を軽快に選ぶため、親との自由な会話は行いません。\nEmma FullではGemmaを端末内で動かし、あなたの話や直前の会話を理解して、その場で英語を生成します。\n初回のみ2GB超のAIモデルを準備します。",
                 style = MaterialTheme.typography.bodyLarge,
             )
 
