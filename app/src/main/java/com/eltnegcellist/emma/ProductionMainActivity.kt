@@ -101,6 +101,9 @@ private fun ProductionEmmaApp() {
     var latestTranscript by remember { mutableStateOf("") }
     var autoRespond by remember { mutableStateOf(preferences.getBoolean("auto_respond", true)) }
     var settingsOpen by remember { mutableStateOf(false) }
+    var onboardingOpen by remember {
+        mutableStateOf(!preferences.getBoolean("onboarding_complete_v2", false))
+    }
     var mouthLevel by remember { mutableStateOf(0f) }
 
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
@@ -563,8 +566,23 @@ private fun ProductionEmmaApp() {
     }
 
 
+    fun openSettings() {
+        autoStartPending = false
+        stopSession()
+        settingsOpen = true
+    }
+
+
     fun requestParentMode() {
-        if (recording) {
+        autoStartPending = false
+        if (
+            recording ||
+            generating ||
+            pendingStartAfterPermission ||
+            status == ProductionEmmaStatus.SPEAKING ||
+            status == ProductionEmmaStatus.THINKING ||
+            status == ProductionEmmaStatus.ENDPOINT_WAIT
+        ) {
             stopSession()
         }
 
@@ -727,8 +745,8 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    LaunchedEffect(modelReady) {
-        if (modelReady && autoStartPending && !recording && !kokoroOnly) {
+    LaunchedEffect(modelReady, onboardingOpen) {
+        if (modelReady && !onboardingOpen && autoStartPending && !recording && !kokoroOnly) {
             autoStartPending = false
             startSession()
         }
@@ -825,7 +843,16 @@ private fun ProductionEmmaApp() {
         ProductionEmmaStatus.ERROR -> "確認してください"
     }
 
-    if (fullSetupOpen) {
+    if (onboardingOpen) {
+        EmmaOnboardingScreen(
+            onContinue = {
+                preferences.edit()
+                    .putBoolean("onboarding_complete_v2", true)
+                    .apply()
+                onboardingOpen = false
+            },
+        )
+    } else if (fullSetupOpen) {
         FullModeSetupScreen(
             busy = fullSetupBusy,
             phase = fullSetupPhase,
@@ -932,7 +959,7 @@ private fun ProductionEmmaApp() {
             latestEmmaText = latestEmmaText,
             engineMode = engineMode,
             onParentRequested = ::requestParentMode,
-            onOpenSettings = { settingsOpen = true },
+            onOpenSettings = ::openSettings,
             onStartSession = ::startSession,
             onStopSession = ::stopSession,
             onToggleAutoRespond = {
