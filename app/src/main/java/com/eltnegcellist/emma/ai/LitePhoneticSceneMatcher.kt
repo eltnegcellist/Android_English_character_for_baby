@@ -105,7 +105,7 @@ internal object LitePhoneticSceneMatcher {
 
     private fun plainNormalize(text: String): String = text
         .lowercase()
-        .replace(Regex("[\\s、。！？!?,.・「」『』（）()【】\[\]ー〜~]"), "")
+        .replace(Regex("[\\s、。！？!?,.・「」『』（）()【】\\[\\]ー〜~]"), "")
 
     private fun katakanaToHiragana(ch: Char): Char =
         if (ch.code in 0x30A1..0x30F6) (ch.code - 0x60).toChar() else ch
@@ -235,7 +235,7 @@ internal object LitePhoneticSceneMatcher {
     )
 
     private const val MIN_SOURCE_LENGTH = 4
-    private const val MIN_CANDIDATE_LENGTH = 4
+    private const val MIN_CANDIDATE_LENGTH = 3
     private const val WINDOW_LENGTH_TOLERANCE = 2
     private const val MIN_CONFIDENCE_MARGIN = 0.08
     private const val MIN_RESCUE_SCORE = 3
