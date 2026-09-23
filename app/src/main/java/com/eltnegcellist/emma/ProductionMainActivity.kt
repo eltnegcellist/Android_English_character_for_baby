@@ -34,12 +34,10 @@ import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
 import com.eltnegcellist.emma.tts.DiagnosticStore
-import com.eltnegcellist.emma.tts.EmmaSpeaker
 import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.tts.SupertonicModelStore
 import com.eltnegcellist.emma.tts.SupertonicSpeaker
-import com.eltnegcellist.emma.tts.VoiceBackend
 import com.eltnegcellist.emma.ui.EmmaTheme
 import com.eltnegcellist.emma.ui.EmmaVisualState
 import kotlin.math.abs
@@ -75,6 +73,10 @@ private enum class ProductionEmmaStatus {
 private fun ProductionEmmaApp() {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
+    remember {
+        preferences.edit().remove("voice_backend").apply()
+        true
+    }
     var englishLevel by remember { mutableStateOf(EnglishLevel.fromSaved(preferences.getString("level", null))) }
     val initialEngineMode = remember {
         val saved = preferences.getString("conversation_engine_mode", null)
@@ -89,7 +91,7 @@ private fun ProductionEmmaApp() {
         }
     }
     var engineMode by remember { mutableStateOf(initialEngineMode) }
-    var onboardingMode by remember { mutableStateOf(ConversationEngineMode.STANDARD) }
+    var onboardingMode by remember { mutableStateOf(initialEngineMode) }
     val initialRate = remember {
         val stored = preferences.getFloat("rate", 1.00f).coerceIn(0.70f, 1.10f)
         if (!preferences.getBoolean("rate_migrated_v121", false)) {
@@ -113,28 +115,13 @@ private fun ProductionEmmaApp() {
     var aboutOpen by remember { mutableStateOf(false) }
     var parentFullPromptOpen by remember { mutableStateOf(false) }
     var onboardingOpen by remember {
-        mutableStateOf(!preferences.getBoolean("onboarding_completed_v2", false))
+        mutableStateOf(!preferences.getBoolean("onboarding_completed_v3", false))
     }
     var firstRunBusy by remember { mutableStateOf(false) }
     var firstRunReady by remember { mutableStateOf(false) }
     var firstRunPhase by remember { mutableStateOf("") }
     var firstRunProgressPercent by remember { mutableStateOf<Int?>(null) }
     var firstRunError by remember { mutableStateOf<String?>(null) }
-    var voiceBackend by remember {
-        val savedBackend = VoiceBackend.fromSaved(preferences.getString("voice_backend", null))
-        val resolvedBackend = if (
-            initialEngineMode == ConversationEngineMode.STANDARD &&
-            SupertonicModelStore.isInstalled(context)
-        ) {
-            VoiceBackend.SUPERTONIC
-        } else {
-            savedBackend
-        }
-        if (resolvedBackend != savedBackend) {
-            preferences.edit().putString("voice_backend", resolvedBackend.savedValue).apply()
-        }
-        mutableStateOf(resolvedBackend)
-    }
     var mouthLevel by remember { mutableStateOf(0f) }
 
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
@@ -176,7 +163,7 @@ private fun ProductionEmmaApp() {
             initialEngineMode == ConversationEngineMode.FULL &&
                 (
                     !GemmaModelStore.hasUsableModel(context) ||
-                        (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
+                        !SupertonicModelStore.isInstalled(context)
                 ),
         )
     }
@@ -312,48 +299,17 @@ private fun ProductionEmmaApp() {
         )
     }
 
-    val androidSpeaker = remember {
-        EmmaSpeaker(
-            context = context,
-            onDone = {
-                if (!disposed) {
-                    mouthLevel = 0f
-                    endpointStartedNanos = null
-                    ttsRequestedAfterEndpointMillis = null
-                    if (recording) recorder.resumeBuffering(clearExisting = true)
-                    status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE
-                    statusMessage = if (recording) {
-                        if (autoRespond) "普通に話しかけてください。" else "話し終えたら「今返事して」を押してください。"
-                    } else {
-                        "試聴を終了しました。"
-                    }
-                }
-            },
-            onError = { message ->
-                if (!disposed) {
-                    voiceError = message
-                    if (recording) recorder.resumeBuffering(clearExisting = true)
-                    status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Android標準音声の再生に失敗しました: $message"
-                }
-            },
-        )
-    }
-
     fun speakEmma(text: String): Boolean {
         lastSpeechMillis = null
         ttsRequestedAfterEndpointMillis = endpointStartedNanos?.let { started ->
             (System.nanoTime() - started) / 1_000_000L
         }
-        if (engineMode == ConversationEngineMode.LITE) {
-            return kittenInstalled && kitten.speak(text)
-        }
-        return when (voiceBackend) {
-            VoiceBackend.SUPERTONIC -> supertonicInstalled && supertonic.speak(text, speechRate)
-            VoiceBackend.ANDROID -> androidSpeaker.speak(
-                text,
-                rate = (speechRate * 0.84f).coerceIn(0.65f, 0.95f),
-            )
+        return when (engineMode) {
+            ConversationEngineMode.LITE ->
+                kittenInstalled && kitten.speak(text)
+            ConversationEngineMode.STANDARD,
+            ConversationEngineMode.FULL ->
+                supertonicInstalled && supertonic.speak(text, speechRate)
         }
     }
 
@@ -436,14 +392,6 @@ private fun ProductionEmmaApp() {
             .apply()
         if (selected != ConversationEngineMode.FULL) {
             preferences.edit().putString("audience_mode", "BABY").apply()
-        }
-        if (
-            selected == ConversationEngineMode.STANDARD &&
-            SupertonicModelStore.isInstalled(context)
-        ) {
-            voiceBackend = VoiceBackend.SUPERTONIC
-            preferences.edit().putString("voice_backend", VoiceBackend.SUPERTONIC.savedValue).apply()
-            supertonic.resetModel()
         }
         modelReady = false
         kittenInstalled = KittenModelStore.isInstalled(context)
@@ -631,8 +579,6 @@ private fun ProductionEmmaApp() {
                 mainHandler.post {
                     if (disposed) return@post
                     supertonicInstalled = true
-                    voiceBackend = VoiceBackend.SUPERTONIC
-                    preferences.edit().putString("voice_backend", voiceBackend.savedValue).apply()
                     supertonic.resetModel()
                     liteSetupBusy = false
                     liteSetupProgressPercent = 100
@@ -801,8 +747,6 @@ private fun ProductionEmmaApp() {
                     if (selectedMode == ConversationEngineMode.LITE) {
                         kitten.resetModel()
                     } else {
-                        voiceBackend = VoiceBackend.SUPERTONIC
-                        preferences.edit().putString("voice_backend", voiceBackend.savedValue).apply()
                         supertonic.resetModel()
                     }
                     modelPresent = modeModelsPresent(selectedMode)
@@ -902,7 +846,7 @@ private fun ProductionEmmaApp() {
                     }.getOrThrow()
                 }
 
-                if (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context)) {
+                if !SupertonicModelStore.isInstalled(context) {
                     mainHandler.post {
                         if (!disposed) {
                             fullSetupPhase = "Emmaの声（Supertonic 3）を準備しています"
@@ -986,18 +930,11 @@ private fun ProductionEmmaApp() {
             return
         }
         if (engineMode != ConversationEngineMode.LITE &&
-            voiceBackend == VoiceBackend.SUPERTONIC && !supertonicInstalled
+            !supertonicInstalled
         ) {
             status = ProductionEmmaStatus.ERROR
             statusMessage = "Supertonic 3を準備するか、Android標準音声を選んでください。"
             settingsOpen = true
-            return
-        }
-        if (engineMode != ConversationEngineMode.LITE &&
-            voiceBackend == VoiceBackend.ANDROID && !androidSpeaker.isReady()
-        ) {
-            status = ProductionEmmaStatus.ERROR
-            statusMessage = "Androidの英語音声を準備しています。少ししてからもう一度お試しください。"
             return
         }
         if (!modelReady) {
@@ -1019,7 +956,6 @@ private fun ProductionEmmaApp() {
         pendingStartAfterPermission = false
         kitten.stop()
         supertonic.stop()
-        androidSpeaker.stop()
         recorder.stop()
         recording = false
         generating = false
@@ -1207,7 +1143,7 @@ private fun ProductionEmmaApp() {
             initialEngineMode == ConversationEngineMode.FULL &&
             (
                 !GemmaModelStore.hasUsableModel(context) ||
-                    (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
+                    !SupertonicModelStore.isInstalled(context)
             )
         ) {
             fullSetupOpen = true
@@ -1286,7 +1222,6 @@ private fun ProductionEmmaApp() {
             recorder.stop()
             kitten.shutdown()
             supertonic.shutdown()
-            androidSpeaker.shutdown()
             mainHandler.removeCallbacksAndMessages(null)
             EmmaWorkQueue.execute {
                 gemma.close()
@@ -1345,9 +1280,9 @@ private fun ProductionEmmaApp() {
             onStartEmma = {
                 if (!firstRunBusy && firstRunReady) {
                     preferences.edit()
-                        .putBoolean("onboarding_completed_v2", true)
+                        .putBoolean("onboarding_completed_v3", true)
                         .putString("conversation_engine_mode", engineMode.savedValue)
-                        .putString("voice_backend", voiceBackend.savedValue)
+                        .remove("voice_backend")
                         .apply()
                     onboardingOpen = false
                     autoStartPending = true
@@ -1368,7 +1303,7 @@ private fun ProductionEmmaApp() {
             progressPercent = fullSetupProgressPercent,
             errorMessage = fullSetupError,
             gemmaNeeded = !GemmaModelStore.hasUsableModel(context),
-            supertonicNeeded = voiceBackend == VoiceBackend.SUPERTONIC && !supertonicInstalled,
+            supertonicNeeded = !supertonicInstalled,
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
                 if (!fullSetupBusy) {
@@ -1378,7 +1313,7 @@ private fun ProductionEmmaApp() {
                         engineMode == ConversationEngineMode.FULL &&
                         (
                 !GemmaModelStore.hasUsableModel(context) ||
-                    (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
+                    !SupertonicModelStore.isInstalled(context)
             )
                     ) {
                         settingsOpen = true
@@ -1403,7 +1338,6 @@ private fun ProductionEmmaApp() {
             modelPresent = modelPresent,
             kittenInstalled = kittenInstalled,
             supertonicInstalled = supertonicInstalled,
-            voiceBackend = voiceBackend,
             lastSpeechMillis = lastSpeechMillis,
             engineMode = engineMode,
             keepScreenOn = keepScreenOn,
@@ -1415,7 +1349,7 @@ private fun ProductionEmmaApp() {
                         selected == ConversationEngineMode.FULL &&
                         (
                 !GemmaModelStore.hasUsableModel(context) ||
-                    (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
+                    !SupertonicModelStore.isInstalled(context)
             )
                     ) {
                         fullSetupError = null
@@ -1450,26 +1384,8 @@ private fun ProductionEmmaApp() {
                 keepScreenOn = it
                 preferences.edit().putBoolean("keep_screen_on", it).apply()
             },
-            onUseSupertonicVoice = {
-                if (supertonicInstalled) {
-                    voiceBackend = VoiceBackend.SUPERTONIC
-                    preferences.edit().putString("voice_backend", VoiceBackend.SUPERTONIC.savedValue).apply()
-                    supertonic.resetModel()
-                    status = ProductionEmmaStatus.IDLE
-                    statusMessage = "Supertonic 3 F3を使用します。"
-                } else {
-                    status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Supertonic 3を先に準備してください。"
-                }
-            },
-            onUseAndroidVoice = {
-                voiceBackend = VoiceBackend.ANDROID
-                preferences.edit().putString("voice_backend", VoiceBackend.ANDROID.savedValue).apply()
-                status = ProductionEmmaStatus.IDLE
-                statusMessage = "Android標準音声を使用します。Supertonic 3は後から追加できます。"
-            },
-            onExportDiagnostics = { diagnosticsExporter.launch("emma-beta11-diagnostics.txt") },
-            onExportCrashDetails = { crashDetailsExporter.launch("emma-beta11-crash-details.zip") },
+            onExportDiagnostics = { diagnosticsExporter.launch("emma-beta12-diagnostics.txt") },
+            onExportCrashDetails = { crashDetailsExporter.launch("emma-beta12-crash-details.zip") },
         )
     } else {
         EmmaHomeScreen(
@@ -1518,7 +1434,7 @@ private fun ProductionEmmaApp() {
 
                     val fullNeedsSetup =
                         !GemmaModelStore.hasUsableModel(context) ||
-                            (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
+                            !SupertonicModelStore.isInstalled(context)
 
                     if (fullNeedsSetup) {
                         fullSetupError = null
