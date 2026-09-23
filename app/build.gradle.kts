@@ -38,8 +38,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 65
-        versionName = "1.4.0-beta13"
+        versionCode = 66
+        versionName = "1.4.0-beta14"
     }
 
     val prototypeSigningConfig = if (hasAllCustomSigningInputs) {

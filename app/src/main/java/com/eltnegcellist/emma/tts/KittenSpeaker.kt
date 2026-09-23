@@ -224,7 +224,7 @@ class KittenSpeaker(
     }
 
     private companion object {
-        const val KIKI_SPEAKER_ID = 6
+        const val KIKI_SPEAKER_ID = 7
         const val KITTEN_SPEED = 1.0f
         const val THREADS = 2
         const val PLAYBACK_CHUNK_SAMPLES = 2048
