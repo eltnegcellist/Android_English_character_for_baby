@@ -42,13 +42,13 @@ internal fun FullModeSetupScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                "Emma Fullについて",
+                "Emma Fullを準備",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "「親へ」はEmma Fullの機能です。\n標準Emmaは赤ちゃん向けの短い返答を軽快に選ぶため、親との自由な会話は行いません。\nEmma FullではGemmaを端末内で動かし、あなたの話や直前の会話を理解して、その場で英語を生成します。\n初回のみ2GB超のAIモデルを準備します。",
+                "FullではGemma 4 E2Bが会話の内容を理解し、その場で英語を生成します。",
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -59,7 +59,7 @@ internal fun FullModeSetupScreen(
                     modifier = Modifier.padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text("Fullで必要なデータ", style = MaterialTheme.typography.titleMedium)
+                    Text("初回のみ必要なデータを取得します", style = MaterialTheme.typography.titleMedium)
                     if (gemmaNeeded) {
                         Text(
                             "Gemmaの会話モデルは2GBを超えます（約2.6GB）。Wi-Fiでの準備をおすすめします。",
@@ -79,7 +79,7 @@ internal fun FullModeSetupScreen(
                         )
                     } else {
                         Text(
-                            "Kokoroは導入済みなので、今回はGemmaだけを取得します。",
+                            "音声は現在の設定を使います。Kokoroの追加ダウンロードが不要な場合は、Gemmaだけを取得します。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -122,9 +122,9 @@ internal fun FullModeSetupScreen(
                         if (errorMessage != null) {
                             "もう一度ダウンロードする"
                         } else if (gemmaNeeded) {
-                            "Full版を準備する"
+                            "2GB超をダウンロードしてFullを準備"
                         } else {
-                            "Full版を準備する"
+                            "必要なデータを取得してFullを準備"
                         },
                     )
                 }
@@ -133,7 +133,7 @@ internal fun FullModeSetupScreen(
                     onClick = onCancel,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("今はやめる")
+                    Text("今はFullにしない")
                 }
                 errorMessage?.let {
                     Spacer(Modifier.height(10.dp))

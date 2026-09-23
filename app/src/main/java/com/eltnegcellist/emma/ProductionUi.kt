@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,9 +36,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.eltnegcellist.emma.ai.AudienceMode
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
+import com.eltnegcellist.emma.tts.VoiceBackend
 import com.eltnegcellist.emma.ui.CompactEmmaAvatar
 import com.eltnegcellist.emma.ui.EmmaColorMode
 import com.eltnegcellist.emma.ui.EmmaVividPalette
@@ -59,7 +62,8 @@ internal fun EmmaHomeScreen(
     latestTranscript: String,
     latestEmmaText: String,
     engineMode: ConversationEngineMode,
-    onParentRequested: () -> Unit,
+    onRequestParentFull: () -> Unit,
+    onOpenAbout: () -> Unit,
     onOpenSettings: () -> Unit,
     onStartSession: () -> Unit,
     onStopSession: () -> Unit,
@@ -115,7 +119,10 @@ internal fun EmmaHomeScreen(
                     Text("Emma", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
                     Text("おうちの英語パートナー", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                TextButton(onClick = onOpenSettings) { Text("設定") }
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(onClick = onOpenAbout) { Text("Emmaとは？") }
+                    TextButton(onClick = onOpenSettings) { Text("設定") }
+                }
             }
 
             Surface(
@@ -137,9 +144,9 @@ internal fun EmmaHomeScreen(
             }
 
             AudienceSelector(
-                enabled = !busy,
+                enabled = !busy && !recording,
                 engineMode = engineMode,
-                onParentRequested = onParentRequested,
+                onRequestParentFull = onRequestParentFull,
             )
 
             CompactEmmaAvatar(
@@ -205,7 +212,7 @@ internal fun EmmaHomeScreen(
 private fun AudienceSelector(
     enabled: Boolean,
     engineMode: ConversationEngineMode,
-    onParentRequested: () -> Unit,
+    onRequestParentFull: () -> Unit,
 ) {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
@@ -231,22 +238,24 @@ private fun AudienceSelector(
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AudienceMode.entries.forEach { option ->
-                    if (option == mode) {
+                    val selected = option == mode
+                    val onClick = {
+                        if (engineMode == ConversationEngineMode.LITE && option == AudienceMode.PARENT) {
+                            onRequestParentFull()
+                        } else {
+                            mode = option
+                            preferences.edit().putString("audience_mode", option.name).apply()
+                        }
+                    }
+                    if (selected) {
                         Button(
-                            onClick = {},
+                            onClick = onClick,
                             enabled = enabled,
                             modifier = Modifier.weight(1f),
                         ) { Text(option.label) }
                     } else {
                         OutlinedButton(
-                            onClick = {
-                                if (engineMode == ConversationEngineMode.LITE && option == AudienceMode.PARENT) {
-                                    onParentRequested()
-                                } else {
-                                    mode = option
-                                    preferences.edit().putString("audience_mode", option.name).apply()
-                                }
-                            },
+                            onClick = onClick,
                             enabled = enabled,
                             modifier = Modifier.weight(1f),
                         ) { Text(option.label) }
@@ -255,7 +264,7 @@ private fun AudienceSelector(
             }
             Text(
                 if (engineMode == ConversationEngineMode.LITE) {
-                    "「親へ」はEmma Fullの機能です。タップすると、Gemmaを使ってその場で英語を考えるFull版の準備をご案内します。"
+                    "現在の標準モードは「赤ちゃんへ」専用です。親との自由会話や、より柔軟な応答はFullで利用できます。"
                 } else {
                     mode.description
                 },
@@ -311,9 +320,11 @@ internal fun EmmaSettingsScreen(
     modelReady: Boolean,
     modelPresent: Boolean,
     kokoroInstalled: Boolean,
+    voiceBackend: VoiceBackend,
     lastSpeechMillis: Long?,
     engineMode: ConversationEngineMode,
     onBack: () -> Unit,
+    onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
     onLevel: (EnglishLevel) -> Unit,
     onRate: (Float) -> Unit,
@@ -322,10 +333,9 @@ internal fun EmmaSettingsScreen(
     onDownloadGemma: () -> Unit,
     onSelectGemma: () -> Unit,
     onDownloadLiteAsr: () -> Unit,
-    onSelectLiteAsr: () -> Unit,
     onLoadGemma: () -> Unit,
     onDownloadKokoro: () -> Unit,
-    onSelectKokoro: () -> Unit,
+    onUseAndroidVoice: () -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
 ) {
@@ -338,12 +348,19 @@ internal fun EmmaSettingsScreen(
                 .padding(horizontal = 20.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onBack) { Text("← 戻る") }
-                Column(Modifier.padding(start = 4.dp)) {
-                    Text("設定", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
-                    Text("家族とEmmaの設定", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = onBack) { Text("← 戻る") }
+                    Column(Modifier.padding(start = 4.dp)) {
+                        Text("設定", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
+                        Text("家族とEmmaの設定", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
+                TextButton(onClick = onOpenAbout) { Text("Emmaとは？") }
             }
 
             ProductionFamilySettings(enabled = enabled)
@@ -352,7 +369,7 @@ internal fun EmmaSettingsScreen(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("動作モード", style = MaterialTheme.typography.titleMedium)
+                    Text("Emmaの話し方", style = MaterialTheme.typography.titleMedium)
                     ConversationEngineMode.entries.forEach { option ->
                         if (engineMode == option) {
                             Button(
@@ -382,13 +399,21 @@ internal fun EmmaSettingsScreen(
                         if (engineMode == ConversationEngineMode.LITE) "Emma" else "Emma Full",
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    if (modelReady && kokoroInstalled) {
+                    if (modelReady && (kokoroInstalled || voiceBackend == VoiceBackend.ANDROID)) {
                         Text("準備完了", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                         Text(
                             if (engineMode == ConversationEngineMode.LITE) {
-                                "日常の育児場面に合わせて短い英語を選び、Kokoroの温かい声で話します。"
+                                if (voiceBackend == VoiceBackend.KOKORO) {
+                                    "親の日本語を聞き取り、その場に合う赤ちゃん向け英語を選び、Emmaの温かい声で話します。"
+                                } else {
+                                    "親の日本語を聞き取り、その場に合う赤ちゃん向け英語を選び、Android標準の英語音声で話します。"
+                                }
                             } else {
-                                "会話・聞き取り・EmmaのKokoro音声はこの端末の中で処理されます。"
+                                if (voiceBackend == VoiceBackend.KOKORO) {
+                                    "会話・聞き取り・EmmaのKokoro音声はこの端末の中で処理されます。"
+                                } else {
+                                    "会話処理は端末内で行い、音声はAndroid標準TTSを使います。"
+                                }
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
@@ -400,33 +425,44 @@ internal fun EmmaSettingsScreen(
 
                         if (!modelReady) {
                             Text(
-                                if (engineMode == ConversationEngineMode.LITE) "日本語聞き取り" else "会話AI",
+                                if (engineMode == ConversationEngineMode.LITE) "日本語の聞き取り" else "Full用AI",
                                 style = MaterialTheme.typography.titleSmall,
                             )
                             Text(
                                 when {
                                     modelPresent -> "導入済み。読み込みが必要です。"
-                                    engineMode == ConversationEngineMode.LITE -> "未導入です。標準Emmaの日本語聞き取りに必要なデータを準備します。"
+                                    engineMode == ConversationEngineMode.LITE -> "未導入です。約116MBのデータを自動で取得し、準備が終わるとそのままEmmaを起動します。"
                                     else -> "未導入です。"
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                             )
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                if (!modelPresent) {
-                                    OutlinedButton(
-                                        onClick = if (engineMode == ConversationEngineMode.LITE) onDownloadLiteAsr else onDownloadGemma,
-                                        enabled = enabled,
-                                        modifier = Modifier.weight(1f),
-                                    ) { Text("入手する") }
+                            if (!modelPresent) {
+                                if (engineMode == ConversationEngineMode.LITE) {
                                     Button(
-                                        onClick = if (engineMode == ConversationEngineMode.LITE) onSelectLiteAsr else onSelectGemma,
+                                        onClick = onDownloadLiteAsr,
                                         enabled = enabled,
-                                        modifier = Modifier.weight(1f),
-                                    ) { Text("選択する") }
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("日本語の聞き取りを準備") }
                                 } else {
-                                    Button(onClick = onLoadGemma, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                        Text(if (engineMode == ConversationEngineMode.LITE) "Emmaを準備" else "会話AIを準備")
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        OutlinedButton(
+                                            onClick = onDownloadGemma,
+                                            enabled = enabled,
+                                            modifier = Modifier.weight(1f),
+                                        ) { Text("入手する") }
+                                        Button(
+                                            onClick = onSelectGemma,
+                                            enabled = enabled,
+                                            modifier = Modifier.weight(1f),
+                                        ) { Text("選択する") }
                                     }
+                                }
+                            } else {
+                                Button(onClick = onLoadGemma, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                                    Text(if (engineMode == ConversationEngineMode.LITE) "Emmaを準備" else "Fullを準備")
                                 }
                             }
                         }
@@ -434,12 +470,25 @@ internal fun EmmaSettingsScreen(
                         if (!kokoroInstalled) {
                             Text("Emmaの声（Kokoro）", style = MaterialTheme.typography.titleSmall)
                             Text(
-                                "Emmaでは声の温かみを重視するため、Kokoroは必須です。Android標準TTSには切り替えません。",
+                                "Emmaは声の温かみを重視するためKokoroをおすすめします。約350MBを自動で取得・設定できます。使わない場合はAndroid標準音声でも利用できます。",
                                 style = MaterialTheme.typography.bodySmall,
                             )
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                OutlinedButton(onClick = onDownloadKokoro, enabled = enabled, modifier = Modifier.weight(1f)) { Text("入手する") }
-                                Button(onClick = onSelectKokoro, enabled = enabled, modifier = Modifier.weight(1f)) { Text("選択する") }
+                            Button(
+                                onClick = onDownloadKokoro,
+                                enabled = enabled,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("Kokoroを自動で準備") }
+                            OutlinedButton(
+                                onClick = onUseAndroidVoice,
+                                enabled = enabled,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("Kokoroを使わずAndroid標準音声を使う") }
+                            if (voiceBackend == VoiceBackend.ANDROID) {
+                                Text(
+                                    "現在はAndroid標準音声を使用しています。Kokoroは後からいつでも追加できます。",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }
@@ -448,9 +497,9 @@ internal fun EmmaSettingsScreen(
 
             Text(
                 if (engineMode == ConversationEngineMode.LITE) {
-                    "標準Emmaは日本語を端末内で聞き取り、日常の育児場面に合う短い返答を選んでKokoroで話します。"
+                    "標準のEmmaは、赤ちゃん向けの短い英語をすばやく選んで話します。より自由に、あなたの話や会話の流れに合わせてAIがその場で言葉を選ぶFull版も利用できます。"
                 } else {
-                    "Emma Fullは直前の会話も含めて理解し、その場で英語を生成します。処理は端末内で行います。"
+                    "Fullでは、より自由に、あなたの話や直前の会話に合わせてAIがその場で英語を考えて話します。処理は端末内で行います。"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -458,6 +507,44 @@ internal fun EmmaSettingsScreen(
             Spacer(Modifier.height(16.dp))
         }
     }
+}
+
+@Composable
+internal fun LiteModelInstallDialog(
+    phase: String,
+    progressPercent: Int?,
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        confirmButton = {},
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+        ),
+        title = {
+            Text("Whisperを準備しています")
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                CircularProgressIndicator()
+                progressPercent?.let {
+                    Text("$it%", style = MaterialTheme.typography.titleMedium)
+                }
+                Text(
+                    phase.ifBlank { "日本語聞き取りモデルを準備しています…" },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    "インストール中のためお待ちください。完了するまでアプリを閉じたり、他の操作をしたりしないでください。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+    )
 }
 
 @Composable

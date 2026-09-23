@@ -5,12 +5,12 @@ enum class ConversationEngineMode(
     val description: String,
 ) {
     LITE(
-        label = "Emma",
-        description = "日常の育児場面に合わせて、あらかじめ用意した短い英語をKokoroの声で話します。",
+        label = "標準",
+        description = "赤ちゃん向けの短い英語を、今の場面に合わせて端末内で選んで話します。普段はこちらがおすすめです。",
     ),
     FULL(
-        label = "Emma Full",
-        description = "Gemma 4 E2Bが直前の会話まで理解し、その場で新しい英語を考えて返します。初回のみ2GB超のAIモデルを準備します。",
+        label = "Full",
+        description = "より自由に、あなたの話や直前の会話に合わせてAIがその場で英語を考えて話します。初回のみ2GB超の追加データが必要です。",
     );
 
     companion object {

@@ -1,7 +1,6 @@
 package com.eltnegcellist.emma.tts
 
 import android.content.Context
-import android.net.Uri
 import com.eltnegcellist.emma.model.InAppModelDownloader
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
@@ -27,7 +26,7 @@ object KokoroModelStore {
         context: Context,
         progress: (Int?) -> Unit,
     ): Result<Unit> = runCatching {
-        val archive = File(context.filesDir, "$ROOT.auto-download.tar.bz2")
+        val archive = File(context.cacheDir, "$ROOT.auto-download.tar.bz2")
         try {
             InAppModelDownloader.download(
                 url = MODEL_URL,
@@ -42,23 +41,6 @@ object KokoroModelStore {
                 progress(installPercent?.let { 70 + (it * 30) / 100 })
             }.getOrThrow()
             progress(100)
-        } finally {
-            archive.delete()
-        }
-    }
-
-    fun importArchive(context: Context, uri: Uri, progress: (Int?) -> Unit): Result<Unit> = runCatching {
-        val archive = File(context.filesDir, "$ROOT.download.part")
-        archive.delete()
-        try {
-            context.contentResolver.openInputStream(uri).use { source ->
-                requireNotNull(source) { "モデル書庫を開けません。" }
-                FileOutputStream(archive).use { output ->
-                    source.copyTo(output, 1024 * 1024)
-                    output.fd.sync()
-                }
-            }
-            installArchiveFile(context, archive, progress).getOrThrow()
         } finally {
             archive.delete()
         }

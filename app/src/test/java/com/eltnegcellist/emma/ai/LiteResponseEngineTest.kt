@@ -11,7 +11,7 @@ class LiteResponseEngineTest {
         val response = LiteResponseEngine().respond("そろそろお風呂に入ろうね")
         assertEquals("bath", response.scene)
         assertTrue(response.score >= 3)
-        assertTrue(response.english.isNotBlank())
+        assertTrue(response.english.contains("bath", ignoreCase = true))
     }
 
     @Test
@@ -32,13 +32,13 @@ class LiteResponseEngineTest {
     fun configuredNameCanBeInserted() {
         val engine = LiteResponseEngine()
         val outputs = (0 until 8).map { engine.respond("お風呂の時間だよ", "Hana").english }
-        assertTrue(outputs.any { it.contains("Hana-chan") })
+        assertTrue(outputs.any { it.contains("Hana") })
         assertFalse(outputs.any { it.contains("{name}") })
     }
 
 
     @Test
-    fun repliesStayShortWithoutPadding() {
+    fun repliesStayCompactAndBabyDirected() {
         val samples = listOf(
             "そろそろお風呂に入ろうね",
             "ミルクいっぱい飲んだね",
@@ -57,17 +57,53 @@ class LiteResponseEngineTest {
                 .findAll(text)
                 .count()
 
-            assertTrue("sentence count for: $text", sentences.size in 3..5)
-            assertTrue("word count for: $text", words <= 20)
+            assertTrue(
+                "sentence count for: $text",
+                sentences.size in LiteSpeechStyle.MIN_SENTENCES..LiteSpeechStyle.MAX_SENTENCES,
+            )
+            assertTrue(
+                "word count for: $text",
+                words in LiteSpeechStyle.MIN_WORDS..LiteSpeechStyle.MAX_WORDS,
+            )
+            sentences.forEach { sentence ->
+                val sentenceWords = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
+                    .findAll(sentence)
+                    .count()
+                assertTrue(
+                    "sentence too long ($sentenceWords words): $sentence",
+                    sentenceWords <= LiteSpeechStyle.MAX_WORDS_PER_SENTENCE,
+                )
+            }
         }
     }
 
+
     @Test
-    fun noGenericFillerIsInjected() {
-        val text = LiteResponseEngine().respond("お風呂に入ろうね").english
-        assertFalse(text.contains("Look and listen with me."))
-        assertFalse(text.contains("Here we go together now."))
-        assertFalse(text.contains("Emma is right here with you."))
+    fun everyBakedReplyMatchesCompactLiteEnvelope() {
+        LiteResponseEngine.allTemplatesForValidation().forEach { template ->
+            val text = template.replace("{name}", "Hana")
+            val sentences = Regex("(?<=[.!?])\\s+")
+                .split(text.trim())
+                .filter { it.isNotBlank() }
+            val words = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
+                .findAll(text)
+                .count()
+
+            assertEquals("sentence count for: $text", LiteSpeechStyle.MIN_SENTENCES, sentences.size)
+            assertTrue(
+                "word count for: $text",
+                words in LiteSpeechStyle.MIN_WORDS..LiteSpeechStyle.MAX_WORDS,
+            )
+            sentences.forEach { sentence ->
+                val sentenceWords = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
+                    .findAll(sentence)
+                    .count()
+                assertTrue(
+                    "sentence too long ($sentenceWords words): $sentence",
+                    sentenceWords <= LiteSpeechStyle.MAX_WORDS_PER_SENTENCE,
+                )
+            }
+        }
     }
 
     @Test
@@ -77,7 +113,7 @@ class LiteResponseEngineTest {
             engine.respond("お風呂の時間だよ", "Hana").english
         }
         val nameTurns = outputs.mapIndexedNotNull { index, text ->
-            index.takeIf { text.contains("Hana-chan") }
+            index.takeIf { text.contains("Hana") }
         }
 
         assertTrue(nameTurns.isNotEmpty())

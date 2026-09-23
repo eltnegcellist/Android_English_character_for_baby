@@ -11,7 +11,7 @@ enum class KokoroAudioTestMode(
     PIPELINE_058(
         savedValue = "PIPELINE_058",
         label = "A：0.58×・逐次再生",
-        description = "1短句目ができたら再生を始める逐次再生モードです。",
+        description = "1短句目ができたら再生を始めます。v1.2.11に近い条件で、再生パイプライン由来のザラつきを再現する比較条件です。",
     ),
     FULL_BUFFER_058(
         savedValue = "FULL_BUFFER_058",
@@ -46,7 +46,7 @@ enum class KokoroAudioTestMode(
     SPLIT_058_STATIC(
         savedValue = "SPLIT_058_STATIC",
         label = "H：0.58×・短句別生成・静的再生",
-        description = "固定英文を短句ごとに生成し、間を入れて結合したPCMを静的再生します。",
+        description = "固定英文を4短句に分けて0.58×で個別生成し、約0.42秒の間を入れて全PCMを1本に結合してMODE_STATIC再生します。Bと生成条件、Gと再生方式をそろえた本命比較です。",
     );
 
     companion object {

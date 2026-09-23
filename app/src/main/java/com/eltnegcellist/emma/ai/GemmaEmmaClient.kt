@@ -180,7 +180,6 @@ class GemmaEmmaClient(context: Context) {
             val previousWasQuestion = conversationHistory.lastOrNull()?.askedQuestion == true
             val configuredBabyName = configuredBabyName()
             val spokenBabyName = configuredSpokenBabyName(configuredBabyName)
-            val addressedBabyName = BabyNamePronunciation.withChan(spokenBabyName)
             val babyGender = configuredBabyGender()
             val infantVocalEvent = transcript == BABY_VOCAL_CONTEXT
             // Clear infant vocalizations are always answered to the baby, even if the user was
@@ -202,9 +201,9 @@ class GemmaEmmaClient(context: Context) {
                 .filter { it.audience == AudienceMode.BABY }
                 .takeLast(BabySpeechStyle.NAME_REPEAT_WINDOW)
             val shouldUseBabyName = audienceMode == AudienceMode.BABY &&
-                addressedBabyName.isNotBlank() &&
-                recentBabyReplies.none { containsSpokenName(it.english, addressedBabyName) }
-            val spokenNameWordCount = englishWordCount(addressedBabyName).coerceAtLeast(1)
+                spokenBabyName.isNotBlank() &&
+                recentBabyReplies.none { containsSpokenName(it.english, spokenBabyName) }
+            val spokenNameWordCount = englishWordCount(spokenBabyName).coerceAtLeast(1)
             val generationWordLimit = if (shouldUseBabyName) {
                 (outputMaxWords - spokenNameWordCount).coerceAtLeast(4)
             } else {
@@ -214,12 +213,12 @@ class GemmaEmmaClient(context: Context) {
             val babyContextInstruction = when {
                 configuredBabyName.isBlank() ->
                     "No baby name is configured. Refer to the baby generically, such as \"little one\" when needed. Never invent, guess, or assume a baby name."
-                addressedBabyName.isBlank() ->
+                spokenBabyName.isBlank() ->
                     "A baby name is saved, but no safe English spoken form is available. Do not copy Japanese characters into the English reply and do not guess the pronunciation."
                 shouldUseBabyName ->
-                    "Address the baby as \"$addressedBabyName\" exactly once in this reply. This Latin-script name with -chan is allowed in English-only output."
+                    "The baby's SPOKEN ENGLISH name is \"$spokenBabyName\". You MUST address the baby by exactly this Latin-script name once in this reply. This proper name is allowed in English-only output."
                 else ->
-                    "The baby's preferred spoken address is \"$addressedBabyName\". It was used recently, so use it only if it sounds especially natural in this reply."
+                    "The baby's SPOKEN ENGLISH name is \"$spokenBabyName\". It was used recently, so use it only if it sounds especially natural in this reply."
             }
             val babyGenderInstruction = babyGender.promptInstruction
 
@@ -232,9 +231,9 @@ class GemmaEmmaClient(context: Context) {
                     Turn the useful concrete meaning into a short baby-directed MINI CONVERSATION.
 
                     Baby-directed style:
-                    - Aim for about ${BabySpeechStyle.TARGET_MIN_WORDS}-${BabySpeechStyle.MAX_WORDS} spoken words when the context supports it. Never exceed $generationWordLimit words before any app-level name fallback.
-                    - Prefer ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} very short sentences, usually 2-6 words each. If the context is extremely small, an even shorter natural reply is acceptable; never add filler just to reach a quota.
-                    - Keep each phrase easy and let the whole response finish quickly.
+                    - Aim for about ${BabySpeechStyle.MIN_WORDS}-${BabySpeechStyle.MAX_WORDS} spoken words when the context supports it. Never exceed $generationWordLimit words before any app-level name fallback.
+                    - Prefer ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} very short sentences, usually 2-${BabySpeechStyle.MAX_WORDS_PER_SENTENCE} words each. If the context is extremely small, 4 sentences is acceptable.
+                    - Keep EACH phrase easy even though the whole response is longer.
                     - Build a little sequence around the SAME supported moment: get attention, react, repeat one or two key words/actions across multiple sentences, then add a simple playful invitation or sound.
                     - End every short sentence with punctuation so the voice can speak one complete sentence naturally, then pause before the next sentence.
                     - Use very common, concrete, easy-to-hear words.
@@ -302,7 +301,7 @@ class GemmaEmmaClient(context: Context) {
             DiagnosticStore.mark(
                 appContext,
                 "before_gemma_english_generation",
-                "audience=${audienceMode.name} infantVocal=$infantVocalEvent babyGender=${babyGender.name} nameConfigured=${configuredBabyName.isNotBlank()} spokenNameReady=${addressedBabyName.isNotBlank()} mustUseName=$shouldUseBabyName wordLimit=$generationWordLimit historyTurns=${conversationHistory.size} previousQuestion=$previousWasQuestion ${memoryDetail()}",
+                "audience=${audienceMode.name} infantVocal=$infantVocalEvent babyGender=${babyGender.name} nameConfigured=${configuredBabyName.isNotBlank()} spokenNameReady=${spokenBabyName.isNotBlank()} mustUseName=$shouldUseBabyName wordLimit=$generationWordLimit historyTurns=${conversationHistory.size} previousQuestion=$previousWasQuestion ${memoryDetail()}",
             )
             val generationStarted = System.nanoTime()
             val generationMaxTokens = if (audienceMode == AudienceMode.BABY) 192 else 256
@@ -313,7 +312,7 @@ class GemmaEmmaClient(context: Context) {
                             "Current parent turn (Japanese, highest priority):\n$transcript\n\n" +
                             if (audienceMode == AudienceMode.BABY) {
                                 if (shouldUseBabyName) {
-                                    "Speak directly to the baby now. Include \"$addressedBabyName\" exactly once. Make ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} short complete sentences: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
+                                    "Speak directly to the baby now. Include the spoken name \"$spokenBabyName\" exactly once. Make ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} short complete sentences: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 } else {
                                     "Speak directly to the baby now. Make ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} short complete sentences: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 }
@@ -325,10 +324,10 @@ class GemmaEmmaClient(context: Context) {
                 val validated = EnglishOutput.validate(response, level, generationWordLimit)
                 val withRequiredName = if (
                     shouldUseBabyName &&
-                    addressedBabyName.isNotBlank() &&
-                    !containsSpokenName(validated, addressedBabyName)
+                    spokenBabyName.isNotBlank() &&
+                    !containsSpokenName(validated, spokenBabyName)
                 ) {
-                    "$addressedBabyName! $validated"
+                    "$spokenBabyName! $validated"
                 } else {
                     validated
                 }
@@ -352,7 +351,7 @@ class GemmaEmmaClient(context: Context) {
             DiagnosticStore.mark(
                 appContext,
                 "after_gemma_english_generation",
-                "audience=${audienceMode.name} infantVocal=$infantVocalEvent babyGender=${babyGender.name} usedName=${addressedBabyName.isNotBlank() && containsSpokenName(english, addressedBabyName)} words=${englishWordCount(english)} chars=${english.length} durationMs=$generationMillis historyTurns=${conversationHistory.size} ${memoryDetail()}",
+                "audience=${audienceMode.name} infantVocal=$infantVocalEvent babyGender=${babyGender.name} usedName=${spokenBabyName.isNotBlank() && containsSpokenName(english, spokenBabyName)} words=${englishWordCount(english)} chars=${english.length} durationMs=$generationMillis historyTurns=${conversationHistory.size} ${memoryDetail()}",
             )
             english
         }

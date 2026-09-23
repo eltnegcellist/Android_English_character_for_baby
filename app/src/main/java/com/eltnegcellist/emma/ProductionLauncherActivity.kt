@@ -5,7 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 
-/** Opens the production Emma experience and normalizes persisted audio mode state. */
+/**
+ * Production entry point. It migrates installs out of the temporary Kokoro-only
+ * diagnostic mode used during development, then opens the production Emma UI.
+ */
 class ProductionLauncherActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

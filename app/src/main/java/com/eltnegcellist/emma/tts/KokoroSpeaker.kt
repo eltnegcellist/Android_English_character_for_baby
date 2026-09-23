@@ -97,7 +97,7 @@ class KokoroSpeaker(
                     KokoroAudioTestMode.WHOLE_070_STATIC,
                     -> 0.70f
                     KokoroAudioTestMode.WHOLE_100_STREAM -> 1.00f
-                    null -> if (normalBabyMode) BABY_SENTENCE_SPEED else speed.coerceIn(0.70f, 1.10f)
+                    null -> if (normalBabyMode) (speed * BABY_SENTENCE_SPEED_FACTOR).coerceIn(0.82f, 1.00f) else speed.coerceIn(0.70f, 1.10f)
                 }
                 val phrases = when {
                     wholeUtteranceTest -> listOf(speechText.trim())
@@ -171,14 +171,14 @@ class KokoroSpeaker(
                 val generationStarted = System.nanoTime()
 
                 // generateWithCallback() is intentionally not used on Android because that JNI
-                // Whole-utterance modes use the synchronous generation path for predictable playback.
+                // callback path crashed on real devices. Whole-utterance diagnostic modes call the
                 // safe synchronous generate() once; normal and split-static modes generate tiny phrases.
                 for (phrase in phrases) {
                     if (closed || requestId != id) break
                     val phraseStarted = System.nanoTime()
                     val generated = active.tts.generate(
                         text = phrase,
-                        sid = 3,
+                        sid = KOKORO_SPEAKER_ID,
                         speed = effectiveSpeed,
                     )
                     val phraseMs = (System.nanoTime() - phraseStarted) / 1_000_000L
@@ -757,9 +757,10 @@ class KokoroSpeaker(
         const val AUDIENCE_MODE_KEY = "audience_mode"
         const val KOKORO_CPU_MODE_KEY = "kokoro_cpu_mode"
         const val BABY_AUDIENCE_VALUE = "BABY"
-        const val BABY_SENTENCE_SPEED = 1.00f
-        const val BABY_SENTENCE_PAUSE_MS = 600
-        const val BABY_PHRASE_PAUSE_MS = 420
+        const val KOKORO_SPEAKER_ID = 3 // af_heart in kokoro-multi-lang-v1_0
+        const val BABY_SENTENCE_SPEED_FACTOR = 0.94f
+        const val BABY_SENTENCE_PAUSE_MS = 780
+        const val BABY_PHRASE_PAUSE_MS = 520
         const val MAX_BABY_PHRASES = 7
         const val MAX_PARENT_PHRASES = 5
         const val PHRASE_EDGE_FADE_MS = 6

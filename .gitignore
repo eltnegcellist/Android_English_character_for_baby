@@ -5,7 +5,19 @@ local.properties
 /app/build/
 *.iml
 .DS_Store
+
+# Downloaded build dependencies
 app/libs/*.aar
+
+# Signing material and local secrets
+app/signing/
 *.jks
 *.keystore
-keystore.properties
+*.p12
+*.pem
+*.key
+signing.properties
+secrets.properties
+.env
+.env.*
+!.env.example

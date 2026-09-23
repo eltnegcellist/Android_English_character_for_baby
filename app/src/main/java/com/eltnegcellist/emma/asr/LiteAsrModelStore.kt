@@ -1,7 +1,7 @@
 package com.eltnegcellist.emma.asr
 
 import android.content.Context
-import android.net.Uri
+import com.eltnegcellist.emma.model.InAppModelDownloader
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import java.io.BufferedInputStream
@@ -31,11 +31,46 @@ object LiteAsrModelStore {
 
     fun isInstalled(context: Context): Boolean = isInstalledAt(directory(context))
 
-    fun importArchive(
+    /**
+     * Downloads the official sherpa-onnx Whisper archive inside Emma, then
+     * extracts, verifies and installs it without requiring the file picker.
+     *
+     * Progress 0..70 = download, 70..100 = extract / verify / install.
+     */
+    fun downloadAndInstall(
         context: Context,
-        uri: Uri,
         progress: (Int?) -> Unit,
     ): Result<Unit> = runCatching {
+        val archive = File(context.cacheDir, "$MODEL_NAME.auto-download.tar.bz2")
+        archive.parentFile?.mkdirs()
+        try {
+            InAppModelDownloader.download(
+                url = MODEL_URL,
+                destination = archive,
+                minimumBytes = 100_000_000L,
+                freeSpaceMarginBytes = 384L * 1024L * 1024L,
+            ) { state ->
+                progress(state.percent?.let { (it * 70) / 100 })
+            }.getOrThrow()
+
+            installArchiveFile(context, archive) { installPercent ->
+                progress(installPercent?.let { 70 + (it * 30) / 100 })
+            }.getOrThrow()
+            progress(100)
+        } finally {
+            archive.delete()
+        }
+    }
+
+    private fun installArchiveFile(
+        context: Context,
+        archive: File,
+        progress: (Int?) -> Unit,
+    ): Result<Unit> = runCatching {
+        require(archive.isFile && archive.length() > 0L) {
+            "Whisper tinyの書庫を確認できません。"
+        }
+
         val target = directory(context)
         val staging = File(context.filesDir, "asr/$MODEL_NAME.part")
         staging.deleteRecursively()
@@ -43,8 +78,7 @@ object LiteAsrModelStore {
 
         try {
             val found = mutableSetOf<String>()
-            context.contentResolver.openInputStream(uri).use { source ->
-                requireNotNull(source) { "ASRモデル書庫を開けませんでした。" }
+            FileInputStream(archive).use { source ->
                 TarArchiveInputStream(
                     BZip2CompressorInputStream(BufferedInputStream(source)),
                 ).use { tar ->
@@ -63,7 +97,7 @@ object LiteAsrModelStore {
                                 output.parentFile?.mkdirs()
                                 FileOutputStream(output).use { tar.copyTo(it, 1024 * 1024) }
                                 found += relative
-                                progress(found.size * 80 / requiredFiles.size)
+                                progress(found.size * 75 / requiredFiles.size)
                             }
                         }
                         entry = tar.nextEntry
@@ -75,18 +109,19 @@ object LiteAsrModelStore {
                 "Whisper tinyに必要なファイルが不足しています。"
             }
 
-            progress(85)
+            progress(80)
             verifySha256(
                 File(staging, "tiny-encoder.int8.onnx"),
                 ENCODER_SHA256,
                 "Whisper tiny encoder",
             )
-            progress(92)
+            progress(90)
             verifySha256(
                 File(staging, "tiny-decoder.int8.onnx"),
                 DECODER_SHA256,
                 "Whisper tiny decoder",
             )
+            progress(95)
 
             val backup = File(context.filesDir, "asr/$MODEL_NAME.old")
             backup.deleteRecursively()
@@ -133,7 +168,7 @@ object LiteAsrModelStore {
         }
         val actual = digest.digest().joinToString("") { "%02x".format(it) }
         require(actual == expected) {
-            "$label のSHA-256が一致しません。公式sherpa-onnxモデルを選択してください。"
+            "$label のSHA-256が一致しません。自動ダウンロードをやり直してください。"
         }
     }
 }

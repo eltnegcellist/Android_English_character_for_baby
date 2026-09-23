@@ -1,12 +1,6 @@
 package com.eltnegcellist.emma.ai
 
 internal object BabyNamePronunciation {
-    fun withChan(spokenEnglishName: String): String {
-        val clean = sanitizeEnglishName(spokenEnglishName)
-        if (clean.isBlank()) return ""
-        return if (clean.endsWith("-chan", ignoreCase = true)) clean else "$clean-chan"
-    }
-
     fun toSpokenEnglish(savedName: String, overrideName: String = ""): String {
         val explicit = sanitizeEnglishName(overrideName)
         if (explicit.isNotBlank()) return explicit

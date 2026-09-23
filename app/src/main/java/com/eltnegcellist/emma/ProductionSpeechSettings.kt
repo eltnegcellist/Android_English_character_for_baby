@@ -41,7 +41,6 @@ internal fun ProductionSpeechSettings(
     var babyName by remember { mutableStateOf(preferences.getString("baby_name", "").orEmpty()) }
     var spokenBabyName by remember { mutableStateOf(preferences.getString("baby_spoken_name", "").orEmpty()) }
     val resolvedSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, spokenBabyName)
-    val addressedBabyName = BabyNamePronunciation.withChan(resolvedSpokenName)
 
     Card(Modifier.fillMaxWidth()) {
         Column(
@@ -62,7 +61,7 @@ internal fun ProductionSpeechSettings(
                 enabled = enabled,
                 singleLine = true,
                 label = { Text("名前（任意）") },
-                placeholder = { Text("例：ハナ / Hana") },
+                placeholder = { Text("例：はな / Hana") },
             )
             OutlinedTextField(
                 value = spokenBabyName,
@@ -83,7 +82,7 @@ internal fun ProductionSpeechSettings(
             Text(
                 when {
                     babyName.isBlank() -> "名前は未設定です。"
-                    resolvedSpokenName.isNotBlank() -> "Emmaが呼ぶ名前：$addressedBabyName"
+                    resolvedSpokenName.isNotBlank() -> "Emmaが呼ぶ名前：$resolvedSpokenName"
                     else -> "読み方が必要な場合は英字で指定してください。"
                 },
                 style = MaterialTheme.typography.bodySmall,

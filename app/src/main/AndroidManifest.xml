@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <queries><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <application
         android:name=".EmmaApplication"
         android:allowBackup="true"
@@ -10,14 +17,30 @@
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.Emma">
-        <uses-native-library android:name="libvndksupport.so" android:required="false" />
-        <uses-native-library android:name="libOpenCL.so" android:required="false" />
-        <activity android:name=".ProductionMainActivity" android:exported="false" />
-        <activity android:name=".ProductionLauncherActivity" android:exported="true">
+
+        <uses-native-library
+            android:name="libvndksupport.so"
+            android:required="false" />
+        <uses-native-library
+            android:name="libOpenCL.so"
+            android:required="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProductionMainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProductionLauncherActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

@@ -31,8 +31,10 @@ import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
 import com.eltnegcellist.emma.tts.DiagnosticStore
+import com.eltnegcellist.emma.tts.EmmaSpeaker
 import com.eltnegcellist.emma.tts.KokoroModelStore
 import com.eltnegcellist.emma.tts.KokoroSpeaker
+import com.eltnegcellist.emma.tts.VoiceBackend
 import com.eltnegcellist.emma.ui.EmmaTheme
 import com.eltnegcellist.emma.ui.EmmaVisualState
 import kotlin.math.abs
@@ -101,8 +103,18 @@ private fun ProductionEmmaApp() {
     var latestTranscript by remember { mutableStateOf("") }
     var autoRespond by remember { mutableStateOf(preferences.getBoolean("auto_respond", true)) }
     var settingsOpen by remember { mutableStateOf(false) }
+    var aboutOpen by remember { mutableStateOf(false) }
+    var parentFullPromptOpen by remember { mutableStateOf(false) }
     var onboardingOpen by remember {
-        mutableStateOf(!preferences.getBoolean("onboarding_complete_v2", false))
+        mutableStateOf(!preferences.getBoolean("onboarding_completed_v2", false))
+    }
+    var firstRunBusy by remember { mutableStateOf(false) }
+    var firstRunReady by remember { mutableStateOf(false) }
+    var firstRunPhase by remember { mutableStateOf("") }
+    var firstRunProgressPercent by remember { mutableStateOf<Int?>(null) }
+    var firstRunError by remember { mutableStateOf<String?>(null) }
+    var voiceBackend by remember {
+        mutableStateOf(VoiceBackend.fromSaved(preferences.getString("voice_backend", null)))
     }
     var mouthLevel by remember { mutableStateOf(0f) }
 
@@ -122,7 +134,7 @@ private fun ProductionEmmaApp() {
     }
     var latestEmmaText by remember { mutableStateOf("") }
     var recording by remember { mutableStateOf(false) }
-    var autoStartPending by remember { mutableStateOf(true) }
+    var autoStartPending by remember { mutableStateOf(!onboardingOpen) }
     var pendingStartAfterPermission by remember { mutableStateOf(false) }
     var modelPresent by remember {
         mutableStateOf(
@@ -138,14 +150,19 @@ private fun ProductionEmmaApp() {
     var fullSetupOpen by remember {
         mutableStateOf(
             initialEngineMode == ConversationEngineMode.FULL &&
-                (!GemmaModelStore.hasUsableModel(context) || !KokoroModelStore.isInstalled(context)),
+                (
+                    !GemmaModelStore.hasUsableModel(context) ||
+                        (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+                ),
         )
     }
     var fullSetupBusy by remember { mutableStateOf(false) }
     var fullSetupPhase by remember { mutableStateOf("") }
     var fullSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
     var fullSetupError by remember { mutableStateOf<String?>(null) }
-    var parentModeRequestedAfterFullSetup by remember { mutableStateOf(false) }
+    var liteSetupBusy by remember { mutableStateOf(false) }
+    var liteSetupPhase by remember { mutableStateOf("") }
+    var liteSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
     var kokoroOnly by remember { mutableStateOf(preferences.getBoolean("kokoro_only", false)) }
     var kokoroImporting by remember { mutableStateOf(false) }
     var lastSpeechMillis by remember { mutableStateOf<Long?>(null) }
@@ -220,12 +237,46 @@ private fun ProductionEmmaApp() {
         )
     }
 
+    val androidSpeaker = remember {
+        EmmaSpeaker(
+            context = context,
+            onDone = {
+                if (!disposed) {
+                    mouthLevel = 0f
+                    endpointStartedNanos = null
+                    ttsRequestedAfterEndpointMillis = null
+                    if (recording) recorder.resumeBuffering(clearExisting = true)
+                    status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE
+                    statusMessage = if (recording) {
+                        if (autoRespond) "普通に話しかけてください。" else "話し終えたら「今返事して」を押してください。"
+                    } else {
+                        "試聴を終了しました。"
+                    }
+                }
+            },
+            onError = { message ->
+                if (!disposed) {
+                    voiceError = message
+                    if (recording) recorder.resumeBuffering(clearExisting = true)
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "Android標準音声の再生に失敗しました: $message"
+                }
+            },
+        )
+    }
+
     fun speakEmma(text: String): Boolean {
         lastSpeechMillis = null
         ttsRequestedAfterEndpointMillis = endpointStartedNanos?.let { started ->
             (System.nanoTime() - started) / 1_000_000L
         }
-        return kokoroInstalled && kokoro.speak(text, speechRate)
+        return when (voiceBackend) {
+            VoiceBackend.KOKORO -> kokoroInstalled && kokoro.speak(text, speechRate)
+            VoiceBackend.ANDROID -> androidSpeaker.speak(
+                text,
+                rate = (speechRate * 0.84f).coerceIn(0.65f, 0.95f),
+            )
+        }
     }
 
     fun loadModel() {
@@ -245,7 +296,7 @@ private fun ProductionEmmaApp() {
             modelReady = false
             status = ProductionEmmaStatus.ERROR
             statusMessage = if (engineMode == ConversationEngineMode.LITE) {
-                "Emmaの日本語聞き取りデータを先に準備してください。"
+                "日本語の聞き取りデータを先に準備してください。"
             } else {
                 "会話モデルを先に設定してください。"
             }
@@ -307,7 +358,7 @@ private fun ProductionEmmaApp() {
         }
         status = ProductionEmmaStatus.IDLE
         statusMessage = if (selected == ConversationEngineMode.LITE) {
-            if (modelPresent) "標準Emmaを選びました。起動します…" else "標準Emmaを選びました。日本語聞き取りデータを準備してください。"
+            if (modelPresent) "標準のEmmaを選びました。起動します…" else "日本語の聞き取りを準備してください。"
         } else {
             if (modelPresent) "Fullを選びました。起動します…" else "Fullを選びました。Gemmaを準備してください。"
         }
@@ -356,61 +407,190 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    val liteAsrArchivePicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument(),
-    ) { uri ->
-        if (uri != null && !disposed) {
-            modelReady = false
-            status = ProductionEmmaStatus.MODEL_IMPORTING
-            statusMessage = "Emmaの日本語聞き取りデータを取り込んでいます…"
-            EmmaWorkQueue.execute {
-                lite.close()
-                val result = LiteAsrModelStore.importArchive(context, uri) { percent ->
-                    mainHandler.post {
-                        if (!disposed) {
-                            statusMessage = "Emmaの日本語聞き取りデータを取り込んでいます… ${percent ?: ""}%"
+    fun startLiteAutomaticSetup() {
+        if (disposed || liteSetupBusy) return
+
+        liteSetupBusy = true
+        liteSetupProgressPercent = 0
+        liteSetupPhase = "Whisperをダウンロードしています…"
+        modelReady = false
+        status = ProductionEmmaStatus.MODEL_IMPORTING
+        statusMessage = "Whisperを準備しています…"
+
+        EmmaWorkQueue.execute {
+            lite.close()
+            LiteAsrModelStore.downloadAndInstall(context) { percent ->
+                mainHandler.post {
+                    if (!disposed) {
+                        liteSetupProgressPercent = percent
+                        liteSetupPhase = when {
+                            percent == null -> "Whisperをダウンロードしています…"
+                            percent < 70 -> "Whisperをダウンロードしています…"
+                            percent < 93 -> "Whisperを展開・検証しています…"
+                            else -> "Whisperを配置しています…"
                         }
+                        statusMessage = "Whisperを準備しています… ${percent?.let { "$it%" } ?: ""}"
                     }
                 }
+            }.onSuccess {
                 mainHandler.post {
                     if (disposed) return@post
-                    result.onSuccess {
-                        modelPresent = true
-                        if (engineMode == ConversationEngineMode.LITE) loadModel()
-                    }.onFailure { error ->
-                        modelPresent = LiteAsrModelStore.isInstalled(context)
-                        status = ProductionEmmaStatus.ERROR
-                        statusMessage = "日本語聞き取りデータの取り込みに失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                    liteSetupBusy = false
+                    liteSetupProgressPercent = 100
+                    modelPresent = true
+                    statusMessage = "日本語の聞き取り準備ができました。Emmaを起動します…"
+                    if (engineMode == ConversationEngineMode.LITE) {
+                        loadModel()
+                    } else {
+                        status = ProductionEmmaStatus.IDLE
                     }
+                }
+            }.onFailure { error ->
+                mainHandler.post {
+                    if (disposed) return@post
+                    liteSetupBusy = false
+                    liteSetupProgressPercent = null
+                    modelPresent = LiteAsrModelStore.isInstalled(context)
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "Whisperの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                    settingsOpen = true
                 }
             }
         }
     }
 
-    val kokoroArchivePicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument(),
-    ) { uri ->
-        if (uri != null && !disposed) {
-            kokoroImporting = true
-            status = ProductionEmmaStatus.MODEL_IMPORTING
-            statusMessage = "音声モデルを取り込んでいます…"
-            EmmaWorkQueue.execute {
-                val result = KokoroModelStore.importArchive(context, uri) { percent ->
-                    mainHandler.post { if (!disposed) statusMessage = "音声モデルを取り込んでいます… ${percent ?: ""}%" }
+    fun startFirstRunSetup(useKokoro: Boolean) {
+        if (disposed || firstRunBusy) return
+
+        firstRunBusy = true
+        firstRunReady = false
+        firstRunError = null
+        firstRunProgressPercent = 0
+        firstRunPhase = "Whisperを準備しています…"
+        status = ProductionEmmaStatus.MODEL_IMPORTING
+        statusMessage = "Emmaの初期設定をしています…"
+        engineMode = ConversationEngineMode.LITE
+        preferences.edit()
+            .putString("conversation_engine_mode", ConversationEngineMode.LITE.name)
+            .putString("audience_mode", "BABY")
+            .apply()
+
+        EmmaWorkQueue.execute {
+            runCatching {
+                gemma.close()
+                lite.close()
+
+                if (!LiteAsrModelStore.isInstalled(context)) {
+                    LiteAsrModelStore.downloadAndInstall(context) { percent ->
+                        mainHandler.post {
+                            if (!disposed) {
+                                firstRunPhase = when {
+                                    percent == null -> "Whisperをダウンロードしています…"
+                                    percent < 70 -> "Whisperをダウンロードしています…"
+                                    percent < 93 -> "Whisperを展開・検証しています…"
+                                    else -> "Whisperを配置しています…"
+                                }
+                                firstRunProgressPercent = percent
+                            }
+                        }
+                    }.getOrThrow()
                 }
+
+                if (useKokoro && !KokoroModelStore.isInstalled(context)) {
+                    mainHandler.post {
+                        if (!disposed) {
+                            firstRunPhase = "Kokoroの温かい声を準備しています…"
+                            firstRunProgressPercent = 0
+                        }
+                    }
+                    KokoroModelStore.downloadAndInstall(context) { percent ->
+                        mainHandler.post {
+                            if (!disposed) {
+                                firstRunPhase = "Kokoroの温かい声を準備しています…"
+                                firstRunProgressPercent = percent
+                            }
+                        }
+                    }.getOrThrow()
+                }
+
+                mainHandler.post {
+                    if (!disposed) {
+                        firstRunPhase = "Emmaを起動しています…"
+                        firstRunProgressPercent = null
+                    }
+                }
+                lite.initialize().getOrThrow()
+            }.onSuccess {
+                mainHandler.post {
+                    if (disposed) return@post
+                    modelPresent = true
+                    modelReady = true
+                    kokoroInstalled = KokoroModelStore.isInstalled(context)
+                    if (useKokoro && kokoroInstalled) {
+                        voiceBackend = VoiceBackend.KOKORO
+                        kokoro.resetModel()
+                    } else {
+                        voiceBackend = VoiceBackend.ANDROID
+                    }
+                    preferences.edit()
+                        .putString("voice_backend", voiceBackend.savedValue)
+                        .apply()
+                    firstRunBusy = false
+                    firstRunReady = true
+                    firstRunProgressPercent = 100
+                    firstRunPhase = "準備できました"
+                    status = ProductionEmmaStatus.IDLE
+                    statusMessage = "初期設定が完了しました。"
+                }
+            }.onFailure { error ->
+                mainHandler.post {
+                    if (disposed) return@post
+                    modelPresent = LiteAsrModelStore.isInstalled(context)
+                    modelReady = false
+                    kokoroInstalled = KokoroModelStore.isInstalled(context)
+                    firstRunBusy = false
+                    firstRunReady = false
+                    firstRunProgressPercent = null
+                    firstRunError = error.message
+                        ?: "初期設定を完了できませんでした。通信環境と空き容量を確認してください。"
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "Emmaの初期設定を完了できませんでした。"
+                }
+            }
+        }
+    }
+
+    fun startKokoroAutomaticSetup() {
+        if (disposed || kokoroImporting) return
+        kokoroImporting = true
+        status = ProductionEmmaStatus.MODEL_IMPORTING
+        statusMessage = "Kokoroの温かい声を準備しています…"
+
+        EmmaWorkQueue.execute {
+            KokoroModelStore.downloadAndInstall(context) { percent ->
+                mainHandler.post {
+                    if (!disposed) {
+                        statusMessage = "Kokoroの温かい声を準備しています… ${percent?.let { "$it%" } ?: ""}"
+                    }
+                }
+            }.onSuccess {
                 mainHandler.post {
                     if (disposed) return@post
                     kokoroImporting = false
-                    result.onSuccess {
-                        kokoro.resetModel()
-                        kokoroInstalled = true
-                        status = ProductionEmmaStatus.IDLE
-                        statusMessage = "音声の準備ができました。"
-                    }.onFailure { error ->
-                        kokoroInstalled = KokoroModelStore.isInstalled(context)
-                        status = ProductionEmmaStatus.ERROR
-                        statusMessage = "音声モデルの取り込みに失敗しました: ${error.message ?: error.javaClass.simpleName}"
-                    }
+                    kokoroInstalled = true
+                    voiceBackend = VoiceBackend.KOKORO
+                    preferences.edit().putString("voice_backend", VoiceBackend.KOKORO.savedValue).apply()
+                    kokoro.resetModel()
+                    status = ProductionEmmaStatus.IDLE
+                    statusMessage = "Kokoroの準備ができました。"
+                }
+            }.onFailure { error ->
+                mainHandler.post {
+                    if (disposed) return@post
+                    kokoroImporting = false
+                    kokoroInstalled = KokoroModelStore.isInstalled(context)
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "Kokoroの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
                 }
             }
         }
@@ -448,7 +628,7 @@ private fun ProductionEmmaApp() {
                     }.getOrThrow()
                 }
 
-                if (!KokoroModelStore.isInstalled(context)) {
+                if (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context)) {
                     mainHandler.post {
                         if (!disposed) {
                             fullSetupPhase = "Emmaの声（Kokoro）を準備しています"
@@ -469,16 +649,14 @@ private fun ProductionEmmaApp() {
                     if (disposed) return@post
                     modelPresent = GemmaModelStore.hasUsableModel(context)
                     kokoroInstalled = KokoroModelStore.isInstalled(context)
-                    kokoro.resetModel()
+                    if (voiceBackend == VoiceBackend.KOKORO && kokoroInstalled) {
+                        kokoro.resetModel()
+                    }
                     fullSetupBusy = false
                     fullSetupProgressPercent = 100
                     fullSetupPhase = "Fullの準備ができました"
                     fullSetupOpen = false
                     fullSetupError = null
-                    if (parentModeRequestedAfterFullSetup) {
-                        preferences.edit().putString("audience_mode", "PARENT").apply()
-                        parentModeRequestedAfterFullSetup = false
-                    }
                     activateEngineMode(ConversationEngineMode.FULL)
                 }
             }.onFailure { error ->
@@ -531,10 +709,15 @@ private fun ProductionEmmaApp() {
     }
 
     fun startSession() {
-        if (!kokoroInstalled) {
+        if (voiceBackend == VoiceBackend.KOKORO && !kokoroInstalled) {
             status = ProductionEmmaStatus.ERROR
-            statusMessage = "Emmaの温かみのある音声に必要なKokoroを先に準備してください。"
+            statusMessage = "Kokoroを準備するか、Android標準音声を選んでください。"
             settingsOpen = true
+            return
+        }
+        if (voiceBackend == VoiceBackend.ANDROID && !androidSpeaker.isReady()) {
+            status = ProductionEmmaStatus.ERROR
+            statusMessage = "Androidの英語音声を準備しています。少ししてからもう一度お試しください。"
             return
         }
         if (!modelReady) {
@@ -555,6 +738,7 @@ private fun ProductionEmmaApp() {
         session.stop()
         pendingStartAfterPermission = false
         kokoro.stop()
+        androidSpeaker.stop()
         recorder.stop()
         recording = false
         generating = false
@@ -563,45 +747,6 @@ private fun ProductionEmmaApp() {
         ttsRequestedAfterEndpointMillis = null
         status = ProductionEmmaStatus.IDLE
         statusMessage = "セッションを終了しました。"
-    }
-
-
-    fun openSettings() {
-        autoStartPending = false
-        stopSession()
-        settingsOpen = true
-    }
-
-
-    fun requestParentMode() {
-        autoStartPending = false
-        if (
-            recording ||
-            generating ||
-            pendingStartAfterPermission ||
-            status == ProductionEmmaStatus.SPEAKING ||
-            status == ProductionEmmaStatus.THINKING ||
-            status == ProductionEmmaStatus.ENDPOINT_WAIT
-        ) {
-            stopSession()
-        }
-
-        if (engineMode == ConversationEngineMode.FULL) {
-            preferences.edit().putString("audience_mode", "PARENT").apply()
-            return
-        }
-
-        parentModeRequestedAfterFullSetup = true
-        if (GemmaModelStore.hasUsableModel(context) && KokoroModelStore.isInstalled(context)) {
-            preferences.edit().putString("audience_mode", "PARENT").apply()
-            parentModeRequestedAfterFullSetup = false
-            activateEngineMode(ConversationEngineMode.FULL)
-        } else {
-            fullSetupError = null
-            fullSetupProgressPercent = null
-            fullSetupPhase = ""
-            fullSetupOpen = true
-        }
     }
 
     fun askEmma(automatic: Boolean = false) {
@@ -733,9 +878,15 @@ private fun ProductionEmmaApp() {
     }
 
     LaunchedEffect(Unit) {
-        if (
+        if (onboardingOpen) {
+            settingsOpen = false
+            fullSetupOpen = false
+        } else if (
             initialEngineMode == ConversationEngineMode.FULL &&
-            (!GemmaModelStore.hasUsableModel(context) || !KokoroModelStore.isInstalled(context))
+            (
+                !GemmaModelStore.hasUsableModel(context) ||
+                    (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+            )
         ) {
             fullSetupOpen = true
         } else if (!kokoroOnly && modelPresent) {
@@ -812,6 +963,7 @@ private fun ProductionEmmaApp() {
             recorder.onError = null
             recorder.stop()
             kokoro.shutdown()
+            androidSpeaker.shutdown()
             mainHandler.removeCallbacksAndMessages(null)
             EmmaWorkQueue.execute {
                 gemma.close()
@@ -820,7 +972,7 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    val busy = fullSetupBusy || generating || kokoroImporting || status == ProductionEmmaStatus.MODEL_IMPORTING ||
+    val busy = firstRunBusy || fullSetupBusy || liteSetupBusy || generating || kokoroImporting || status == ProductionEmmaStatus.MODEL_IMPORTING ||
         status == ProductionEmmaStatus.MODEL_LOADING || status == ProductionEmmaStatus.THINKING || status == ProductionEmmaStatus.SPEAKING
 
     val visualState = when (status) {
@@ -843,14 +995,38 @@ private fun ProductionEmmaApp() {
         ProductionEmmaStatus.ERROR -> "確認してください"
     }
 
-    if (onboardingOpen) {
-        EmmaOnboardingScreen(
-            onContinue = {
-                preferences.edit()
-                    .putBoolean("onboarding_complete_v2", true)
-                    .apply()
-                onboardingOpen = false
+    if (aboutOpen) {
+        AboutEmmaScreen(
+            onBack = { aboutOpen = false },
+        )
+    } else if (onboardingOpen) {
+        FirstRunOnboardingScreen(
+            busy = firstRunBusy,
+            ready = firstRunReady,
+            phase = firstRunPhase,
+            progressPercent = firstRunProgressPercent,
+            errorMessage = firstRunError,
+            usingAndroidVoice = voiceBackend == VoiceBackend.ANDROID,
+            onPrepareRecommended = { startFirstRunSetup(useKokoro = true) },
+            onUseAndroidVoice = { startFirstRunSetup(useKokoro = false) },
+            onOpenAbout = { aboutOpen = true },
+            onStartEmma = {
+                if (!firstRunBusy && firstRunReady) {
+                    preferences.edit()
+                        .putBoolean("onboarding_completed_v2", true)
+                        .putString("voice_backend", voiceBackend.savedValue)
+                        .apply()
+                    onboardingOpen = false
+                    autoStartPending = true
+                    status = ProductionEmmaStatus.IDLE
+                    statusMessage = "Emmaを始めます。"
+                }
             },
+        )
+    } else if (liteSetupBusy) {
+        LiteModelInstallDialog(
+            phase = liteSetupPhase,
+            progressPercent = liteSetupProgressPercent,
         )
     } else if (fullSetupOpen) {
         FullModeSetupScreen(
@@ -859,16 +1035,18 @@ private fun ProductionEmmaApp() {
             progressPercent = fullSetupProgressPercent,
             errorMessage = fullSetupError,
             gemmaNeeded = !GemmaModelStore.hasUsableModel(context),
-            kokoroNeeded = !kokoroInstalled,
+            kokoroNeeded = voiceBackend == VoiceBackend.KOKORO && !kokoroInstalled,
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
                 if (!fullSetupBusy) {
                     fullSetupOpen = false
                     fullSetupError = null
-                    parentModeRequestedAfterFullSetup = false
                     if (
                         engineMode == ConversationEngineMode.FULL &&
-                        (!GemmaModelStore.hasUsableModel(context) || !KokoroModelStore.isInstalled(context))
+                        (
+                !GemmaModelStore.hasUsableModel(context) ||
+                    (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+            )
                     ) {
                         settingsOpen = true
                     }
@@ -877,10 +1055,6 @@ private fun ProductionEmmaApp() {
             onManualSetup = {
                 if (!fullSetupBusy) {
                     fullSetupOpen = false
-                    if (parentModeRequestedAfterFullSetup) {
-                        preferences.edit().putString("audience_mode", "PARENT").apply()
-                        parentModeRequestedAfterFullSetup = false
-                    }
                     activateEngineMode(ConversationEngineMode.FULL)
                     settingsOpen = true
                 }
@@ -895,14 +1069,19 @@ private fun ProductionEmmaApp() {
             modelReady = modelReady,
             modelPresent = modelPresent,
             kokoroInstalled = kokoroInstalled,
+            voiceBackend = voiceBackend,
             lastSpeechMillis = lastSpeechMillis,
             engineMode = engineMode,
             onBack = { settingsOpen = false },
+            onOpenAbout = { aboutOpen = true },
             onEngineMode = { selected ->
                 if (!recording && !busy && selected != engineMode) {
                     if (
                         selected == ConversationEngineMode.FULL &&
-                        (!GemmaModelStore.hasUsableModel(context) || !KokoroModelStore.isInstalled(context))
+                        (
+                !GemmaModelStore.hasUsableModel(context) ||
+                    (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+            )
                     ) {
                         fullSetupError = null
                         fullSetupProgressPercent = null
@@ -928,19 +1107,17 @@ private fun ProductionEmmaApp() {
                     .onFailure { statusMessage = "ブラウザを開けませんでした。" }
             },
             onSelectGemma = { modelPicker.launch(arrayOf("*/*")) },
-            onDownloadLiteAsr = {
-                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(LiteAsrModelStore.MODEL_URL))) }
-                    .onFailure { statusMessage = "ブラウザを開けませんでした。" }
-            },
-            onSelectLiteAsr = { liteAsrArchivePicker.launch(arrayOf("*/*")) },
+            onDownloadLiteAsr = ::startLiteAutomaticSetup,
             onLoadGemma = ::loadModel,
-            onDownloadKokoro = {
-                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(KokoroModelStore.MODEL_URL))) }
-                    .onFailure { statusMessage = "ブラウザを開けませんでした。" }
+            onDownloadKokoro = ::startKokoroAutomaticSetup,
+            onUseAndroidVoice = {
+                voiceBackend = VoiceBackend.ANDROID
+                preferences.edit().putString("voice_backend", VoiceBackend.ANDROID.savedValue).apply()
+                status = ProductionEmmaStatus.IDLE
+                statusMessage = "Android標準音声を使用します。Kokoroは後から追加できます。"
             },
-            onSelectKokoro = { kokoroArchivePicker.launch(arrayOf("*/*")) },
-            onExportDiagnostics = { diagnosticsExporter.launch("emma-diagnostics.txt") },
-            onExportCrashDetails = { crashDetailsExporter.launch("emma-crash-details.zip") },
+            onExportDiagnostics = { diagnosticsExporter.launch("emma-v1.2-diagnostics.txt") },
+            onExportCrashDetails = { crashDetailsExporter.launch("emma-v1.2-crash-details.zip") },
         )
     } else {
         EmmaHomeScreen(
@@ -958,8 +1135,9 @@ private fun ProductionEmmaApp() {
             latestTranscript = latestTranscript,
             latestEmmaText = latestEmmaText,
             engineMode = engineMode,
-            onParentRequested = ::requestParentMode,
-            onOpenSettings = ::openSettings,
+            onRequestParentFull = { parentFullPromptOpen = true },
+            onOpenAbout = { aboutOpen = true },
+            onOpenSettings = { settingsOpen = true },
             onStartSession = ::startSession,
             onStopSession = ::stopSession,
             onToggleAutoRespond = {
@@ -972,5 +1150,30 @@ private fun ProductionEmmaApp() {
             },
             onManualRespond = { askEmma(automatic = false) },
         )
+
+        if (parentFullPromptOpen) {
+            ParentFullPrompt(
+                onUseFull = {
+                    parentFullPromptOpen = false
+                    preferences.edit()
+                        .putString("audience_mode", "PARENT")
+                        .apply()
+
+                    val fullNeedsSetup =
+                        !GemmaModelStore.hasUsableModel(context) ||
+                            (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+
+                    if (fullNeedsSetup) {
+                        fullSetupError = null
+                        fullSetupProgressPercent = null
+                        fullSetupPhase = ""
+                        fullSetupOpen = true
+                    } else {
+                        activateEngineMode(ConversationEngineMode.FULL)
+                    }
+                },
+                onDismiss = { parentFullPromptOpen = false },
+            )
+        }
     }
 }

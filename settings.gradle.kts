@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "EmmaBilingual"
 include(":app")
+

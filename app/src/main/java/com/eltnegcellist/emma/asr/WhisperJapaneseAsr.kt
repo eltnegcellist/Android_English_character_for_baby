@@ -24,7 +24,7 @@ class WhisperJapaneseAsr(
     fun initialize(): Result<Unit> = runCatching {
         val directory = LiteAsrModelStore.directory(appContext)
         require(LiteAsrModelStore.isInstalled(appContext)) {
-            "Emmaの日本語聞き取りデータがまだ導入されていません。"
+            "Emma LiteのWhisper tinyモデルがまだ導入されていません。"
         }
 
         val encoder = File(directory, "tiny-encoder.int8.onnx")
@@ -64,7 +64,7 @@ class WhisperJapaneseAsr(
         val pcm = WavMono16.decode(wavAudio)
         val started = System.nanoTime()
         val text = synchronized(lock) {
-            val active = recognizer ?: error("Emma ASR is not initialized.")
+            val active = recognizer ?: error("Emma Lite ASR is not initialized.")
             val stream = active.createStream()
             try {
                 stream.acceptWaveform(pcm.samples, pcm.sampleRate)
