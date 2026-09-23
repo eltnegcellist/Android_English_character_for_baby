@@ -5,19 +5,19 @@ import org.junit.Test
 
 class ConversationEngineModeTest {
     @Test
-    fun legacyLiteMigratesToStandard() {
-        assertEquals(ConversationEngineMode.STANDARD, ConversationEngineMode.fromSaved("LITE"))
+    fun legacyModesMigrateToLite() {
+        assertEquals(ConversationEngineMode.LITE, ConversationEngineMode.fromSaved("LITE"))
+        assertEquals(ConversationEngineMode.LITE, ConversationEngineMode.fromSaved("WEB_LITE"))
+        assertEquals(ConversationEngineMode.LITE, ConversationEngineMode.fromSaved("STANDARD"))
     }
 
     @Test
-    fun newEditionValuesRoundTrip() {
-        assertEquals(ConversationEngineMode.LITE, ConversationEngineMode.fromSaved("WEB_LITE"))
-        assertEquals(ConversationEngineMode.STANDARD, ConversationEngineMode.fromSaved("STANDARD"))
+    fun fullRoundTrips() {
         assertEquals(ConversationEngineMode.FULL, ConversationEngineMode.fromSaved("FULL"))
     }
 
     @Test
-    fun missingValueDefaultsToStandard() {
-        assertEquals(ConversationEngineMode.STANDARD, ConversationEngineMode.fromSaved(null))
+    fun missingValueDefaultsToLite() {
+        assertEquals(ConversationEngineMode.LITE, ConversationEngineMode.fromSaved(null))
     }
 }
