@@ -287,9 +287,22 @@ class SupertonicSpeaker(
         const val DEFAULT_SUPERTONIC_SAMPLE_RATE = 24_000
         const val PLAYBACK_CHUNK_SAMPLES = 2048
         const val PLAYBACK_TIMEOUT_MS = 60_000L
+        const val TTS_TARGET_PEAK = 0.92f
+        const val TTS_MAX_VOLUME_BOOST = 1.8f
 
-        fun toPcm16(samples: FloatArray): ShortArray = ShortArray(samples.size) {
-            (samples[it].coerceIn(-1f, 1f) * Short.MAX_VALUE).toInt().toShort()
+        fun toPcm16(samples: FloatArray): ShortArray {
+            var peak = 0f
+            for (sample in samples) {
+                peak = max(peak, abs(sample))
+            }
+            val gain = if (peak > 0f) {
+                (TTS_TARGET_PEAK / peak).coerceIn(1f, TTS_MAX_VOLUME_BOOST)
+            } else {
+                1f
+            }
+            return ShortArray(samples.size) {
+                (samples[it].times(gain).coerceIn(-1f, 1f) * Short.MAX_VALUE).toInt().toShort()
+            }
         }
 
         fun chunkAmplitude(samples: ShortArray, offset: Int, count: Int): Float {
