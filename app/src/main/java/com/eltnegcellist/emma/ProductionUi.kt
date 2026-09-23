@@ -255,7 +255,7 @@ private fun AudienceSelector(
             }
             Text(
                 if (engineMode == ConversationEngineMode.LITE) {
-                    "「親へ」ではEmma Fullを使います。タップすると初回のみFullの準備をご案内します。"
+                    "「親へ」はEmma Fullの機能です。タップすると、Gemmaを使ってその場で英語を考えるFull版の準備をご案内します。"
                 } else {
                     mode.description
                 },
