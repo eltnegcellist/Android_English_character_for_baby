@@ -795,8 +795,6 @@ private fun ProductionEmmaApp() {
                     if (disposed) return@post
                     supertonicImporting = false
                     supertonicInstalled = true
-                    voiceBackend = VoiceBackend.SUPERTONIC
-                    preferences.edit().putString("voice_backend", VoiceBackend.SUPERTONIC.savedValue).apply()
                     supertonic.resetModel()
                     status = ProductionEmmaStatus.IDLE
                     statusMessage = "Supertonic 3の準備ができました。"
@@ -867,7 +865,7 @@ private fun ProductionEmmaApp() {
                     if (disposed) return@post
                     modelPresent = GemmaModelStore.hasUsableModel(context)
                     supertonicInstalled = SupertonicModelStore.isInstalled(context)
-                    if (voiceBackend == VoiceBackend.SUPERTONIC && supertonicInstalled) {
+                    if (supertonicInstalled) {
                         supertonic.resetModel()
                     }
                     fullSetupBusy = false
@@ -933,7 +931,7 @@ private fun ProductionEmmaApp() {
             !supertonicInstalled
         ) {
             status = ProductionEmmaStatus.ERROR
-            statusMessage = "Supertonic 3を準備するか、Android標準音声を選んでください。"
+            statusMessage = "Supertonic 3 F3を準備してください。"
             settingsOpen = true
             return
         }
