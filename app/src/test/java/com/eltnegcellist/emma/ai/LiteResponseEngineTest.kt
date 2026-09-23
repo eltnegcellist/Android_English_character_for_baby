@@ -212,4 +212,31 @@ class LiteResponseEngineTest {
         val second = engine.respond("お散歩に行こうね").english
         assertFalse(first == second)
     }
+    @Test
+    fun phoneticRescueRecoversCommonAsrNearMisses() {
+        val samples = listOf(
+            "お袋入ろうね" to "bath",
+            "年々使用か" to "sleep",
+            "おむづ変えようか" to "diaper",
+        )
+
+        samples.forEach { (input, expectedScene) ->
+            val response = LiteResponseEngine().respond(input)
+            assertEquals("rescued scene for: $input", expectedScene, response.scene)
+            assertTrue("rescued score for: $input", response.score >= 3)
+        }
+    }
+
+    @Test
+    fun phoneticRescueKeepsUnrelatedSpeechGeneric() {
+        val response = LiteResponseEngine().respond("今日は会社で会議だったよ")
+        assertEquals("generic", response.scene)
+    }
+
+    @Test
+    fun phoneticRescueStillHonorsSceneExclusions() {
+        val response = LiteResponseEngine().respond("風呂敷を包もうね")
+        assertFalse(response.scene == "bath")
+    }
+
 }
