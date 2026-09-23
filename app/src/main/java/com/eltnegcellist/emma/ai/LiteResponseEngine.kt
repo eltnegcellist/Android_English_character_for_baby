@@ -72,6 +72,15 @@ internal class LiteResponseEngine {
                 }
             }
         }
+
+        if (scene.id == "sleep" && !transcript.contains("寝返り")) {
+            val hintMatched = sleepSpeechHints
+                .asSequence()
+                .map(::normalize)
+                .filter { it.isNotEmpty() }
+                .any { transcript.contains(it) }
+            if (hintMatched) total = max(total, 4)
+        }
         return total
     }
 
@@ -200,6 +209,12 @@ internal class LiteResponseEngine {
         .replace(Regex("[\\s、。！？!?,.・「」『』（）()ー〜~]"), "")
         .replace("おふろ", "お風呂")
         .replace("お風呂", "風呂")
+        .replace("ねよっか", "寝よっか")
+        .replace("ねよう", "寝よう")
+        .replace("ねる", "寝る")
+        .replace("ねます", "寝ます")
+        .replace("ねて", "寝て")
+        .replace("ねた", "寝た")
 
     companion object {
         private const val MIN_SCENE_SCORE = 3
@@ -211,6 +226,28 @@ internal class LiteResponseEngine {
          * these candidates offline with Gemma using the Full Baby-mode intent,
          * validate them, then bake only the resulting English strings into Lite.
          */
+        private val sleepSpeechHints = listOf(
+            "寝よ",
+            "寝る",
+            "寝ます",
+            "寝て",
+            "寝た",
+            "寝かし",
+            "寝かせ",
+            "眠ろ",
+            "眠る",
+            "眠い",
+            "眠そう",
+            "眠く",
+            "ねんね",
+            "おねんね",
+            "おやすみ",
+            "昼寝",
+            "お昼寝",
+            "睡眠",
+            "就寝",
+        )
+
         private val genericReplies = listOf(
             "Hello, little one! Emma is here. Hello, hello!",
             "Hi there, little one! I'm right here. Hello, hello!",
