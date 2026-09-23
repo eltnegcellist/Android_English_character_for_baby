@@ -325,7 +325,7 @@ class GemmaEmmaClient(context: Context) {
                     ),
                 )).toString().trim()
                 require(response != NO_RESPONSE) {
-                    "応答対象となる日本語または明確な赤ちゃんの発声を確認できませんでした。"
+                    "日本語を聞き取れませんでした。明確な赤ちゃんの発声も確認できませんでした。"
                 }
                 val validated = EnglishOutput.validate(response, level, generationWordLimit)
                 val withRequiredName = if (
