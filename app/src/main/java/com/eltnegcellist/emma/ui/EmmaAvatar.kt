@@ -135,7 +135,7 @@ internal fun EmmaAvatar(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 30_000, easing = LinearEasing),
+            animation = tween(durationMillis = 120_000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart,
         ),
         label = "time-color-shift",
