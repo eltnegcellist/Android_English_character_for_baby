@@ -6,28 +6,24 @@ enum class ConversationEngineMode(
     val description: String,
 ) {
     LITE(
-        savedValue = "WEB_LITE",
+        savedValue = "LITE",
         label = "Lite",
-        description = "最も軽い構成です。Moonshineで日本語を聞き取り、Kitten TTS Nanoで話します。Web版Liteと同じ音声モデルを使います。",
-    ),
-    STANDARD(
-        savedValue = "STANDARD",
-        label = "Standard",
-        description = "Android向けの標準構成です。ReazonSpeechとSupertonic 3を使い、認識精度と声の自然さを高めます。",
+        description = "軽くてすぐ使える構成です。Moonshineで日本語を聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。",
     ),
     FULL(
         savedValue = "FULL",
         label = "Full",
-        description = "Gemmaが会話の流れに合わせて、その場で英語を考えて話します。初回のみ2GB超の追加データが必要です。",
+        description = "Liteと同じMoonshineとKittenを使いながら、Gemmaが文字起こし・元音声・会話履歴を受け取り、その場で英語を考えます。初回のみ2GB超のGemma追加データが必要です。",
     );
 
     companion object {
         fun fromSaved(value: String?): ConversationEngineMode = when (value) {
-            "LITE" -> STANDARD
-            LITE.savedValue -> LITE
-            STANDARD.savedValue -> STANDARD
+            LITE.savedValue,
+            "WEB_LITE",
+            "STANDARD",
+            -> LITE
             FULL.savedValue -> FULL
-            else -> STANDARD
+            else -> LITE
         }
     }
 }

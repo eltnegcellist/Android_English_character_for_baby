@@ -84,8 +84,8 @@ internal fun AboutEmmaScreen(
             }
 
             AboutSection(
-                title = "Lite・Standard・Full",
-                body = "Emma Liteは軽さを優先し、Web版と同じMoonshineとKitten TTSを使います。Emma StandardはAndroid向けにReazonSpeechとSupertonic 3を使い、認識精度と声の自然さを高めます。LiteとStandardは同じ短い赤ちゃん向け返答ロジックです。Emma FullではGemmaが直前の会話も踏まえて、その場で英語を考えて話します。",
+                title = "Lite・Full",
+                body = "Emma LiteとFullは、音声の入口と出口を共通化しています。どちらもMoonshineで日本語を聞き取り、Kitten TTS Nano / Kikiで話します。Liteは軽量なLiteResponseEngineから返答を選びます。FullはGemmaを追加し、Moonshineの文字起こしを言葉の第一情報として使いながら、元音声のイントネーションや赤ちゃんの発声などの非言語情報、直前の会話も補助的に受け取り、その場で英語を考えます。",
             )
 
             AboutSection(

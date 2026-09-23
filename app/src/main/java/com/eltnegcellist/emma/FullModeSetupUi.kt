@@ -27,7 +27,8 @@ internal fun FullModeSetupScreen(
     progressPercent: Int?,
     errorMessage: String?,
     gemmaNeeded: Boolean,
-    supertonicNeeded: Boolean,
+    moonshineNeeded: Boolean,
+    kittenNeeded: Boolean,
     onPrepare: () -> Unit,
     onCancel: () -> Unit,
     onManualSetup: () -> Unit,
@@ -48,7 +49,7 @@ internal fun FullModeSetupScreen(
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "FullではGemma 4 E2Bが会話の内容を理解し、その場で英語を生成します。",
+                "Fullでも音声の聞き取りと読み上げはLiteと共通です。Gemmaだけを追加し、会話の流れや元音声の非言語情報も使って返答を考えます。",
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -60,6 +61,16 @@ internal fun FullModeSetupScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text("初回のみ必要なデータを取得します", style = MaterialTheme.typography.titleMedium)
+                    if (moonshineNeeded) {
+                        Text("Moonshine 日本語Tiny（約32MB）を準備します。", style = MaterialTheme.typography.bodyMedium)
+                    } else {
+                        Text("Moonshine 日本語Tinyは導入済みです。", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    if (kittenNeeded) {
+                        Text("Kitten TTS Nano / Kiki（約31MB）を準備します。", style = MaterialTheme.typography.bodyMedium)
+                    } else {
+                        Text("Kitten TTS Nano / Kikiは導入済みです。", style = MaterialTheme.typography.bodyMedium)
+                    }
                     if (gemmaNeeded) {
                         Text(
                             "Gemmaの会話モデルは2GBを超えます（約2.6GB）。Wi-Fiでの準備をおすすめします。",
@@ -69,19 +80,6 @@ internal fun FullModeSetupScreen(
                         Text(
                             "Gemmaは導入済みです。Gemmaの大容量ダウンロードは行いません。",
                             style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                    if (supertonicNeeded) {
-                        Text(
-                            "Supertonic 3音声も未導入のため、約129MBの音声データもあわせて取得します。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        Text(
-                            "Supertonic 3 F3は導入済みです。Fullの音声はSupertonic 3 F3を使います。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Text(

@@ -6,13 +6,11 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta12** (`versionCode 64`).
+The current public baseline is **v1.4.0-beta15** (`versionCode 67`).
 
-Android Emma now contains three editions. They share the same family settings, avatar, endpoint detection, baby-name handling, and local-first design. Lite and Standard also share the same `LiteResponseEngine`; their main difference is the speech stack.
+Android Emma now contains two editions: **Lite** and **Full**. They share the same speech input/output stack; the main difference is how Emma decides what to say.
 
 ## Emma Lite
-
-The lightest edition, aligned with Emma Web Lite.
 
 ```text
 Microphone
@@ -28,79 +26,60 @@ Emma avatar
 
 - Japanese ASR: Moonshine Tiny Streaming
 - TTS: Kitten TTS Nano 0.8 INT8, Kiki
-- Approximate model download: about 64 MB
+- Approximate speech-model download: about 64 MB
 - Processing after setup: on-device
-- Response logic: same LiteResponseEngine as Standard
-
-The Web edition uses the same model families through browser/WASM runtimes; Android Lite uses native Android runtimes.
-
-## Emma Standard
-
-In beta12, the voice path is fixed by edition: Lite uses Kitten TTS Nano, while Standard and Full use Supertonic 3 F3. Android system TTS is not used as a fallback.
-
-The Android-oriented default edition.
-
-```text
-Microphone
-  ↓
-ReazonSpeech K2 v2 INT8
-  ↓
-LiteResponseEngine
-  ↓
-Supertonic 3 F3
-  ↓
-Emma avatar
-```
-
-- Japanese ASR: ReazonSpeech K2 v2 INT8
-- TTS: Supertonic 3 F3 (44.1 kHz output)
-- Approximate model download: about 298 MB
-- Processing after setup: on-device
-- Response logic: same LiteResponseEngine as Lite
 
 ## Emma Full
 
-Emma Full adds a local Gemma model for more flexible responses and parent conversation.
+Full reuses the exact same ASR and TTS stack. The only large addition is Gemma.
 
 ```text
 Microphone
-  ↓
-Local Gemma speech/context processing
-  ↓
-Gemma response generation
-  ↓
-Supertonic 3 F3
-  ↓
-Emma avatar
+  ├─→ Moonshine Japanese Tiny Streaming ─→ Japanese transcript ─┐
+  └──────────────────── original audio ──────────────────────────┤
+                                                                 ↓
+                                                        Gemma 4 E2B
+                                              + recent conversation history
+                                                                 ↓
+                                                        English response
+                                                                 ↓
+                                                Kitten TTS Nano / Kiki
+                                                                 ↓
+                                                          Emma avatar
 ```
 
-Full requires more than 2 GB of additional local model data.
+The Moonshine transcript is the **primary source for linguistic meaning**. The original audio is supplied to Gemma only as secondary context for information that text can lose, such as intonation, laughter, cooing, babbling, squealing, or crying. A clear transcript is not overridden by Gemma's own interpretation of the waveform.
+
+Full requires more than 2 GB of additional local Gemma model data.
 
 ## First-run experience
 
-Beta12 introduces a new onboarding revision so existing installations are shown the Lite / Standard / Full choice once after updating. After that choice is completed, the selected edition is retained.
-
 On first launch, the family chooses one of:
 
-- **Lite** — lightest; Moonshine + Kitten TTS Nano, about 64 MB
-- **Standard** — Android default; ReazonSpeech + Supertonic 3, about 298 MB
-- **Full** — Gemma-powered; more than 2 GB
+- **Lite** — Moonshine + LiteResponseEngine + Kitten TTS Nano, about 64 MB of speech models
+- **Full** — the same Moonshine + Kitten stack, plus Gemma for context-aware response generation
 
-The selected edition is prepared automatically. The edition can also be changed later from Settings.
+The selected edition is retained and can be changed later from Settings.
 
-Existing installations from beta9 and earlier that stored the old Android `LITE` mode are migrated to **Standard**, because that old mode used ReazonSpeech + Supertonic and corresponds to the new Standard edition.
+Existing saved `STANDARD`, legacy `LITE`, and `WEB_LITE` values are migrated to the current **Lite** edition.
 
-## Shared behavior
+## Shared speech stack
 
-Lite and Standard intentionally share:
+Lite and Full intentionally share:
 
-- the same LiteResponseEngine scene/reply logic,
-- baby name pronunciation and optional `-chan` suffix,
+- Moonshine Japanese Tiny Streaming for Japanese ASR,
+- Kitten TTS Nano 0.8 / Kiki for English speech,
+- baby-name pronunciation and optional `-chan` suffix,
 - family/gender settings,
 - appearance settings,
 - automatic endpoint detection and reply flow,
 - non-verbal baby response behavior,
 - screen-awake preference.
+
+The edition boundary is therefore simple:
+
+- **Lite** = fixed lightweight response knowledge
+- **Full** = Gemma generates the response from transcript + secondary audio context + conversation history
 
 ## Privacy
 
@@ -117,15 +96,15 @@ This public repository does **not** intentionally contain signing keys, keystore
 
 ## Building
 
-The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, sherpa-onnx 1.13.7, and Moonshine Voice 0.1.5.
+The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, sherpa-onnx 1.13.8, and Moonshine Voice 0.1.5.
 
 The sherpa-onnx Android runtime is intentionally not committed to this repository. Download the pinned AAR before building:
 
 ```bash
 mkdir -p app/libs
 curl -fL \
-  https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.7/sherpa-onnx-static-link-onnxruntime-1.13.7.aar \
-  -o app/libs/sherpa-onnx-static-1.13.7.aar
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-static-link-onnxruntime-1.13.8.aar \
+  -o app/libs/sherpa-onnx-static-1.13.8.aar
 ```
 
 Then run:
@@ -138,9 +117,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 - Moonshine Voice / Moonshine Japanese Tiny Streaming — MIT
 - Kitten TTS Nano 0.8 — Apache-2.0
-- ReazonSpeech K2 v2 — Apache-2.0
 - sherpa-onnx — Apache-2.0
-- Supertonic 3 model — OpenRAIL-M
 - LiteRT-LM / Gemma — used for optional Full mode
 
 Model files are downloaded separately and are not committed to this repository.

@@ -55,7 +55,6 @@ internal fun EmmaHomeScreen(
     showBusyIndicator: Boolean,
     recording: Boolean,
     modelReady: Boolean,
-    supertonicOnly: Boolean,
     busy: Boolean,
     autoRespond: Boolean,
     latestTranscript: String,
@@ -87,7 +86,7 @@ internal fun EmmaHomeScreen(
                     if (!recording) {
                         Button(
                             onClick = onStartSession,
-                            enabled = !supertonicOnly && modelReady && !busy,
+                            enabled = modelReady && !busy,
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("Emmaと話す") }
                     } else {
@@ -313,13 +312,11 @@ private fun ConversationExchange(transcript: String, emmaText: String) {
 @Composable
 internal fun EmmaSettingsScreen(
     level: EnglishLevel,
-    rate: Float,
     enabled: Boolean,
     previewing: Boolean,
     modelReady: Boolean,
     modelPresent: Boolean,
     kittenInstalled: Boolean,
-    supertonicInstalled: Boolean,
     lastSpeechMillis: Long?,
     engineMode: ConversationEngineMode,
     keepScreenOn: Boolean,
@@ -327,15 +324,12 @@ internal fun EmmaSettingsScreen(
     onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
     onLevel: (EnglishLevel) -> Unit,
-    onRate: (Float) -> Unit,
     onPreview: () -> Unit,
     onStopPreview: () -> Unit,
     onDownloadGemma: () -> Unit,
     onSelectGemma: () -> Unit,
     onPrepareLite: () -> Unit,
-    onPrepareStandard: () -> Unit,
     onLoadGemma: () -> Unit,
-    onDownloadSupertonic: () -> Unit,
     onKeepScreenOn: (Boolean) -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
@@ -393,7 +387,7 @@ internal fun EmmaSettingsScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Emmaのエディション", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Lite / Standard / Full から選べます。",
+                        "Lite / Full から選べます。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -424,22 +418,16 @@ internal fun EmmaSettingsScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Emma ${engineMode.label}", style = MaterialTheme.typography.titleMedium)
 
-                    val editionReady = when (engineMode) {
-                        ConversationEngineMode.LITE -> modelReady && kittenInstalled
-                        ConversationEngineMode.STANDARD,
-                        ConversationEngineMode.FULL -> modelReady && supertonicInstalled
-                    }
+                    val editionReady = modelReady && kittenInstalled
 
                     if (editionReady) {
                         Text("準備完了", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                         Text(
                             when (engineMode) {
                                 ConversationEngineMode.LITE ->
-                                    "Moonshine 日本語Tinyで聞き取り、Kitten TTS Nano / Kikiで話します。"
-                                ConversationEngineMode.STANDARD ->
-                                    "ReazonSpeechで聞き取り、Supertonic 3 F3で話します。"
+                                    "Moonshine 日本語Tinyで聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
                                 ConversationEngineMode.FULL ->
-                                    "Gemmaが会話に合わせて英語を考え、Supertonic 3 F3で話します。"
+                                    "Moonshineの文字起こしと元音声をGemmaが会話履歴と一緒に受け取り、Kitten TTS Nano / Kikiで話します。"
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
@@ -457,18 +445,6 @@ internal fun EmmaSettingsScreen(
                                     enabled = enabled,
                                     modifier = Modifier.fillMaxWidth(),
                                 ) { Text("Emma Liteを準備") }
-                            }
-
-                            ConversationEngineMode.STANDARD -> {
-                                Text(
-                                    "ReazonSpeech 約169MB + Supertonic 3 約129MB。合計約298MBです。",
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                                Button(
-                                    onClick = onPrepareStandard,
-                                    enabled = enabled,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) { Text("Emma Standardを準備") }
                             }
 
                             ConversationEngineMode.FULL -> {
@@ -496,34 +472,32 @@ internal fun EmmaSettingsScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                     ) { Text("Emma Fullを起動") }
                                 }
-                                if (!supertonicInstalled) {
+                                if (!kittenInstalled) {
                                     Button(
-                                        onClick = onDownloadSupertonic,
+                                        onClick = onPrepareLite,
                                         enabled = enabled,
                                         modifier = Modifier.fillMaxWidth(),
-                                    ) { Text("Supertonic 3 F3を準備") }
+                                    ) { Text("Moonshine + Kittenを準備") }
                                 }
                             }
                         }
                     }
 
-                    if (engineMode != ConversationEngineMode.LITE) {
-                        Text("Emmaの声：Supertonic 3 F3", style = MaterialTheme.typography.titleSmall)
-                        if (supertonicInstalled) {
-                            OutlinedButton(
-                                onClick = if (previewing) onStopPreview else onPreview,
-                                enabled = enabled || previewing,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(if (previewing) "試聴を停止" else "Supertonic 3 F3を試聴")
-                            }
-                        } else {
-                            OutlinedButton(
-                                onClick = onDownloadSupertonic,
-                                enabled = enabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Supertonic 3 F3を準備") }
+                    Text("Emmaの声：Kitten TTS Nano / Kiki", style = MaterialTheme.typography.titleSmall)
+                    if (kittenInstalled) {
+                        OutlinedButton(
+                            onClick = if (previewing) onStopPreview else onPreview,
+                            enabled = enabled || previewing,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(if (previewing) "試聴を停止" else "Kikiの声を試聴")
                         }
+                    } else {
+                        OutlinedButton(
+                            onClick = onPrepareLite,
+                            enabled = enabled,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text("Moonshine + Kittenを準備") }
                     }
 
                     lastSpeechMillis?.let {
@@ -539,11 +513,9 @@ internal fun EmmaSettingsScreen(
             Text(
                 when (engineMode) {
                     ConversationEngineMode.LITE ->
-                        "Liteは最も軽く、Web版Liteと同じ音声モデルを使います。返答内容はStandardと同じLiteResponseEngineです。"
-                    ConversationEngineMode.STANDARD ->
-                        "StandardはLiteと同じ返答エンジンを使いながら、Android向けの高精度ASRとSupertonic 3 F3を使います。"
+                        "LiteはMoonshine + LiteResponseEngine + Kitten / Kikiの軽量構成です。"
                     ConversationEngineMode.FULL ->
-                        "FullはGemmaが直前の会話も踏まえて、その場で英語を生成します。"
+                        "Fullは同じMoonshineとKittenを使い、Gemmaだけを追加します。文字内容はMoonshineを優先し、元音声は非言語情報の補助として使います。"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

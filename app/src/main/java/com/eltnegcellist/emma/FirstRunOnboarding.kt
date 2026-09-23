@@ -54,7 +54,7 @@ internal fun FirstRunOnboardingScreen(
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                "単なる日本語→英語の翻訳ではありません。使い方に合わせてLite・Standard・Fullから選べます。",
+                "単なる日本語→英語の翻訳ではありません。軽いLiteと、その場で会話を考えるFullから選べます。",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -83,11 +83,9 @@ internal fun FirstRunOnboardingScreen(
                         Text(
                             when (option) {
                                 ConversationEngineMode.LITE ->
-                                    "Moonshine Tiny + Kitten TTS Nano / 約64MB / 完全ローカル"
-                                ConversationEngineMode.STANDARD ->
-                                    "ReazonSpeech + Supertonic 3 / 約298MB / 完全ローカル"
+                                    "Moonshine Tiny + LiteResponseEngine + Kitten TTS Nano / 約64MB / 完全ローカル"
                                 ConversationEngineMode.FULL ->
-                                    "Gemma + Supertonic 3 / 2GB超 / 完全ローカル"
+                                    "Moonshine Tiny + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -125,11 +123,9 @@ internal fun FirstRunOnboardingScreen(
                     Text(
                         when (selectedMode) {
                             ConversationEngineMode.LITE ->
-                                "Web版Liteと同じMoonshine日本語TinyとKitten TTS Nano / KikiをAndroid上で動かします。"
-                            ConversationEngineMode.STANDARD ->
-                                "Android向けにReazonSpeechとSupertonic 3 F3を使います。通常はこちらがおすすめです。"
+                                "Moonshine日本語Tinyで聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
                             ConversationEngineMode.FULL ->
-                                "Gemmaが応答を生成します。ダウンロード量が大きいためWi-Fiでの準備をおすすめします。"
+                                "Liteと同じMoonshineとKittenを使い、Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                     )
