@@ -71,8 +71,6 @@ private fun ProductionEmmaApp() {
     remember {
         preferences.edit()
             .remove("voice_backend")
-            .putBoolean("kokoro_only", false)
-            .putBoolean("supertonic_only", false)
             .apply()
         true
     }
