@@ -73,14 +73,21 @@ internal class LiteResponseEngine {
             }
         }
 
-        if (scene.id == "sleep" && !transcript.contains("寝返り")) {
-            val hintMatched = sleepSpeechHints
-                .asSequence()
-                .map(::normalize)
-                .filter { it.isNotEmpty() }
-                .any { transcript.contains(it) }
-            if (hintMatched) total = max(total, 4)
-        }
+        val hints = sceneSpeechHints[scene.id].orEmpty()
+            .asSequence()
+            .map(::normalize)
+            .filter { it.isNotEmpty() }
+            .toList()
+        val exclusions = sceneSpeechExclusions[scene.id].orEmpty()
+            .asSequence()
+            .map(::normalize)
+            .filter { it.isNotEmpty() }
+            .toList()
+        val hintMatched = hints.any { transcript.contains(it) }
+        val excluded = exclusions.any { transcript.contains(it) }
+
+        if (excluded && !hintMatched) return 0
+        if (hintMatched) total = max(total, 4)
         return total
     }
 
@@ -226,26 +233,83 @@ internal class LiteResponseEngine {
          * these candidates offline with Gemma using the Full Baby-mode intent,
          * validate them, then bake only the resulting English strings into Lite.
          */
-        private val sleepSpeechHints = listOf(
-            "寝よ",
-            "寝る",
-            "寝ます",
-            "寝て",
-            "寝た",
-            "寝かし",
-            "寝かせ",
-            "眠ろ",
-            "眠る",
-            "眠い",
-            "眠そう",
-            "眠く",
-            "ねんね",
-            "おねんね",
-            "おやすみ",
-            "昼寝",
-            "お昼寝",
-            "睡眠",
-            "就寝",
+        private val sceneSpeechHints = mapOf(
+            "bath" to listOf(
+                "お風呂入", "風呂入", "おふろはい", "シャワー浴", "体洗", "洗お", "湯船入",
+            ),
+            "milk" to listOf(
+                "ミルク飲", "みるく飲", "おっぱい飲", "授乳", "哺乳瓶", "ミルクにし", "おっぱいにし",
+            ),
+            "sleep" to listOf(
+                "寝よ", "寝る", "寝ます", "寝て", "寝た", "寝かし", "寝かせ", "眠ろ", "眠る",
+                "眠い", "眠そう", "眠く", "ねんね", "おねんね", "おやすみ", "昼寝", "お昼寝", "睡眠", "就寝",
+            ),
+            "wake" to listOf(
+                "起きよ", "起きる", "起きて", "起きた", "目覚め", "おはよう", "朝だ",
+            ),
+            "diaper" to listOf(
+                "おむつ替", "オムツ替", "おむつかえ", "うんち出", "うんちした", "おしっこ出",
+                "おしっこした", "お尻拭", "おしり拭",
+            ),
+            "clothes" to listOf(
+                "着替えよ", "着替えよう", "着替えよっか", "服着", "服脱", "着せよ", "脱ご",
+                "パジャマ着", "靴下はこ",
+            ),
+            "hug" to listOf(
+                "抱っこし", "だっこし", "抱っこする", "だっこする", "ぎゅー", "ぎゅっ", "抱きしめ",
+            ),
+            "hands" to listOf(
+                "おてて", "手握", "手にぎ", "指つか", "指握", "手バタ",
+            ),
+            "feet" to listOf(
+                "あんよ", "足バタ", "足けり", "足蹴", "キック", "つま先", "足動",
+            ),
+            "smile" to listOf(
+                "にこにこ", "ニコニコ", "笑った", "笑って", "笑顔", "微笑", "にやっ", "にこっ",
+            ),
+            "cry" to listOf(
+                "泣い", "泣く", "泣き", "涙", "えーん", "ぐず", "ぐずぐず", "ぐずって",
+            ),
+            "voice" to listOf(
+                "声出", "おしゃべり", "喃語", "クーイング", "あーって", "うーって", "あうあう",
+                "話してる", "しゃべって",
+            ),
+            "tummy" to listOf(
+                "げっぷ", "ゲップ", "お腹いっぱい", "おなかいっぱい", "満腹", "吐き戻", "吐いた",
+                "お腹苦", "おなか苦",
+            ),
+            "play" to listOf(
+                "遊ぼ", "あそぼ", "遊ぶ", "おもちゃ", "ガラガラ", "ぬいぐるみ", "メリー", "ボールで遊",
+            ),
+            "outside" to listOf(
+                "散歩行", "お散歩行", "さんぽ行", "外行", "お外行", "出かけ", "ベビーカー乗", "公園行",
+            ),
+            "rain" to listOf(
+                "雨降", "雨だ", "あめ降", "雨音", "傘さ",
+            ),
+            "sun" to listOf(
+                "晴れ", "晴れた", "晴れてる", "いい天気", "お日様", "太陽", "ぽかぽか",
+            ),
+            "food" to listOf(
+                "ごはん食", "ご飯食", "離乳食", "食べよ", "たべよ", "食べる", "食べた",
+                "いただきます", "スプーン", "お腹すい", "おなかすい", "お腹減", "おなか減",
+            ),
+            "book" to listOf(
+                "絵本読", "えほん読", "本読", "読も", "よもっか", "ページめく", "絵本見", "本見",
+            ),
+            "music" to listOf(
+                "歌お", "うたお", "歌う", "うたう", "音楽聞", "曲聞", "踊ろ", "リズム", "歌って",
+            ),
+        )
+
+        private val sceneSpeechExclusions = mapOf(
+            "bath" to listOf("風呂敷"),
+            "sleep" to listOf("寝返り"),
+            "hands" to listOf("手伝", "手続", "手紙", "手数"),
+            "feet" to listOf("足り", "足す", "足し"),
+            "tummy" to listOf("お腹すい", "おなかすい", "お腹減", "おなか減"),
+            "voice" to listOf("声優"),
+            "music" to listOf("歌舞伎"),
         )
 
         private val genericReplies = listOf(
