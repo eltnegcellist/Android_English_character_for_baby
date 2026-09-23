@@ -403,13 +403,13 @@ internal fun EmmaSettingsScreen(
                         Text("準備完了", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                         Text(
                             if (engineMode == ConversationEngineMode.LITE) {
-                                if (voiceBackend == VoiceBackend.KOKORO) {
+                                if (voiceBackend == VoiceBackend.SUPERTONIC) {
                                     "親の日本語を聞き取り、その場に合う赤ちゃん向け英語を選び、Emmaの温かい声で話します。"
                                 } else {
                                     "親の日本語を聞き取り、その場に合う赤ちゃん向け英語を選び、Android標準の英語音声で話します。"
                                 }
                             } else {
-                                if (voiceBackend == VoiceBackend.KOKORO) {
+                                if (voiceBackend == VoiceBackend.SUPERTONIC) {
                                     "会話・聞き取り・EmmaのSupertonic 3 F3音声はこの端末の中で処理されます。"
                                 } else {
                                     "会話処理は端末内で行い、音声はAndroid標準TTSを使います。"
