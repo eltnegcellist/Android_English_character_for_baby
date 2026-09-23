@@ -16,12 +16,14 @@ class LiteEmmaClient(
 
     fun initialize(): Result<Unit> = asr.initialize()
 
+    fun transcribe(wavAudio: ByteArray): Result<String> = asr.transcribe(wavAudio)
+
     fun createEnglishIsland(
         wavAudio: ByteArray,
         level: EnglishLevel,
         onTranscript: (String) -> Unit,
     ): Result<String> = runCatching {
-        val transcript = asr.transcribe(wavAudio).getOrThrow()
+        val transcript = transcribe(wavAudio).getOrThrow()
         onTranscript(transcript)
 
         val audience = AudienceMode.fromSaved(preferences.getString("audience_mode", null))
