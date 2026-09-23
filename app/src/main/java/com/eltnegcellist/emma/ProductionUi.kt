@@ -339,6 +339,7 @@ internal fun EmmaSettingsScreen(
     onLoadGemma: () -> Unit,
     onDownloadSupertonic: () -> Unit,
     onKeepScreenOn: (Boolean) -> Unit,
+    onUseSupertonicVoice: () -> Unit,
     onUseAndroidVoice: () -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
@@ -526,6 +527,45 @@ internal fun EmmaSettingsScreen(
                                     ) { Text("Android標準音声を使う") }
                                 }
                             }
+                        }
+                    }
+
+                    if (engineMode != ConversationEngineMode.LITE) {
+                        Text("Emmaの声", style = MaterialTheme.typography.titleSmall)
+                        if (supertonicInstalled) {
+                            if (voiceBackend == VoiceBackend.SUPERTONIC) {
+                                Button(
+                                    onClick = {},
+                                    enabled = enabled,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) { Text("Supertonic 3 F3（使用中）") }
+                            } else {
+                                Button(
+                                    onClick = onUseSupertonicVoice,
+                                    enabled = enabled,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) { Text("Supertonic 3 F3を使う") }
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = onDownloadSupertonic,
+                                enabled = enabled,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("Supertonic 3 F3を準備") }
+                        }
+
+                        if (voiceBackend == VoiceBackend.ANDROID) {
+                            OutlinedButton(
+                                onClick = {},
+                                enabled = enabled,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("Android標準音声（使用中）") }
+                        } else {
+                            OutlinedButton(
+                                onClick = onUseAndroidVoice,
+                                enabled = enabled,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("Android標準音声を使う") }
                         }
                     }
                 }
