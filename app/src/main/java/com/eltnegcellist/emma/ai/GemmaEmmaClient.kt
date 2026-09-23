@@ -282,11 +282,15 @@ class GemmaEmmaClient(context: Context) {
                 $babyGenderInstruction
                 $audienceInstruction
 
-                Input priority:
-                - The Moonshine Japanese transcript is the PRIMARY source for linguistic meaning.
-                - The original audio is SECONDARY context only: use it for nonverbal cues such as intonation, laughter, infant cooing, babbling, squealing, or crying.
-                - Never override a clear Moonshine transcript because the raw audio seems to contain different words.
-                - If the current transcript is exactly "$NO_CLEAR_SPEECH_CONTEXT", use the original audio only to decide whether there is a CLEAR infant vocalization. If there is not, output exactly "$NO_RESPONSE" and nothing else.
+                Input priority and ASR-repair policy:
+                - Treat the Moonshine Japanese transcript as the BASELINE and default source for linguistic meaning.
+                - Do not freely re-transcribe, rewrite, or replace the transcript from the raw audio.
+                - Moonshine can occasionally turn one or two sounds into a different-looking word or an unnatural short phrase. When that happens, you MAY infer a small intended-utterance repair only when the transcript is locally unnatural AND both the attached audio and recent conversation strongly support the same nearby interpretation.
+                - Keep any repair minimal: normally an ending, particle, inflection, or roughly one or two misheard sounds/words. If confidence is not high, use the Moonshine transcript as-is.
+                - Never use repair to flip or invent negation, change a number/quantity, alter a person's name, or make another meaning-changing substitution. Preserve those details from Moonshine unless they are explicitly repeated unambiguously elsewhere in the supplied context.
+                - The repaired interpretation is INTERNAL only. Use it to choose Emma's response; do not announce a correction or claim that the parent said different words.
+                - The original audio remains SECONDARY evidence. Besides confirming a small ASR repair, use it for nonverbal cues such as intonation, laughter, infant cooing, babbling, squealing, or crying.
+                - If the current transcript is exactly "$NO_CLEAR_SPEECH_CONTEXT", do not attempt linguistic reconstruction from audio. Use the original audio only to decide whether there is a CLEAR infant vocalization. If there is not, output exactly "$NO_RESPONSE" and nothing else.
 
                 Conversation rules shared by both modes:
                 - Never merely translate or paraphrase the Japanese. Add a genuine, context-appropriate response.
@@ -321,7 +325,7 @@ class GemmaEmmaClient(context: Context) {
                     Content.Text(
                         "Recent conversation (context only, newest information is more important):\n$historyText\n\n" +
                             "Moonshine transcript for the current turn (PRIMARY linguistic source):\n$transcriptForPrompt\n\n" +
-                            "The attached original audio is SECONDARY context for nonverbal cues only.\n\n" +
+                            "The attached original audio is SECONDARY evidence: use it for nonverbal cues and, only when strongly supported, to confirm a small Moonshine ASR near-miss. Do not replace the transcript wholesale.\n\n" +
                             if (audioOnlyTurn) {
                                 "Moonshine found no intelligible Japanese. Inspect the attached audio only for a CLEAR infant vocalization. If it is not clearly an infant vocalization, output exactly \"$NO_RESPONSE\". If it is clear, respond warmly to the baby in short spoken English only."
                             } else if (audienceMode == AudienceMode.BABY) {
