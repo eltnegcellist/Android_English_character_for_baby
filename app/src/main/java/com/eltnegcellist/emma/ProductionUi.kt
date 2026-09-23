@@ -323,6 +323,7 @@ internal fun EmmaSettingsScreen(
     voiceBackend: VoiceBackend,
     lastSpeechMillis: Long?,
     engineMode: ConversationEngineMode,
+    keepScreenOn: Boolean,
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
@@ -335,6 +336,7 @@ internal fun EmmaSettingsScreen(
     onDownloadLiteAsr: () -> Unit,
     onLoadGemma: () -> Unit,
     onDownloadSupertonic: () -> Unit,
+    onKeepScreenOn: (Boolean) -> Unit,
     onUseAndroidVoice: () -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
@@ -366,6 +368,28 @@ internal fun EmmaSettingsScreen(
             ProductionFamilySettings(enabled = enabled)
 
             AppearanceSettings(enabled = enabled)
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Android版の動作", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Emma利用中は画面をスリープさせない",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = keepScreenOn,
+                        onCheckedChange = onKeepScreenOn,
+                        enabled = enabled,
+                    )
+                }
+            }
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

@@ -11,6 +11,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,11 +33,15 @@ internal fun ProductionFamilySettings(
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
     var babyName by remember { mutableStateOf(preferences.getString("baby_name", "").orEmpty()) }
     var spokenBabyName by remember { mutableStateOf(preferences.getString("baby_spoken_name", "").orEmpty()) }
+    var useChanSuffix by remember { mutableStateOf(preferences.getBoolean("use_chan_suffix", true)) }
     var babyGender by remember {
         mutableStateOf(BabyGender.fromSaved(preferences.getString("baby_gender", null)))
     }
     var pronunciationOpen by remember { mutableStateOf(false) }
-    val resolvedSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, spokenBabyName)
+    val resolvedSpokenName = BabyNamePronunciation.withChanSuffix(
+        BabyNamePronunciation.toSpokenEnglish(babyName, spokenBabyName),
+        useChanSuffix,
+    )
 
     Card(Modifier.fillMaxWidth()) {
         Column(
@@ -117,6 +122,20 @@ internal fun ProductionFamilySettings(
                     label = { Text("英語で呼ぶ名前") },
                     placeholder = { Text("例：Hana") },
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text("名前に「-chan」を付ける", style = MaterialTheme.typography.bodyMedium)
+                    Switch(
+                        checked = useChanSuffix,
+                        onCheckedChange = {
+                            useChanSuffix = it
+                            preferences.edit().putBoolean("use_chan_suffix", it).apply()
+                        },
+                        enabled = enabled,
+                    )
+                }
                 Text(
                     when {
                         babyName.isBlank() -> "名前は未設定です。"

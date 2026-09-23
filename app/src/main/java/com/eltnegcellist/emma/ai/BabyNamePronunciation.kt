@@ -26,6 +26,13 @@ internal object BabyNamePronunciation {
             .take(MAX_SPOKEN_NAME_CHARS)
     }
 
+    fun withChanSuffix(spokenName: String, enabled: Boolean = true): String {
+        val base = spokenName.trim()
+        if (base.isBlank() || !enabled) return base
+        if (Regex("(?:-|\\s)?chan$", RegexOption.IGNORE_CASE).containsMatchIn(base)) return base
+        return "$base-chan".take(MAX_SPOKEN_NAME_WITH_SUFFIX_CHARS)
+    }
+
     private fun sanitizeEnglishName(value: String): String = value
         .filterNot { it.isISOControl() }
         .replace(Regex("[^A-Za-z'’ -]"), "")
@@ -125,4 +132,5 @@ internal object BabyNamePronunciation {
     )
 
     private const val MAX_SPOKEN_NAME_CHARS = 40
+    private const val MAX_SPOKEN_NAME_WITH_SUFFIX_CHARS = 45
 }

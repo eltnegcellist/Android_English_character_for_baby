@@ -31,7 +31,11 @@ class LiteEmmaClient(
 
         val babyName = preferences.getString("baby_name", "").orEmpty()
         val explicitSpokenName = preferences.getString("baby_spoken_name", "").orEmpty()
-        val spokenName = BabyNamePronunciation.toSpokenEnglish(babyName, explicitSpokenName)
+        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, explicitSpokenName)
+        val spokenName = BabyNamePronunciation.withChanSuffix(
+            baseSpokenName,
+            preferences.getBoolean("use_chan_suffix", true),
+        )
         val selected = responses.respond(transcript, spokenName)
         val adjusted = fitLevel(selected.english, level)
 

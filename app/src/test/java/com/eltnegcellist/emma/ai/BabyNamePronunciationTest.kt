@@ -34,4 +34,13 @@ class BabyNamePronunciationTest {
     fun kanjiRequiresExplicitPronunciation() {
         assertEquals("", BabyNamePronunciation.toSpokenEnglish("花"))
     }
+    @Test
+    fun addsChanSuffixByDefaultWithoutDuplicatingIt() {
+        assertEquals("Hana-chan", BabyNamePronunciation.withChanSuffix("Hana"))
+        assertEquals("Hana-chan", BabyNamePronunciation.withChanSuffix("Hana-chan"))
+        assertEquals("Hana chan", BabyNamePronunciation.withChanSuffix("Hana chan"))
+        assertEquals("Hana", BabyNamePronunciation.withChanSuffix("Hana", enabled = false))
+        assertEquals("", BabyNamePronunciation.withChanSuffix(""))
+    }
+
 }

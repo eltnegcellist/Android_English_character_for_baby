@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -102,6 +103,7 @@ private fun ProductionEmmaApp() {
     var speechRate by remember { mutableStateOf(initialRate) }
     var latestTranscript by remember { mutableStateOf("") }
     var autoRespond by remember { mutableStateOf(preferences.getBoolean("auto_respond", true)) }
+    var keepScreenOn by remember { mutableStateOf(preferences.getBoolean("keep_screen_on", true)) }
     var settingsOpen by remember { mutableStateOf(false) }
     var aboutOpen by remember { mutableStateOf(false) }
     var parentFullPromptOpen by remember { mutableStateOf(false) }
@@ -169,6 +171,18 @@ private fun ProductionEmmaApp() {
     var endpointStartedNanos by remember { mutableStateOf<Long?>(null) }
     var ttsRequestedAfterEndpointMillis by remember { mutableStateOf<Long?>(null) }
     var lastNonverbalResponseAtMillis by remember { mutableStateOf(0L) }
+
+    DisposableEffect(recording, keepScreenOn) {
+        val window = (context as? ComponentActivity)?.window
+        if (recording && keepScreenOn) {
+            window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     val diagnosticsExporter = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain"),
@@ -1072,6 +1086,7 @@ private fun ProductionEmmaApp() {
             voiceBackend = voiceBackend,
             lastSpeechMillis = lastSpeechMillis,
             engineMode = engineMode,
+            keepScreenOn = keepScreenOn,
             onBack = { settingsOpen = false },
             onOpenAbout = { aboutOpen = true },
             onEngineMode = { selected ->
@@ -1110,14 +1125,18 @@ private fun ProductionEmmaApp() {
             onDownloadLiteAsr = ::startLiteAutomaticSetup,
             onLoadGemma = ::loadModel,
             onDownloadSupertonic = ::startSupertonicAutomaticSetup,
+            onKeepScreenOn = {
+                keepScreenOn = it
+                preferences.edit().putBoolean("keep_screen_on", it).apply()
+            },
             onUseAndroidVoice = {
                 voiceBackend = VoiceBackend.ANDROID
                 preferences.edit().putString("voice_backend", VoiceBackend.ANDROID.savedValue).apply()
                 status = ProductionEmmaStatus.IDLE
                 statusMessage = "Android標準音声を使用します。Supertonic 3は後から追加できます。"
             },
-            onExportDiagnostics = { diagnosticsExporter.launch("emma-beta8-diagnostics.txt") },
-            onExportCrashDetails = { crashDetailsExporter.launch("emma-beta8-crash-details.zip") },
+            onExportDiagnostics = { diagnosticsExporter.launch("emma-beta9-diagnostics.txt") },
+            onExportCrashDetails = { crashDetailsExporter.launch("emma-beta9-crash-details.zip") },
         )
     } else {
         EmmaHomeScreen(
@@ -1137,7 +1156,12 @@ private fun ProductionEmmaApp() {
             engineMode = engineMode,
             onRequestParentFull = { parentFullPromptOpen = true },
             onOpenAbout = { aboutOpen = true },
-            onOpenSettings = { settingsOpen = true },
+            onOpenSettings = {
+                if (recording || generating || pendingStartAfterPermission || status == ProductionEmmaStatus.SPEAKING) {
+                    stopSession()
+                }
+                settingsOpen = true
+            },
             onStartSession = ::startSession,
             onStopSession = ::stopSession,
             onToggleAutoRespond = {

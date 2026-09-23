@@ -370,11 +370,15 @@ class GemmaEmmaClient(context: Context) {
     }
 
     private fun configuredSpokenBabyName(savedName: String): String {
-        val overrideName = appContext
-            .getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        val preferences = appContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        val overrideName = preferences
             .getString(BABY_SPOKEN_NAME_KEY, "")
             .orEmpty()
-        return BabyNamePronunciation.toSpokenEnglish(savedName, overrideName)
+        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(savedName, overrideName)
+        return BabyNamePronunciation.withChanSuffix(
+            baseSpokenName,
+            preferences.getBoolean(BABY_CHAN_SUFFIX_KEY, true),
+        )
     }
 
     private fun configuredBabyGender(): BabyGender {
@@ -443,6 +447,7 @@ class GemmaEmmaClient(context: Context) {
         private const val PREFERENCES_NAME = "emma_speech"
         private const val BABY_NAME_KEY = "baby_name"
         private const val BABY_SPOKEN_NAME_KEY = "baby_spoken_name"
+        private const val BABY_CHAN_SUFFIX_KEY = "use_chan_suffix"
         private const val BABY_GENDER_KEY = "baby_gender"
         private const val AUDIENCE_MODE_KEY = "audience_mode"
         private const val MAX_BABY_NAME_CHARS = 30

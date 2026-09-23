@@ -6,7 +6,7 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta8** (`versionCode 60`).
+The current public baseline is **v1.4.0-beta9** (`versionCode 61`).
 
 This beta replaces the standard-mode speech stack:
 
@@ -37,6 +37,8 @@ Emma avatar
 ```
 
 The Lite response bank is intentionally compact: typically three very short baby-directed sentences, with repetition and rhythm prioritized over long explanations.
+
+Baby-name pronunciation can optionally add the Japanese-style `-chan` suffix. It is enabled by default in both Standard and Full modes, matching Emma Web.
 
 ### Emma Full
 
