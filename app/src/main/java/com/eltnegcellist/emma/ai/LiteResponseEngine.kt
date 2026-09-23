@@ -27,9 +27,21 @@ internal class LiteResponseEngine {
             .sortedByDescending { it.second }
         val best = ranked.firstOrNull()
         val selected = if (best != null && best.second >= MIN_SCENE_SCORE) best else null
+        val rescued = if (selected == null) {
+            LitePhoneticSceneMatcher.match(
+                transcript = transcript,
+                scenePhrases = scenes.associate { scene ->
+                    scene.id to (scene.keywords + sceneSpeechHints[scene.id].orEmpty())
+                },
+                sceneExclusions = sceneSpeechExclusions,
+            )
+        } else {
+            null
+        }
 
         val scene = selected?.first
-        val score = selected?.second ?: 0
+            ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
+        val score = selected?.second ?: rescued?.score ?: 0
         val replies = scene?.replies ?: genericReplies
         val safeName = sanitizeName(spokenBabyName)
         val forceName = safeName.isNotBlank() &&
