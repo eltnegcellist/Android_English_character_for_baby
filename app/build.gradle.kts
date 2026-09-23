@@ -11,8 +11,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 55
-        versionName = "1.4.0-beta3"
+        versionCode = 56
+        versionName = "1.4.0-beta4"
     }
 
     buildFeatures {
