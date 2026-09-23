@@ -312,7 +312,6 @@ private fun ConversationExchange(transcript: String, emmaText: String) {
 @Composable
 internal fun EmmaSettingsScreen(
     level: EnglishLevel,
-    rate: Float,
     enabled: Boolean,
     previewing: Boolean,
     modelReady: Boolean,
@@ -325,7 +324,6 @@ internal fun EmmaSettingsScreen(
     onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
     onLevel: (EnglishLevel) -> Unit,
-    onRate: (Float) -> Unit,
     onPreview: () -> Unit,
     onStopPreview: () -> Unit,
     onDownloadGemma: () -> Unit,
@@ -389,7 +387,7 @@ internal fun EmmaSettingsScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Emmaのエディション", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Lite / Standard / Full から選べます。",
+                        "Lite / Full から選べます。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
