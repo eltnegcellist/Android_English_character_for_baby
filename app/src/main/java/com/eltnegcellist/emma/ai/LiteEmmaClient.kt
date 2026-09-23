@@ -1,7 +1,7 @@
 package com.eltnegcellist.emma.ai
 
 import android.content.Context
-import com.eltnegcellist.emma.asr.WhisperJapaneseAsr
+import com.eltnegcellist.emma.asr.ReazonSpeechJapaneseAsr
 import com.eltnegcellist.emma.tts.DiagnosticStore
 
 class LiteEmmaClient(
@@ -9,7 +9,7 @@ class LiteEmmaClient(
 ) {
     private val appContext = context.applicationContext
     private val preferences = appContext.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
-    private val asr = WhisperJapaneseAsr(appContext)
+    private val asr = ReazonSpeechJapaneseAsr(appContext)
     private val responses = LiteResponseEngine()
 
     fun isReady(): Boolean = asr.isReady()

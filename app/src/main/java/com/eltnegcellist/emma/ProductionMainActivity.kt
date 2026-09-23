@@ -26,14 +26,14 @@ import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.ai.GemmaEmmaClient
 import com.eltnegcellist.emma.ai.LiteEmmaClient
-import com.eltnegcellist.emma.asr.LiteAsrModelStore
+import com.eltnegcellist.emma.asr.ReazonSpeechModelStore
 import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.eltnegcellist.emma.tts.EmmaSpeaker
-import com.eltnegcellist.emma.tts.KokoroModelStore
-import com.eltnegcellist.emma.tts.KokoroSpeaker
+import com.eltnegcellist.emma.tts.SupertonicModelStore
+import com.eltnegcellist.emma.tts.SupertonicSpeaker
 import com.eltnegcellist.emma.tts.VoiceBackend
 import com.eltnegcellist.emma.ui.EmmaTheme
 import com.eltnegcellist.emma.ui.EmmaVisualState
@@ -139,20 +139,20 @@ private fun ProductionEmmaApp() {
     var modelPresent by remember {
         mutableStateOf(
             if (initialEngineMode == ConversationEngineMode.LITE) {
-                LiteAsrModelStore.isInstalled(context)
+                ReazonSpeechModelStore.isInstalled(context)
             } else {
                 GemmaModelStore.hasUsableModel(context)
             },
         )
     }
     var modelReady by remember { mutableStateOf(false) }
-    var kokoroInstalled by remember { mutableStateOf(KokoroModelStore.isInstalled(context)) }
+    var supertonicInstalled by remember { mutableStateOf(SupertonicModelStore.isInstalled(context)) }
     var fullSetupOpen by remember {
         mutableStateOf(
             initialEngineMode == ConversationEngineMode.FULL &&
                 (
                     !GemmaModelStore.hasUsableModel(context) ||
-                        (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+                        (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
                 ),
         )
     }
@@ -163,8 +163,8 @@ private fun ProductionEmmaApp() {
     var liteSetupBusy by remember { mutableStateOf(false) }
     var liteSetupPhase by remember { mutableStateOf("") }
     var liteSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
-    var kokoroOnly by remember { mutableStateOf(preferences.getBoolean("kokoro_only", false)) }
-    var kokoroImporting by remember { mutableStateOf(false) }
+    var supertonicOnly by remember { mutableStateOf(preferences.getBoolean("supertonic_only", false)) }
+    var supertonicImporting by remember { mutableStateOf(false) }
     var lastSpeechMillis by remember { mutableStateOf<Long?>(null) }
     var endpointStartedNanos by remember { mutableStateOf<Long?>(null) }
     var ttsRequestedAfterEndpointMillis by remember { mutableStateOf<Long?>(null) }
@@ -198,8 +198,8 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    val kokoro = remember {
-        KokoroSpeaker(
+    val supertonic = remember {
+        SupertonicSpeaker(
             context = context,
             onDone = { firstAudioMillis, totalMillis ->
                 if (!disposed) {
@@ -210,7 +210,7 @@ private fun ProductionEmmaApp() {
                         DiagnosticStore.mark(
                             context,
                             "emma_response_latency",
-                            "endpointToTtsRequestMs=$queued kokoroToFirstAudioMs=$firstAudioMillis endpointToFirstAudioMs=${queued + firstAudioMillis} kokoroTotalMs=$totalMillis",
+                            "endpointToTtsRequestMs=$queued supertonicToFirstAudioMs=$firstAudioMillis endpointToFirstAudioMs=${queued + firstAudioMillis} supertonicTotalMs=$totalMillis",
                         )
                     }
                     endpointStartedNanos = null
@@ -230,7 +230,7 @@ private fun ProductionEmmaApp() {
                     voiceError = message
                     if (recording) recorder.resumeBuffering(clearExisting = true)
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Kokoro音声の生成または再生に失敗しました: $message"
+                    statusMessage = "Supertonic 3音声の生成または再生に失敗しました: $message"
                 }
             },
             onAmplitude = { amplitude -> if (!disposed) mouthLevel = amplitude },
@@ -271,7 +271,7 @@ private fun ProductionEmmaApp() {
             (System.nanoTime() - started) / 1_000_000L
         }
         return when (voiceBackend) {
-            VoiceBackend.KOKORO -> kokoroInstalled && kokoro.speak(text, speechRate)
+            VoiceBackend.SUPERTONIC -> supertonicInstalled && supertonic.speak(text, speechRate)
             VoiceBackend.ANDROID -> androidSpeaker.speak(
                 text,
                 rate = (speechRate * 0.84f).coerceIn(0.65f, 0.95f),
@@ -281,13 +281,13 @@ private fun ProductionEmmaApp() {
 
     fun loadModel() {
         if (disposed) return
-        if (kokoroOnly) {
-            statusMessage = "Kokoroだけの診断モードでは会話エンジンを起動しません。"
+        if (supertonicOnly) {
+            statusMessage = "Supertonic 3だけの診断モードでは会話エンジンを起動しません。"
             return
         }
 
         val requiredModelPresent = if (engineMode == ConversationEngineMode.LITE) {
-            LiteAsrModelStore.isInstalled(context)
+            ReazonSpeechModelStore.isInstalled(context)
         } else {
             GemmaModelStore.hasUsableModel(context)
         }
@@ -352,7 +352,7 @@ private fun ProductionEmmaApp() {
         }
         modelReady = false
         modelPresent = if (selected == ConversationEngineMode.LITE) {
-            LiteAsrModelStore.isInstalled(context)
+            ReazonSpeechModelStore.isInstalled(context)
         } else {
             GemmaModelStore.hasUsableModel(context)
         }
@@ -412,24 +412,24 @@ private fun ProductionEmmaApp() {
 
         liteSetupBusy = true
         liteSetupProgressPercent = 0
-        liteSetupPhase = "Whisperをダウンロードしています…"
+        liteSetupPhase = "ReazonSpeechをダウンロードしています…"
         modelReady = false
         status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "Whisperを準備しています…"
+        statusMessage = "ReazonSpeechを準備しています…"
 
         EmmaWorkQueue.execute {
             lite.close()
-            LiteAsrModelStore.downloadAndInstall(context) { percent ->
+            ReazonSpeechModelStore.downloadAndInstall(context) { percent ->
                 mainHandler.post {
                     if (!disposed) {
                         liteSetupProgressPercent = percent
                         liteSetupPhase = when {
-                            percent == null -> "Whisperをダウンロードしています…"
-                            percent < 70 -> "Whisperをダウンロードしています…"
-                            percent < 93 -> "Whisperを展開・検証しています…"
-                            else -> "Whisperを配置しています…"
+                            percent == null -> "ReazonSpeechをダウンロードしています…"
+                            percent < 70 -> "ReazonSpeechをダウンロードしています…"
+                            percent < 93 -> "ReazonSpeechを展開・検証しています…"
+                            else -> "ReazonSpeechを配置しています…"
                         }
-                        statusMessage = "Whisperを準備しています… ${percent?.let { "$it%" } ?: ""}"
+                        statusMessage = "ReazonSpeechを準備しています… ${percent?.let { "$it%" } ?: ""}"
                     }
                 }
             }.onSuccess {
@@ -450,23 +450,23 @@ private fun ProductionEmmaApp() {
                     if (disposed) return@post
                     liteSetupBusy = false
                     liteSetupProgressPercent = null
-                    modelPresent = LiteAsrModelStore.isInstalled(context)
+                    modelPresent = ReazonSpeechModelStore.isInstalled(context)
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Whisperの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                    statusMessage = "ReazonSpeechの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
                     settingsOpen = true
                 }
             }
         }
     }
 
-    fun startFirstRunSetup(useKokoro: Boolean) {
+    fun startFirstRunSetup(useSupertonic: Boolean) {
         if (disposed || firstRunBusy) return
 
         firstRunBusy = true
         firstRunReady = false
         firstRunError = null
         firstRunProgressPercent = 0
-        firstRunPhase = "Whisperを準備しています…"
+        firstRunPhase = "ReazonSpeechを準備しています…"
         status = ProductionEmmaStatus.MODEL_IMPORTING
         statusMessage = "Emmaの初期設定をしています…"
         engineMode = ConversationEngineMode.LITE
@@ -480,15 +480,15 @@ private fun ProductionEmmaApp() {
                 gemma.close()
                 lite.close()
 
-                if (!LiteAsrModelStore.isInstalled(context)) {
-                    LiteAsrModelStore.downloadAndInstall(context) { percent ->
+                if (!ReazonSpeechModelStore.isInstalled(context)) {
+                    ReazonSpeechModelStore.downloadAndInstall(context) { percent ->
                         mainHandler.post {
                             if (!disposed) {
                                 firstRunPhase = when {
-                                    percent == null -> "Whisperをダウンロードしています…"
-                                    percent < 70 -> "Whisperをダウンロードしています…"
-                                    percent < 93 -> "Whisperを展開・検証しています…"
-                                    else -> "Whisperを配置しています…"
+                                    percent == null -> "ReazonSpeechをダウンロードしています…"
+                                    percent < 70 -> "ReazonSpeechをダウンロードしています…"
+                                    percent < 93 -> "ReazonSpeechを展開・検証しています…"
+                                    else -> "ReazonSpeechを配置しています…"
                                 }
                                 firstRunProgressPercent = percent
                             }
@@ -496,17 +496,17 @@ private fun ProductionEmmaApp() {
                     }.getOrThrow()
                 }
 
-                if (useKokoro && !KokoroModelStore.isInstalled(context)) {
+                if (useSupertonic && !SupertonicModelStore.isInstalled(context)) {
                     mainHandler.post {
                         if (!disposed) {
-                            firstRunPhase = "Kokoroの温かい声を準備しています…"
+                            firstRunPhase = "Supertonic 3 F3の声を準備しています…"
                             firstRunProgressPercent = 0
                         }
                     }
-                    KokoroModelStore.downloadAndInstall(context) { percent ->
+                    SupertonicModelStore.downloadAndInstall(context) { percent ->
                         mainHandler.post {
                             if (!disposed) {
-                                firstRunPhase = "Kokoroの温かい声を準備しています…"
+                                firstRunPhase = "Supertonic 3 F3の声を準備しています…"
                                 firstRunProgressPercent = percent
                             }
                         }
@@ -525,10 +525,10 @@ private fun ProductionEmmaApp() {
                     if (disposed) return@post
                     modelPresent = true
                     modelReady = true
-                    kokoroInstalled = KokoroModelStore.isInstalled(context)
-                    if (useKokoro && kokoroInstalled) {
-                        voiceBackend = VoiceBackend.KOKORO
-                        kokoro.resetModel()
+                    supertonicInstalled = SupertonicModelStore.isInstalled(context)
+                    if (useSupertonic && supertonicInstalled) {
+                        voiceBackend = VoiceBackend.SUPERTONIC
+                        supertonic.resetModel()
                     } else {
                         voiceBackend = VoiceBackend.ANDROID
                     }
@@ -545,9 +545,9 @@ private fun ProductionEmmaApp() {
             }.onFailure { error ->
                 mainHandler.post {
                     if (disposed) return@post
-                    modelPresent = LiteAsrModelStore.isInstalled(context)
+                    modelPresent = ReazonSpeechModelStore.isInstalled(context)
                     modelReady = false
-                    kokoroInstalled = KokoroModelStore.isInstalled(context)
+                    supertonicInstalled = SupertonicModelStore.isInstalled(context)
                     firstRunBusy = false
                     firstRunReady = false
                     firstRunProgressPercent = null
@@ -560,37 +560,37 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    fun startKokoroAutomaticSetup() {
-        if (disposed || kokoroImporting) return
-        kokoroImporting = true
+    fun startSupertonicAutomaticSetup() {
+        if (disposed || supertonicImporting) return
+        supertonicImporting = true
         status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "Kokoroの温かい声を準備しています…"
+        statusMessage = "Supertonic 3 F3の声を準備しています…"
 
         EmmaWorkQueue.execute {
-            KokoroModelStore.downloadAndInstall(context) { percent ->
+            SupertonicModelStore.downloadAndInstall(context) { percent ->
                 mainHandler.post {
                     if (!disposed) {
-                        statusMessage = "Kokoroの温かい声を準備しています… ${percent?.let { "$it%" } ?: ""}"
+                        statusMessage = "Supertonic 3 F3の声を準備しています… ${percent?.let { "$it%" } ?: ""}"
                     }
                 }
             }.onSuccess {
                 mainHandler.post {
                     if (disposed) return@post
-                    kokoroImporting = false
-                    kokoroInstalled = true
-                    voiceBackend = VoiceBackend.KOKORO
-                    preferences.edit().putString("voice_backend", VoiceBackend.KOKORO.savedValue).apply()
-                    kokoro.resetModel()
+                    supertonicImporting = false
+                    supertonicInstalled = true
+                    voiceBackend = VoiceBackend.SUPERTONIC
+                    preferences.edit().putString("voice_backend", VoiceBackend.SUPERTONIC.savedValue).apply()
+                    supertonic.resetModel()
                     status = ProductionEmmaStatus.IDLE
-                    statusMessage = "Kokoroの準備ができました。"
+                    statusMessage = "Supertonic 3の準備ができました。"
                 }
             }.onFailure { error ->
                 mainHandler.post {
                     if (disposed) return@post
-                    kokoroImporting = false
-                    kokoroInstalled = KokoroModelStore.isInstalled(context)
+                    supertonicImporting = false
+                    supertonicInstalled = SupertonicModelStore.isInstalled(context)
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Kokoroの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                    statusMessage = "Supertonic 3の準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
                 }
             }
         }
@@ -628,17 +628,17 @@ private fun ProductionEmmaApp() {
                     }.getOrThrow()
                 }
 
-                if (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context)) {
+                if (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context)) {
                     mainHandler.post {
                         if (!disposed) {
-                            fullSetupPhase = "Emmaの声（Kokoro）を準備しています"
+                            fullSetupPhase = "Emmaの声（Supertonic 3）を準備しています"
                             fullSetupProgressPercent = 0
                         }
                     }
-                    KokoroModelStore.downloadAndInstall(context) { percent ->
+                    SupertonicModelStore.downloadAndInstall(context) { percent ->
                         mainHandler.post {
                             if (!disposed) {
-                                fullSetupPhase = "Emmaの声（Kokoro）を準備しています"
+                                fullSetupPhase = "Emmaの声（Supertonic 3）を準備しています"
                                 fullSetupProgressPercent = percent
                             }
                         }
@@ -648,9 +648,9 @@ private fun ProductionEmmaApp() {
                 mainHandler.post {
                     if (disposed) return@post
                     modelPresent = GemmaModelStore.hasUsableModel(context)
-                    kokoroInstalled = KokoroModelStore.isInstalled(context)
-                    if (voiceBackend == VoiceBackend.KOKORO && kokoroInstalled) {
-                        kokoro.resetModel()
+                    supertonicInstalled = SupertonicModelStore.isInstalled(context)
+                    if (voiceBackend == VoiceBackend.SUPERTONIC && supertonicInstalled) {
+                        supertonic.resetModel()
                     }
                     fullSetupBusy = false
                     fullSetupProgressPercent = 100
@@ -665,9 +665,9 @@ private fun ProductionEmmaApp() {
                     modelPresent = if (engineMode == ConversationEngineMode.FULL) {
                         GemmaModelStore.hasUsableModel(context)
                     } else {
-                        LiteAsrModelStore.isInstalled(context)
+                        ReazonSpeechModelStore.isInstalled(context)
                     }
-                    kokoroInstalled = KokoroModelStore.isInstalled(context)
+                    supertonicInstalled = SupertonicModelStore.isInstalled(context)
                     fullSetupBusy = false
                     fullSetupProgressPercent = null
                     fullSetupError = error.message
@@ -709,9 +709,9 @@ private fun ProductionEmmaApp() {
     }
 
     fun startSession() {
-        if (voiceBackend == VoiceBackend.KOKORO && !kokoroInstalled) {
+        if (voiceBackend == VoiceBackend.SUPERTONIC && !supertonicInstalled) {
             status = ProductionEmmaStatus.ERROR
-            statusMessage = "Kokoroを準備するか、Android標準音声を選んでください。"
+            statusMessage = "Supertonic 3を準備するか、Android標準音声を選んでください。"
             settingsOpen = true
             return
         }
@@ -737,7 +737,7 @@ private fun ProductionEmmaApp() {
     fun stopSession() {
         session.stop()
         pendingStartAfterPermission = false
-        kokoro.stop()
+        supertonic.stop()
         androidSpeaker.stop()
         recorder.stop()
         recording = false
@@ -885,11 +885,11 @@ private fun ProductionEmmaApp() {
             initialEngineMode == ConversationEngineMode.FULL &&
             (
                 !GemmaModelStore.hasUsableModel(context) ||
-                    (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+                    (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
             )
         ) {
             fullSetupOpen = true
-        } else if (!kokoroOnly && modelPresent) {
+        } else if (!supertonicOnly && modelPresent) {
             loadModel()
         } else if (!modelPresent) {
             settingsOpen = true
@@ -897,7 +897,7 @@ private fun ProductionEmmaApp() {
     }
 
     LaunchedEffect(modelReady, onboardingOpen) {
-        if (modelReady && !onboardingOpen && autoStartPending && !recording && !kokoroOnly) {
+        if (modelReady && !onboardingOpen && autoStartPending && !recording && !supertonicOnly) {
             autoStartPending = false
             startSession()
         }
@@ -962,7 +962,7 @@ private fun ProductionEmmaApp() {
             recorder.onVoiceActivity = null
             recorder.onError = null
             recorder.stop()
-            kokoro.shutdown()
+            supertonic.shutdown()
             androidSpeaker.shutdown()
             mainHandler.removeCallbacksAndMessages(null)
             EmmaWorkQueue.execute {
@@ -972,7 +972,7 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    val busy = firstRunBusy || fullSetupBusy || liteSetupBusy || generating || kokoroImporting || status == ProductionEmmaStatus.MODEL_IMPORTING ||
+    val busy = firstRunBusy || fullSetupBusy || liteSetupBusy || generating || supertonicImporting || status == ProductionEmmaStatus.MODEL_IMPORTING ||
         status == ProductionEmmaStatus.MODEL_LOADING || status == ProductionEmmaStatus.THINKING || status == ProductionEmmaStatus.SPEAKING
 
     val visualState = when (status) {
@@ -1007,8 +1007,8 @@ private fun ProductionEmmaApp() {
             progressPercent = firstRunProgressPercent,
             errorMessage = firstRunError,
             usingAndroidVoice = voiceBackend == VoiceBackend.ANDROID,
-            onPrepareRecommended = { startFirstRunSetup(useKokoro = true) },
-            onUseAndroidVoice = { startFirstRunSetup(useKokoro = false) },
+            onPrepareRecommended = { startFirstRunSetup(useSupertonic = true) },
+            onUseAndroidVoice = { startFirstRunSetup(useSupertonic = false) },
             onOpenAbout = { aboutOpen = true },
             onStartEmma = {
                 if (!firstRunBusy && firstRunReady) {
@@ -1035,7 +1035,7 @@ private fun ProductionEmmaApp() {
             progressPercent = fullSetupProgressPercent,
             errorMessage = fullSetupError,
             gemmaNeeded = !GemmaModelStore.hasUsableModel(context),
-            kokoroNeeded = voiceBackend == VoiceBackend.KOKORO && !kokoroInstalled,
+            supertonicNeeded = voiceBackend == VoiceBackend.SUPERTONIC && !supertonicInstalled,
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
                 if (!fullSetupBusy) {
@@ -1045,7 +1045,7 @@ private fun ProductionEmmaApp() {
                         engineMode == ConversationEngineMode.FULL &&
                         (
                 !GemmaModelStore.hasUsableModel(context) ||
-                    (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+                    (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
             )
                     ) {
                         settingsOpen = true
@@ -1068,7 +1068,7 @@ private fun ProductionEmmaApp() {
             previewing = !recording && status == ProductionEmmaStatus.SPEAKING,
             modelReady = modelReady,
             modelPresent = modelPresent,
-            kokoroInstalled = kokoroInstalled,
+            supertonicInstalled = supertonicInstalled,
             voiceBackend = voiceBackend,
             lastSpeechMillis = lastSpeechMillis,
             engineMode = engineMode,
@@ -1080,7 +1080,7 @@ private fun ProductionEmmaApp() {
                         selected == ConversationEngineMode.FULL &&
                         (
                 !GemmaModelStore.hasUsableModel(context) ||
-                    (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+                    (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
             )
                     ) {
                         fullSetupError = null
@@ -1109,12 +1109,12 @@ private fun ProductionEmmaApp() {
             onSelectGemma = { modelPicker.launch(arrayOf("*/*")) },
             onDownloadLiteAsr = ::startLiteAutomaticSetup,
             onLoadGemma = ::loadModel,
-            onDownloadKokoro = ::startKokoroAutomaticSetup,
+            onDownloadSupertonic = ::startSupertonicAutomaticSetup,
             onUseAndroidVoice = {
                 voiceBackend = VoiceBackend.ANDROID
                 preferences.edit().putString("voice_backend", VoiceBackend.ANDROID.savedValue).apply()
                 status = ProductionEmmaStatus.IDLE
-                statusMessage = "Android標準音声を使用します。Kokoroは後から追加できます。"
+                statusMessage = "Android標準音声を使用します。Supertonic 3は後から追加できます。"
             },
             onExportDiagnostics = { diagnosticsExporter.launch("emma-v1.2-diagnostics.txt") },
             onExportCrashDetails = { crashDetailsExporter.launch("emma-v1.2-crash-details.zip") },
@@ -1129,7 +1129,7 @@ private fun ProductionEmmaApp() {
             showBusyIndicator = status == ProductionEmmaStatus.MODEL_IMPORTING || status == ProductionEmmaStatus.MODEL_LOADING || status == ProductionEmmaStatus.THINKING,
             recording = recording,
             modelReady = modelReady,
-            kokoroOnly = kokoroOnly,
+            supertonicOnly = supertonicOnly,
             busy = busy,
             autoRespond = autoRespond,
             latestTranscript = latestTranscript,
@@ -1161,7 +1161,7 @@ private fun ProductionEmmaApp() {
 
                     val fullNeedsSetup =
                         !GemmaModelStore.hasUsableModel(context) ||
-                            (voiceBackend == VoiceBackend.KOKORO && !KokoroModelStore.isInstalled(context))
+                            (voiceBackend == VoiceBackend.SUPERTONIC && !SupertonicModelStore.isInstalled(context))
 
                     if (fullNeedsSetup) {
                         fullSetupError = null

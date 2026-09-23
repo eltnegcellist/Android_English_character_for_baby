@@ -1,4 +1,4 @@
-package com.eltnegcellist.emma.asr
+package com.eltnegcellist.emma.tts
 
 import android.content.Context
 import com.eltnegcellist.emma.model.InAppModelDownloader
@@ -8,53 +8,48 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.security.DigestInputStream
 import java.security.MessageDigest
 
-object LiteAsrModelStore {
-    const val MODEL_NAME = "sherpa-onnx-whisper-tiny"
+object SupertonicModelStore {
+    const val MODEL_NAME = "sherpa-onnx-supertonic-3-tts-int8-2026-05-11"
     const val MODEL_URL =
-        "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/" +
-            "$MODEL_NAME.tar.bz2"
+        "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/$MODEL_NAME.tar.bz2"
+    const val ARCHIVE_SHA256 =
+        "82fa96f91c4ef8abaae3a14a3f4153facf88bed821d1f7331cec2700f432c427"
 
-    private const val ENCODER_SHA256 =
-        "d24fb083ae3b1041fc24e97971d60e280c9342201fbb67b0ab428a8b4a51a434"
-    private const val DECODER_SHA256 =
-        "d2fece8dd42771f1df975c6c0445770d0c292bf7547c2cae04a6c0cc57540925"
-
-    private val requiredFiles = mapOf(
-        "tiny-encoder.int8.onnx" to 12_000_000L,
-        "tiny-decoder.int8.onnx" to 85_000_000L,
-        "tiny-tokens.txt" to 700_000L,
+    private val requiredFiles = setOf(
+        "duration_predictor.int8.onnx",
+        "text_encoder.int8.onnx",
+        "vector_estimator.int8.onnx",
+        "vocoder.int8.onnx",
+        "tts.json",
+        "unicode_indexer.bin",
+        "voice.bin",
     )
 
-    fun directory(context: Context): File = File(context.filesDir, "asr/$MODEL_NAME")
+    fun directory(context: Context): File = File(context.filesDir, "tts/$MODEL_NAME")
 
     fun isInstalled(context: Context): Boolean = isInstalledAt(directory(context))
 
-    /**
-     * Downloads the official sherpa-onnx Whisper archive inside Emma, then
-     * extracts, verifies and installs it without requiring the file picker.
-     *
-     * Progress 0..70 = download, 70..100 = extract / verify / install.
-     */
     fun downloadAndInstall(
         context: Context,
         progress: (Int?) -> Unit,
     ): Result<Unit> = runCatching {
         val archive = File(context.cacheDir, "$MODEL_NAME.auto-download.tar.bz2")
-        archive.parentFile?.mkdirs()
         try {
             InAppModelDownloader.download(
                 url = MODEL_URL,
                 destination = archive,
-                minimumBytes = 100_000_000L,
-                freeSpaceMarginBytes = 384L * 1024L * 1024L,
+                minimumBytes = 120_000_000L,
+                freeSpaceMarginBytes = 512L * 1024L * 1024L,
             ) { state ->
                 progress(state.percent?.let { (it * 70) / 100 })
             }.getOrThrow()
 
+            verifyArchive(archive)
             installArchiveFile(context, archive) { installPercent ->
-                progress(installPercent?.let { 70 + (it * 30) / 100 })
+                progress(70 + (installPercent * 30) / 100)
             }.getOrThrow()
             progress(100)
         } finally {
@@ -65,16 +60,12 @@ object LiteAsrModelStore {
     private fun installArchiveFile(
         context: Context,
         archive: File,
-        progress: (Int?) -> Unit,
+        progress: (Int) -> Unit,
     ): Result<Unit> = runCatching {
-        require(archive.isFile && archive.length() > 0L) {
-            "Whisper tinyの書庫を確認できません。"
-        }
-
         val target = directory(context)
-        val staging = File(context.filesDir, "asr/$MODEL_NAME.part")
+        val staging = File(context.filesDir, "tts/$MODEL_NAME.part")
         staging.deleteRecursively()
-        require(staging.mkdirs()) { "ASRの一時フォルダを作成できませんでした。" }
+        require(staging.mkdirs()) { "音声モデルの一時フォルダを作成できませんでした。" }
 
         try {
             val found = mutableSetOf<String>()
@@ -85,7 +76,7 @@ object LiteAsrModelStore {
                     var entry = tar.nextEntry
                     while (entry != null) {
                         require(!entry.isSymbolicLink && !entry.isLink) {
-                            "リンクを含むASR書庫は利用できません。"
+                            "リンクを含む音声モデル書庫は利用できません。"
                         }
                         if (!entry.isDirectory) {
                             val relative = relativeModelPath(entry.name)
@@ -93,11 +84,11 @@ object LiteAsrModelStore {
                                 val output = File(staging, relative)
                                 require(
                                     output.canonicalPath.startsWith(staging.canonicalPath + File.separator),
-                                ) { "危険なASR書庫パスです。" }
+                                ) { "危険な音声モデル書庫パスです。" }
                                 output.parentFile?.mkdirs()
                                 FileOutputStream(output).use { tar.copyTo(it, 1024 * 1024) }
                                 found += relative
-                                progress(found.size * 75 / requiredFiles.size)
+                                progress(found.size * 100 / requiredFiles.size)
                             }
                         }
                         entry = tar.nextEntry
@@ -105,36 +96,23 @@ object LiteAsrModelStore {
                 }
             }
 
-            require(requiredFiles.keys.all { it in found } && isInstalledAt(staging)) {
-                "Whisper tinyに必要なファイルが不足しています。"
+            require(found.containsAll(requiredFiles) && isInstalledAt(staging)) {
+                "Supertonic 3に必要なファイルが不足しています。"
             }
 
-            progress(80)
-            verifySha256(
-                File(staging, "tiny-encoder.int8.onnx"),
-                ENCODER_SHA256,
-                "Whisper tiny encoder",
-            )
-            progress(90)
-            verifySha256(
-                File(staging, "tiny-decoder.int8.onnx"),
-                DECODER_SHA256,
-                "Whisper tiny decoder",
-            )
-            progress(95)
-
-            val backup = File(context.filesDir, "asr/$MODEL_NAME.old")
+            val backup = File(context.filesDir, "tts/$MODEL_NAME.old")
             backup.deleteRecursively()
             target.parentFile?.mkdirs()
             if (target.exists() && !target.renameTo(backup)) {
-                error("旧ASRモデルを退避できませんでした。")
+                error("旧音声モデルを退避できませんでした。")
             }
             if (!staging.renameTo(target)) {
                 backup.renameTo(target)
-                error("ASRモデルを配置できませんでした。")
+                error("音声モデルを配置できませんでした。")
             }
             backup.deleteRecursively()
-            progress(100)
+
+            File(context.filesDir, "kokoro-multi-lang-v1_0").deleteRecursively()
         } finally {
             staging.deleteRecursively()
         }
@@ -151,24 +129,20 @@ object LiteAsrModelStore {
         }
     }
 
-    private fun isInstalledAt(directory: File): Boolean =
-        requiredFiles.all { (name, minimumBytes) ->
-            File(directory, name).let { it.isFile && it.length() >= minimumBytes }
-        }
+    private fun isInstalledAt(dir: File): Boolean =
+        requiredFiles.all { name -> File(dir, name).let { it.isFile && it.length() > 0L } }
 
-    private fun verifySha256(file: File, expected: String, label: String) {
+    private fun verifyArchive(file: File) {
         val digest = MessageDigest.getInstance("SHA-256")
-        FileInputStream(file).use { input ->
-            val buffer = ByteArray(1024 * 1024)
-            while (true) {
-                val read = input.read(buffer)
-                if (read < 0) break
-                if (read > 0) digest.update(buffer, 0, read)
+        FileInputStream(file).use { source ->
+            DigestInputStream(BufferedInputStream(source), digest).use { input ->
+                val buffer = ByteArray(1024 * 1024)
+                while (input.read(buffer) >= 0) Unit
             }
         }
         val actual = digest.digest().joinToString("") { "%02x".format(it) }
-        require(actual == expected) {
-            "$label のSHA-256が一致しません。自動ダウンロードをやり直してください。"
+        require(actual == ARCHIVE_SHA256) {
+            "Supertonic 3公式アーカイブのSHA-256が一致しません。"
         }
     }
 }

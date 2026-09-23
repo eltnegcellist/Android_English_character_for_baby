@@ -56,7 +56,7 @@ internal fun EmmaHomeScreen(
     showBusyIndicator: Boolean,
     recording: Boolean,
     modelReady: Boolean,
-    kokoroOnly: Boolean,
+    supertonicOnly: Boolean,
     busy: Boolean,
     autoRespond: Boolean,
     latestTranscript: String,
@@ -88,7 +88,7 @@ internal fun EmmaHomeScreen(
                     if (!recording) {
                         Button(
                             onClick = onStartSession,
-                            enabled = !kokoroOnly && modelReady && !busy,
+                            enabled = !supertonicOnly && modelReady && !busy,
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("Emmaと話す") }
                     } else {
@@ -319,7 +319,7 @@ internal fun EmmaSettingsScreen(
     previewing: Boolean,
     modelReady: Boolean,
     modelPresent: Boolean,
-    kokoroInstalled: Boolean,
+    supertonicInstalled: Boolean,
     voiceBackend: VoiceBackend,
     lastSpeechMillis: Long?,
     engineMode: ConversationEngineMode,
@@ -334,7 +334,7 @@ internal fun EmmaSettingsScreen(
     onSelectGemma: () -> Unit,
     onDownloadLiteAsr: () -> Unit,
     onLoadGemma: () -> Unit,
-    onDownloadKokoro: () -> Unit,
+    onDownloadSupertonic: () -> Unit,
     onUseAndroidVoice: () -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
@@ -399,7 +399,7 @@ internal fun EmmaSettingsScreen(
                         if (engineMode == ConversationEngineMode.LITE) "Emma" else "Emma Full",
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    if (modelReady && (kokoroInstalled || voiceBackend == VoiceBackend.ANDROID)) {
+                    if (modelReady && (supertonicInstalled || voiceBackend == VoiceBackend.ANDROID)) {
                         Text("準備完了", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                         Text(
                             if (engineMode == ConversationEngineMode.LITE) {
@@ -410,7 +410,7 @@ internal fun EmmaSettingsScreen(
                                 }
                             } else {
                                 if (voiceBackend == VoiceBackend.KOKORO) {
-                                    "会話・聞き取り・EmmaのKokoro音声はこの端末の中で処理されます。"
+                                    "会話・聞き取り・EmmaのSupertonic 3 F3音声はこの端末の中で処理されます。"
                                 } else {
                                     "会話処理は端末内で行い、音声はAndroid標準TTSを使います。"
                                 }
@@ -467,25 +467,25 @@ internal fun EmmaSettingsScreen(
                             }
                         }
 
-                        if (!kokoroInstalled) {
-                            Text("Emmaの声（Kokoro）", style = MaterialTheme.typography.titleSmall)
+                        if (!supertonicInstalled) {
+                            Text("Emmaの声（Supertonic 3）", style = MaterialTheme.typography.titleSmall)
                             Text(
-                                "Emmaは声の温かみを重視するためKokoroをおすすめします。約350MBを自動で取得・設定できます。使わない場合はAndroid標準音声でも利用できます。",
+                                "Emmaは声の温かみを重視するためSupertonic 3 F3をおすすめします。約129MBを自動で取得・設定できます。使わない場合はAndroid標準音声でも利用できます。",
                                 style = MaterialTheme.typography.bodySmall,
                             )
                             Button(
-                                onClick = onDownloadKokoro,
+                                onClick = onDownloadSupertonic,
                                 enabled = enabled,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Kokoroを自動で準備") }
+                            ) { Text("Supertonic 3を自動で準備") }
                             OutlinedButton(
                                 onClick = onUseAndroidVoice,
                                 enabled = enabled,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Kokoroを使わずAndroid標準音声を使う") }
+                            ) { Text("Supertonic 3を使わずAndroid標準音声を使う") }
                             if (voiceBackend == VoiceBackend.ANDROID) {
                                 Text(
-                                    "現在はAndroid標準音声を使用しています。Kokoroは後からいつでも追加できます。",
+                                    "現在はAndroid標準音声を使用しています。Supertonic 3は後からいつでも追加できます。",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -522,7 +522,7 @@ internal fun LiteModelInstallDialog(
             dismissOnClickOutside = false,
         ),
         title = {
-            Text("Whisperを準備しています")
+            Text("ReazonSpeechを準備しています")
         },
         text = {
             Column(

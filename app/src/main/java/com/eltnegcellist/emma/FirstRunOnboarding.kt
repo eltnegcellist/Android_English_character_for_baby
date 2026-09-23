@@ -98,15 +98,15 @@ internal fun FirstRunOnboardingScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text("初回だけ準備します", style = MaterialTheme.typography.titleMedium)
-                    Text("日本語聞き取りデータ：約116MB", style = MaterialTheme.typography.bodyMedium)
-                    Text("Emmaの音声データ：約350MB", style = MaterialTheme.typography.bodyMedium)
+                    Text("日本語聞き取りデータ：約169MB", style = MaterialTheme.typography.bodyMedium)
+                    Text("Emmaの音声データ：約129MB", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        "合計約466MBです。Wi-Fiでの準備をおすすめします。日本語の聞き取りデータはEmmaに必要です。",
+                        "合計約298MBです。Wi-Fiでの準備をおすすめします。日本語の聞き取りデータはEmmaに必要です。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        "Emmaらしい温かい声をおすすめします。使わない場合はAndroid標準の英語音声でも始められます。",
+                        "Supertonic 3 F3の自然な声をおすすめします。使わない場合はAndroid標準の英語音声でも始められます。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -139,7 +139,7 @@ internal fun FirstRunOnboardingScreen(
                             Text("準備できました", style = MaterialTheme.typography.titleMedium)
                             Text(
                                 if (usingAndroidVoice) {
-                                    "日本語の聞き取り準備が完了しました。音声はAndroid標準を使います。Emmaの推奨音声は後から設定できます。"
+                                    "日本語の聞き取り準備が完了しました。音声はAndroid標準を使います。Supertonic 3は後から設定できます。"
                                 } else {
                                     "準備が完了しました。Emmaを始められます。"
                                 },
@@ -169,7 +169,7 @@ internal fun FirstRunOnboardingScreen(
                         Text("標準音声で始める")
                     }
                     Text(
-                        "標準音声を選んでも、日本語の聞き取りに必要なデータは自動で準備します。Emmaの推奨音声だけを省略します。",
+                        "標準音声を選んでも、日本語の聞き取りに必要なデータは自動で準備します。Supertonic 3だけを省略します。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

@@ -6,11 +6,11 @@ import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.k2fsa.sherpa.onnx.OfflineModelConfig
 import com.k2fsa.sherpa.onnx.OfflineRecognizer
 import com.k2fsa.sherpa.onnx.OfflineRecognizerConfig
-import com.k2fsa.sherpa.onnx.OfflineWhisperModelConfig
+import com.k2fsa.sherpa.onnx.OfflineTransducerModelConfig
 import java.io.File
 import kotlin.math.min
 
-class WhisperJapaneseAsr(
+class ReazonSpeechJapaneseAsr(
     context: Context,
 ) {
     private val appContext = context.applicationContext
@@ -22,29 +22,28 @@ class WhisperJapaneseAsr(
     fun isReady(): Boolean = recognizer != null
 
     fun initialize(): Result<Unit> = runCatching {
-        val directory = LiteAsrModelStore.directory(appContext)
-        require(LiteAsrModelStore.isInstalled(appContext)) {
-            "Emma LiteのWhisper tinyモデルがまだ導入されていません。"
+        val directory = ReazonSpeechModelStore.directory(appContext)
+        require(ReazonSpeechModelStore.isInstalled(appContext)) {
+            "EmmaのReazonSpeech日本語モデルがまだ導入されていません。"
         }
 
-        val encoder = File(directory, "tiny-encoder.int8.onnx")
-        val decoder = File(directory, "tiny-decoder.int8.onnx")
-        val tokens = File(directory, "tiny-tokens.txt")
+        val encoder = File(directory, "encoder-epoch-99-avg-1.int8.onnx")
+        val decoder = File(directory, "decoder-epoch-99-avg-1.onnx")
+        val joiner = File(directory, "joiner-epoch-99-avg-1.int8.onnx")
+        val tokens = File(directory, "tokens.txt")
         val threads = min(4, Runtime.getRuntime().availableProcessors().coerceAtLeast(1))
 
         val config = OfflineRecognizerConfig(
             modelConfig = OfflineModelConfig(
-                whisper = OfflineWhisperModelConfig(
+                transducer = OfflineTransducerModelConfig(
                     encoder = encoder.absolutePath,
                     decoder = decoder.absolutePath,
-                    language = "ja",
-                    task = "transcribe",
-                    tailPaddings = 1000,
+                    joiner = joiner.absolutePath,
                 ),
                 tokens = tokens.absolutePath,
                 numThreads = threads,
                 provider = "cpu",
-                modelType = "whisper",
+                modelType = "transducer",
             ),
             decodingMethod = "greedy_search",
         )
@@ -56,7 +55,7 @@ class WhisperJapaneseAsr(
         DiagnosticStore.mark(
             appContext,
             "lite_asr_initialized",
-            "model=${LiteAsrModelStore.MODEL_NAME} language=ja threads=$threads",
+            "model=${ReazonSpeechModelStore.MODEL_NAME} language=ja threads=$threads",
         )
     }
 
@@ -64,7 +63,7 @@ class WhisperJapaneseAsr(
         val pcm = WavMono16.decode(wavAudio)
         val started = System.nanoTime()
         val text = synchronized(lock) {
-            val active = recognizer ?: error("Emma Lite ASR is not initialized.")
+            val active = recognizer ?: error("Emma ASR is not initialized.")
             val stream = active.createStream()
             try {
                 stream.acceptWaveform(pcm.samples, pcm.sampleRate)
@@ -78,7 +77,7 @@ class WhisperJapaneseAsr(
         DiagnosticStore.mark(
             appContext,
             "lite_asr_transcription",
-            "samples=${pcm.samples.size} sampleRate=${pcm.sampleRate} durationMs=$elapsedMs chars=${text.length}",
+            "engine=reazonspeech samples=${pcm.samples.size} sampleRate=${pcm.sampleRate} durationMs=$elapsedMs chars=${text.length}",
         )
         require(text.isNotBlank()) {
             "日本語を聞き取れませんでした。近くで短く話して、もう一度お試しください。"

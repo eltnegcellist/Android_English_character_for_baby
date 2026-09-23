@@ -27,7 +27,7 @@ internal fun FullModeSetupScreen(
     progressPercent: Int?,
     errorMessage: String?,
     gemmaNeeded: Boolean,
-    kokoroNeeded: Boolean,
+    supertonicNeeded: Boolean,
     onPrepare: () -> Unit,
     onCancel: () -> Unit,
     onManualSetup: () -> Unit,
@@ -71,15 +71,15 @@ internal fun FullModeSetupScreen(
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
-                    if (kokoroNeeded) {
+                    if (supertonicNeeded) {
                         Text(
-                            "Kokoro音声も未導入のため、約350MBの音声データもあわせて取得します。",
+                            "Supertonic 3音声も未導入のため、約129MBの音声データもあわせて取得します。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
                         Text(
-                            "音声は現在の設定を使います。Kokoroの追加ダウンロードが不要な場合は、Gemmaだけを取得します。",
+                            "音声は現在の設定を使います。Supertonic 3の追加ダウンロードが不要な場合は、Gemmaだけを取得します。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

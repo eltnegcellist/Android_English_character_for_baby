@@ -6,33 +6,37 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta7** (`versionCode 59`).
+The current public baseline is **v1.4.0-beta8** (`versionCode 60`).
 
-The evaluated stable reference remains v1.2.22, while the v1.4 beta line adds the lightweight standard Emma flow, optional Emma Full, first-run model setup, shorter baby-directed replies, and the newer family-facing UI.
+This beta replaces the standard-mode speech stack:
+
+- Japanese ASR: Whisper tiny → **ReazonSpeech K2 v2 (INT8 Zipformer)**
+- Emma voice: Kokoro → **Supertonic 3 F3**
+- Android TTS remains available as a fallback.
 
 ## Two modes
 
 ### Standard Emma
 
-Standard Emma is designed to start quickly and does not require Gemma at runtime.
+Standard Emma does not require Gemma at runtime.
 
 ```text
 Microphone
   ↓
 Voice activity / endpoint detection
   ↓
-Whisper tiny (Japanese ASR)
+ReazonSpeech K2 v2 INT8 (Japanese ASR)
   ↓
 LiteResponseEngine
   ↓
 Short pre-generated English response
   ↓
-Kokoro or Android TTS
+Supertonic 3 F3 (or Android TTS fallback)
   ↓
 Emma avatar
 ```
 
-The current Lite response bank is intentionally compact: typically three very short baby-directed sentences, with repetition and rhythm prioritized over long explanations.
+The Lite response bank is intentionally compact: typically three very short baby-directed sentences, with repetition and rhythm prioritized over long explanations.
 
 ### Emma Full
 
@@ -49,36 +53,41 @@ Gemma 4 E2B
   ↓
 English response
   ↓
-Kokoro or Android TTS
+Supertonic 3 F3 (or Android TTS fallback)
   ↓
 Emma avatar
 ```
 
-Emma Full requires an additional local model download of more than 2 GB. Selecting the parent conversation mode explains this before setup begins.
+Emma Full requires an additional local model download of more than 2 GB.
 
 ## First-run experience
 
 On first launch Emma:
 
 - explains that it is not a literal translation app,
-- explains why the parent can keep speaking Japanese,
 - lets the family configure optional baby settings,
-- prepares the Japanese ASR model,
-- recommends the Kokoro `af_heart` voice,
+- downloads the ReazonSpeech Japanese ASR files (about 169 MB),
+- recommends Supertonic 3 F3 (about 129 MB),
 - allows Android TTS as a fallback,
-- keeps the main conversation processing on-device after model setup.
+- keeps recognition, response selection/generation, and speech synthesis on-device after model setup.
+
+The standard recommended setup is about 298 MB of downloaded speech models.
+
+## ASR
+
+Standard Emma uses ReazonSpeech K2 v2, a Japanese RNN-T/Zipformer model. Emma downloads only the files needed for INT8 inference (INT8 encoder and joiner, decoder, and tokens) from a pinned model revision instead of downloading the larger package containing unused full-precision variants.
 
 ## Voice
 
-Kokoro is the recommended voice backend. The current baby-directed default uses a warm female voice with slightly slower pacing and deliberate pauses between short sentences.
+Supertonic 3 F3 is the recommended voice backend. Emma runs it locally through sherpa-onnx using the official INT8 conversion package. The Android implementation uses 8 generation steps and keeps PCM amplitude-driven lip sync.
 
-Android TTS remains available as a fallback when the user prefers not to install the Kokoro model.
+Android TTS remains available as a fallback.
 
 ## Privacy
 
 Emma is designed around local processing. Recorded speech and generated conversation are not intended to be sent to a cloud AI API. Network access is used to download required model files.
 
-This public repository does **not** contain signing keys, keystores, passwords, API tokens, private runner configuration, or family-specific private data.
+This public repository does **not** intentionally contain signing keys, keystores, passwords, API tokens, private runner configuration, or family-specific private data.
 
 ## Requirements
 
@@ -90,7 +99,7 @@ This public repository does **not** contain signing keys, keystores, passwords, 
 
 ## Building
 
-The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, and compileSdk 37.
+The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, and sherpa-onnx 1.13.7.
 
 The sherpa-onnx Android runtime is intentionally not committed to this repository. Download the pinned AAR before building:
 
@@ -107,17 +116,11 @@ Then run:
 gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-The debug APK is created at:
-
-```text
-app/build/outputs/apk/debug/app-debug.apk
-```
-
 ## Models and major dependencies
 
-- OpenAI Whisper tiny multilingual — MIT
+- ReazonSpeech K2 v2 — Apache-2.0
 - sherpa-onnx — Apache-2.0
-- Kokoro-82M — Apache-2.0
+- Supertonic 3 model — OpenRAIL-M
 - LiteRT-LM — used for optional local Gemma mode
 
 Model files are downloaded separately and are not committed to this repository.

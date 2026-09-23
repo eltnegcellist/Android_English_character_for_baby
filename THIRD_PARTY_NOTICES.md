@@ -2,28 +2,30 @@
 
 Emma downloads or uses third-party software and model files. Each component remains subject to its own license.
 
-## OpenAI Whisper tiny multilingual
+## ReazonSpeech K2 v2
 
-- Upstream: https://github.com/openai/whisper
-- License: MIT
+- Upstream: https://huggingface.co/reazon-research/reazonspeech-k2-v2
+- License: Apache-2.0
 - Used for Japanese speech recognition in standard Emma.
 
-The Android app uses a sherpa-onnx-compatible Whisper tiny package and verifies the encoder and decoder SHA-256 hashes before installation.
+Emma pins a specific model revision and downloads only the INT8 encoder, decoder, INT8 joiner, and token file required by the Android runtime.
 
 ## sherpa-onnx
 
 - Upstream: https://github.com/k2-fsa/sherpa-onnx
 - License: Apache-2.0
-- Used as the Android runtime for Whisper and Kokoro.
+- Used as the Android inference runtime for ReazonSpeech and Supertonic 3.
 
-## Kokoro-82M
+Emma currently pins sherpa-onnx 1.13.7.
 
-- Upstream: https://github.com/hexgrad/kokoro
-- Model: https://huggingface.co/hexgrad/Kokoro-82M
-- License: Apache-2.0
-- Emma uses the Kokoro model through sherpa-onnx.
+## Supertonic 3
 
-The Kokoro distribution also contains additional data such as espeak-ng resources. Those components retain their own license and notice requirements.
+- Upstream model: https://huggingface.co/Supertone/supertonic-3
+- Model license: OpenRAIL-M
+- Upstream sample/runtime code: MIT
+- Used for local English speech synthesis.
+
+Emma downloads the sherpa-onnx INT8 conversion package and uses the F3 built-in voice style. Model files are not committed to this repository.
 
 ## LiteRT-LM and Gemma
 

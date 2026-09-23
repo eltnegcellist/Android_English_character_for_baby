@@ -26,10 +26,6 @@
             android:required="false" />
 
         <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-
-        <activity
             android:name=".ProductionMainActivity"
             android:exported="false" />
 
