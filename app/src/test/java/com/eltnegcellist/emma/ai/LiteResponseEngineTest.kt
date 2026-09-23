@@ -45,6 +45,58 @@ class LiteResponseEngineTest {
     }
 
     @Test
+    fun naturalParentPhrasesSelectEveryScene() {
+        val samples = listOf(
+            "お風呂入ろっか" to "bath",
+            "ミルク飲もっか" to "milk",
+            "寝よっか" to "sleep",
+            "そろそろ起きよっか" to "wake",
+            "おむつ替えよっか" to "diaper",
+            "着替えよっか" to "clothes",
+            "抱っこする？" to "hug",
+            "おてて握ってるね" to "hands",
+            "あんよバタバタだね" to "feet",
+            "にこって笑ったね" to "smile",
+            "泣いてるね" to "cry",
+            "いっぱいおしゃべりしてるね" to "voice",
+            "げっぷ出たね" to "tummy",
+            "一緒に遊ぼっか" to "play",
+            "お散歩行こっか" to "outside",
+            "雨だね" to "rain",
+            "今日は晴れてるね" to "sun",
+            "ごはん食べよっか" to "food",
+            "絵本読もっか" to "book",
+            "歌おっか" to "music",
+        )
+
+        samples.forEach { (input, expected) ->
+            val response = LiteResponseEngine().respond(input)
+            assertEquals("scene for: $input", expected, response.scene)
+            assertTrue("score for: $input", response.score >= 3)
+        }
+    }
+
+    @Test
+    fun ambiguousJapaneseDoesNotTriggerWrongScene() {
+        val forbidden = listOf(
+            Triple("寝返りしたね", "sleep", "sleep"),
+            Triple("手伝ってね", "hands", "hands"),
+            Triple("足りないね", "feet", "feet"),
+            Triple("風呂敷だね", "bath", "bath"),
+            Triple("声優さんだね", "voice", "voice"),
+            Triple("歌舞伎だね", "music", "music"),
+        )
+
+        forbidden.forEach { (input, forbiddenScene, _) ->
+            val response = LiteResponseEngine().respond(input)
+            assertFalse("$input should not be $forbiddenScene", response.scene == forbiddenScene)
+        }
+
+        val hunger = LiteResponseEngine().respond("お腹すいたね")
+        assertEquals("food", hunger.scene)
+    }
+
+    @Test
     fun milkSpeechSelectsMilkScene() {
         val response = LiteResponseEngine().respond("ミルクいっぱい飲んだね")
         assertEquals("milk", response.scene)
