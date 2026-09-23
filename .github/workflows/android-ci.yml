@@ -35,6 +35,12 @@ jobs:
         with:
           packages: 'platform-tools'
 
+      - name: Install Android 17 platform
+        shell: bash
+        run: |
+          set -euo pipefail
+          android sdk install platforms/android-37
+
       - name: Download pinned sherpa-onnx Android runtime
         shell: bash
         run: |
