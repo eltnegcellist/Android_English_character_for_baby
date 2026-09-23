@@ -6,7 +6,7 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta10** (`versionCode 62`).
+The current public baseline is **v1.4.0-beta11** (`versionCode 63`).
 
 Android Emma now contains three editions. They share the same family settings, avatar, endpoint detection, baby-name handling, and local-first design. Lite and Standard also share the same `LiteResponseEngine`; their main difference is the speech stack.
 
@@ -51,7 +51,7 @@ Emma avatar
 ```
 
 - Japanese ASR: ReazonSpeech K2 v2 INT8
-- TTS: Supertonic 3 F3
+- TTS: Supertonic 3 F3 (44.1 kHz output)
 - Approximate model download: about 298 MB
 - Processing after setup: on-device
 - Response logic: same LiteResponseEngine as Lite
