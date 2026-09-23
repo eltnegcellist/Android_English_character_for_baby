@@ -138,7 +138,7 @@ class KittenSpeaker(
         val player = AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                     .build(),
             )
@@ -156,7 +156,7 @@ class KittenSpeaker(
                         AudioFormat.CHANNEL_OUT_MONO,
                         AudioFormat.ENCODING_PCM_16BIT,
                     ),
-                    sampleRate,
+                    sampleRate * 2,
                 ),
             )
             .setTransferMode(AudioTrack.MODE_STREAM)
