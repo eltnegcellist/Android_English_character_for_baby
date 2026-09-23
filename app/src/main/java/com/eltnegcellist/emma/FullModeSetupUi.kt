@@ -27,7 +27,6 @@ internal fun FullModeSetupScreen(
     progressPercent: Int?,
     errorMessage: String?,
     gemmaNeeded: Boolean,
-    supertonicNeeded: Boolean,
     onPrepare: () -> Unit,
     onCancel: () -> Unit,
     onManualSetup: () -> Unit,
@@ -48,7 +47,7 @@ internal fun FullModeSetupScreen(
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "FullではGemma 4 E2Bが会話の内容を理解し、その場で英語を生成します。",
+                "FullではMoonshineが日本語を文字起こしし、Gemma 4 E2Bが文字起こしと元音声の両方を使って、その場で英語を生成します。",
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -71,19 +70,11 @@ internal fun FullModeSetupScreen(
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
-                    if (supertonicNeeded) {
-                        Text(
-                            "Supertonic 3音声も未導入のため、約129MBの音声データもあわせて取得します。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        Text(
-                            "Supertonic 3 F3は導入済みです。Fullの音声はSupertonic 3 F3を使います。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    Text(
+                        "聞き取りと声はLiteと共通です。Moonshine日本語Tinyで文字起こしし、Kitten TTS Nano / Kikiで話します。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Text(
                         "ダウンロード後の会話処理は端末内で行います。",
                         style = MaterialTheme.typography.bodySmall,
