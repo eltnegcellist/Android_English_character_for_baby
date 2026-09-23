@@ -17,6 +17,7 @@ class ProductionLauncherActivity : ComponentActivity() {
             .edit()
             .putBoolean("kokoro_only", false)
             .putBoolean("supertonic_only", false)
+            .remove("voice_backend")
             .apply()
 
         startActivity(Intent(this, ProductionMainActivity::class.java))

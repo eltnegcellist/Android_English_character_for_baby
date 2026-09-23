@@ -6,7 +6,7 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta11** (`versionCode 63`).
+The current public baseline is **v1.4.0-beta12** (`versionCode 64`).
 
 Android Emma now contains three editions. They share the same family settings, avatar, endpoint detection, baby-name handling, and local-first design. Lite and Standard also share the same `LiteResponseEngine`; their main difference is the speech stack.
 
@@ -35,6 +35,8 @@ Emma avatar
 The Web edition uses the same model families through browser/WASM runtimes; Android Lite uses native Android runtimes.
 
 ## Emma Standard
+
+In beta12, the voice path is fixed by edition: Lite uses Kitten TTS Nano, while Standard and Full use Supertonic 3 F3. Android system TTS is not used as a fallback.
 
 The Android-oriented default edition.
 
@@ -75,6 +77,8 @@ Emma avatar
 Full requires more than 2 GB of additional local model data.
 
 ## First-run experience
+
+Beta12 introduces a new onboarding revision so existing installations are shown the Lite / Standard / Full choice once after updating. After that choice is completed, the selected edition is retained.
 
 On first launch, the family chooses one of:
 

@@ -79,7 +79,7 @@ internal fun FullModeSetupScreen(
                         )
                     } else {
                         Text(
-                            "音声は現在の設定を使います。Supertonic 3の追加ダウンロードが不要な場合は、Gemmaだけを取得します。",
+                            "Supertonic 3 F3は導入済みです。Fullの音声はSupertonic 3 F3を使います。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
