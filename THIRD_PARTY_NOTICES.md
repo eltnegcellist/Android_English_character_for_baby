@@ -26,7 +26,7 @@ Emma uses the sherpa-onnx conversion package `kitten-nano-en-v0_8-int8` and the 
 - License: Apache-2.0
 - Used as the Android inference runtime for Kitten TTS.
 
-Emma currently pins sherpa-onnx 1.13.7.
+Emma currently pins sherpa-onnx 1.13.8.
 
 ## LiteRT-LM and Gemma
 
