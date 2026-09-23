@@ -71,11 +71,20 @@ class SupertonicSpeaker(
                 val generated = active.tts.generateWithConfig(text.trim(), config)
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
 
+                val engineSampleRate = active.tts.sampleRate()
                 require(
-                    generated.sampleRate == EXPECTED_SAMPLE_RATE &&
+                    generated.sampleRate > 0 &&
+                        generated.sampleRate == engineSampleRate &&
                         generated.samples.isNotEmpty() &&
                         generated.samples.all { it.isFinite() },
-                ) { "Supertonic 3 returned invalid audio." }
+                ) {
+                    "Supertonic 3 returned invalid audio: generatedRate=${generated.sampleRate}, engineRate=$engineSampleRate"
+                }
+
+                val peak = generated.samples.maxOf { kotlin.math.abs(it) }
+                require(peak > MIN_AUDIBLE_PEAK) {
+                    "Supertonic 3 generated near-silent audio (peak=$peak)."
+                }
 
                 val pcm = toPcm16(generated.samples)
                 val firstAudioMs = play(id, pcm, generated.sampleRate, started)
@@ -85,7 +94,8 @@ class SupertonicSpeaker(
                     context,
                     "supertonic_generation",
                     "voice=F3 sid=$F3_SPEAKER_ID steps=$NUM_STEPS speed=$effectiveSpeed " +
-                        "chars=${text.length} samples=${pcm.size} generationMs=$generationMs " +
+                        "chars=${text.length} sampleRate=${generated.sampleRate} peak=$peak " +
+                        "samples=${pcm.size} generationMs=$generationMs " +
                         "firstAudioMs=$firstAudioMs totalMs=$totalMs",
                 )
                 firstAudioMs to totalMs
@@ -151,7 +161,7 @@ class SupertonicSpeaker(
         val player = AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                     .build(),
             )
@@ -169,7 +179,7 @@ class SupertonicSpeaker(
                         AudioFormat.CHANNEL_OUT_MONO,
                         AudioFormat.ENCODING_PCM_16BIT,
                     ),
-                    sampleRate,
+                    sampleRate * 2,
                 ),
             )
             .setTransferMode(AudioTrack.MODE_STREAM)
@@ -251,8 +261,8 @@ class SupertonicSpeaker(
         const val F3_SPEAKER_ID = 2
         const val NUM_STEPS = 8
         const val THREADS = 2
-        const val EXPECTED_SAMPLE_RATE = 24_000
         const val BABY_SPEED_FACTOR = 0.94f
+        const val MIN_AUDIBLE_PEAK = 1e-5f
         const val PLAYBACK_CHUNK_SAMPLES = 2048
         const val PLAYBACK_TIMEOUT_MS = 60_000L
 
