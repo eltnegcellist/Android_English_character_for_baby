@@ -35,13 +35,6 @@ jobs:
         with:
           packages: 'platform-tools'
 
-      - name: Install Android API 37 and Build Tools
-        shell: bash
-        run: |
-          set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-37" "build-tools;36.0.0"
-
       - name: Download pinned sherpa-onnx Android runtime
         shell: bash
         run: |
