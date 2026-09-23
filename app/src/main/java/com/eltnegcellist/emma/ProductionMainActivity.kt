@@ -1116,8 +1116,8 @@ private fun ProductionEmmaApp() {
                 status = ProductionEmmaStatus.IDLE
                 statusMessage = "Android標準音声を使用します。Supertonic 3は後から追加できます。"
             },
-            onExportDiagnostics = { diagnosticsExporter.launch("emma-v1.2-diagnostics.txt") },
-            onExportCrashDetails = { crashDetailsExporter.launch("emma-v1.2-crash-details.zip") },
+            onExportDiagnostics = { diagnosticsExporter.launch("emma-beta8-diagnostics.txt") },
+            onExportCrashDetails = { crashDetailsExporter.launch("emma-beta8-crash-details.zip") },
         )
     } else {
         EmmaHomeScreen(
