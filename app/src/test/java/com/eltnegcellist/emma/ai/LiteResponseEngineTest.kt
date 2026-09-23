@@ -15,6 +15,22 @@ class LiteResponseEngineTest {
     }
 
     @Test
+    fun shortSleepWordsSelectSleepScene() {
+        listOf(
+            "寝る",
+            "もう寝るよ",
+            "寝たね",
+            "寝かしつけよう",
+            "睡眠の時間だよ",
+            "お昼寝しよう",
+        ).forEach { input ->
+            val response = LiteResponseEngine().respond(input)
+            assertEquals("sleep scene for: $input", "sleep", response.scene)
+            assertTrue("sleep score for: $input", response.score >= 3)
+        }
+    }
+
+    @Test
     fun milkSpeechSelectsMilkScene() {
         val response = LiteResponseEngine().respond("ミルクいっぱい飲んだね")
         assertEquals("milk", response.scene)

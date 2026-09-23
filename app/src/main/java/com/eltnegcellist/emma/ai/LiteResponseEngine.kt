@@ -61,6 +61,15 @@ internal class LiteResponseEngine {
             if (normalizedKeyword.isNotEmpty() && transcript.contains(normalizedKeyword)) {
                 total += max(2, normalizedKeyword.length)
                 if (normalizedKeyword.length >= 4) total += 2
+                if (normalizedKeyword.length >= 2 && transcript == normalizedKeyword) {
+                    total += 2
+                } else if (
+                    normalizedKeyword.length == 2 &&
+                    transcript.length <= normalizedKeyword.length + 3 &&
+                    (transcript.startsWith(normalizedKeyword) || transcript.endsWith(normalizedKeyword))
+                ) {
+                    total += 1
+                }
             }
         }
         return total
@@ -258,7 +267,11 @@ internal class LiteResponseEngine {
             ),
             Scene(
                 "sleep",
-                listOf("眠い", "眠そう", "ねんね", "寝よう", "寝る", "おやすみ", "昼寝", "眠く"),
+                listOf(
+                    "眠い", "眠そう", "ねむい", "ねむそう", "ねんね", "寝よう", "寝る", "寝るよ",
+                    "寝ます", "寝て", "寝た", "寝かせ", "寝かしつけ", "おやすみ", "昼寝", "お昼寝",
+                    "睡眠", "就寝", "眠く",
+                ),
                 listOf(
                     "So sleepy. Night-night. Rest, little one.",
                     "Sleepy time. Nice and quiet. Night-night.",
