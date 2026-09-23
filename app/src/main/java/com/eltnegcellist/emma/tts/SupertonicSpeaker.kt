@@ -71,30 +71,38 @@ class SupertonicSpeaker(
                 val generated = active.tts.generateWithConfig(text.trim(), config)
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
 
+                require(generated.samples.isNotEmpty()) {
+                    "Supertonic 3 returned no audio samples."
+                }
+
                 val engineSampleRate = active.tts.sampleRate()
-                require(
-                    generated.sampleRate > 0 &&
-                        generated.sampleRate == engineSampleRate &&
-                        generated.samples.isNotEmpty() &&
-                        generated.samples.all { it.isFinite() },
-                ) {
-                    "Supertonic 3 returned invalid audio: generatedRate=${generated.sampleRate}, engineRate=$engineSampleRate"
+                val playbackSampleRate = when {
+                    generated.sampleRate in MIN_SAMPLE_RATE..MAX_SAMPLE_RATE -> generated.sampleRate
+                    engineSampleRate in MIN_SAMPLE_RATE..MAX_SAMPLE_RATE -> engineSampleRate
+                    else -> DEFAULT_SUPERTONIC_SAMPLE_RATE
                 }
-
-                val peak = generated.samples.maxOf { kotlin.math.abs(it) }
-                require(peak > MIN_AUDIBLE_PEAK) {
-                    "Supertonic 3 generated near-silent audio (peak=$peak)."
+                var nonFiniteSamples = 0
+                val safeSamples = FloatArray(generated.samples.size) { index ->
+                    val value = generated.samples[index]
+                    if (value.isFinite()) {
+                        value
+                    } else {
+                        nonFiniteSamples++
+                        0f
+                    }
                 }
+                val peak = safeSamples.maxOf { kotlin.math.abs(it) }
 
-                val pcm = toPcm16(generated.samples)
-                val firstAudioMs = play(id, pcm, generated.sampleRate, started)
+                val pcm = toPcm16(safeSamples)
+                val firstAudioMs = play(id, pcm, playbackSampleRate, started)
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
 
                 DiagnosticStore.mark(
                     context,
                     "supertonic_generation",
                     "voice=F3 sid=$F3_SPEAKER_ID steps=$NUM_STEPS speed=$effectiveSpeed " +
-                        "chars=${text.length} sampleRate=${generated.sampleRate} peak=$peak " +
+                        "chars=${text.length} generatedRate=${generated.sampleRate} engineRate=$engineSampleRate " +
+                        "playbackRate=$playbackSampleRate peak=$peak nonFinite=$nonFiniteSamples " +
                         "samples=${pcm.size} generationMs=$generationMs " +
                         "firstAudioMs=$firstAudioMs totalMs=$totalMs",
                 )
@@ -262,7 +270,9 @@ class SupertonicSpeaker(
         const val NUM_STEPS = 8
         const val THREADS = 2
         const val BABY_SPEED_FACTOR = 0.94f
-        const val MIN_AUDIBLE_PEAK = 1e-5f
+        const val MIN_SAMPLE_RATE = 8_000
+        const val MAX_SAMPLE_RATE = 96_000
+        const val DEFAULT_SUPERTONIC_SAMPLE_RATE = 44_100
         const val PLAYBACK_CHUNK_SAMPLES = 2048
         const val PLAYBACK_TIMEOUT_MS = 60_000L
 
