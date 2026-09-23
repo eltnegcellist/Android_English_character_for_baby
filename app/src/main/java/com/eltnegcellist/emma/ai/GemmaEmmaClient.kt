@@ -217,8 +217,17 @@ class GemmaEmmaClient(context: Context) {
             }
             val babyGenderInstruction = babyGender.promptInstruction
 
-            val audienceInstruction = when (audienceMode) {
-                AudienceMode.BABY -> """
+            val audienceInstruction = when {
+                audioOnlyTurn -> """
+                    Audio-only candidate turn.
+                    Moonshine found no intelligible Japanese speech.
+                    Use the attached original audio only to decide whether it clearly contains an infant crying, cooing, babbling, squealing, or another unmistakable infant vocalization.
+                    If there is no clear infant vocalization, output exactly "$NO_RESPONSE" and nothing else.
+                    If there is a clear infant vocalization, speak warmly to the baby without guessing why the baby vocalized, what the baby feels, or what the baby needs.
+                    Keep the reply short, simple, rhythmic, and baby-directed.
+                """.trimIndent()
+
+                audienceMode == AudienceMode.BABY -> """
                     Audience mode: BABY.
                     The parent's Japanese speech is CONTEXT about the current moment. Your spoken English is directed to the BABY, not to the parent.
                     If the current context is exactly "$BABY_VOCAL_CONTEXT", the baby made a clear nonverbal vocalization. React warmly to hearing the baby's voice without guessing why the baby vocalized, what the baby feels, or what the baby needs.
@@ -248,7 +257,7 @@ class GemmaEmmaClient(context: Context) {
                     Context: $BABY_VOCAL_CONTEXT → "Hi, little one! I hear your voice! Hello, hello! I'm listening!"
                 """.trimIndent()
 
-                AudienceMode.PARENT -> """
+                else -> """
                     Audience mode: PARENT.
                     Speak primarily to the parent as a warm English-speaking companion joining the family's conversation.
                     Reply as the NEXT conversational turn, not as a translator.
@@ -313,7 +322,9 @@ class GemmaEmmaClient(context: Context) {
                         "Recent conversation (context only, newest information is more important):\n$historyText\n\n" +
                             "Moonshine transcript for the current turn (PRIMARY linguistic source):\n$transcriptForPrompt\n\n" +
                             "The attached original audio is SECONDARY context for nonverbal cues only.\n\n" +
-                            if (audienceMode == AudienceMode.BABY) {
+                            if (audioOnlyTurn) {
+                                "Moonshine found no intelligible Japanese. Inspect the attached audio only for a CLEAR infant vocalization. If it is not clearly an infant vocalization, output exactly \"$NO_RESPONSE\". If it is clear, respond warmly to the baby in short spoken English only."
+                            } else if (audienceMode == AudienceMode.BABY) {
                                 if (shouldUseBabyName) {
                                     "Speak directly to the baby now. Include the spoken name \"$spokenBabyName\" exactly once. Make ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} short complete sentences: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 } else {
