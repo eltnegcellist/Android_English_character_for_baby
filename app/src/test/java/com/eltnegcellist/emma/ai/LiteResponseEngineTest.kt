@@ -23,11 +23,25 @@ class LiteResponseEngineTest {
             "寝かしつけよう",
             "睡眠の時間だよ",
             "お昼寝しよう",
+            "寝ようか",
+            "寝よっか",
+            "ねようか",
+            "ねよっか",
+            "もう寝よ",
+            "ねんねしよっか",
+            "眠ろうか",
+            "眠る時間だよ",
         ).forEach { input ->
             val response = LiteResponseEngine().respond(input)
             assertEquals("sleep scene for: $input", "sleep", response.scene)
             assertTrue("sleep score for: $input", response.score >= 3)
         }
+    }
+
+    @Test
+    fun rollingOverIsNotMistakenForSleep() {
+        val response = LiteResponseEngine().respond("寝返りしたね")
+        assertFalse(response.scene == "sleep")
     }
 
     @Test
