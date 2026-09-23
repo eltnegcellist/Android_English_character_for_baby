@@ -54,7 +54,7 @@ internal fun FirstRunOnboardingScreen(
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                "単なる日本語→英語の翻訳ではありません。使い方に合わせてLite・Standard・Fullから選べます。",
+                "単なる日本語→英語の翻訳ではありません。軽いLiteと、Gemmaがその場で考えるFullの2つから選べます。",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -84,10 +84,8 @@ internal fun FirstRunOnboardingScreen(
                             when (option) {
                                 ConversationEngineMode.LITE ->
                                     "Moonshine Tiny + Kitten TTS Nano / 約64MB / 完全ローカル"
-                                ConversationEngineMode.STANDARD ->
-                                    "ReazonSpeech + Supertonic 3 / 約298MB / 完全ローカル"
                                 ConversationEngineMode.FULL ->
-                                    "Gemma + Supertonic 3 / 2GB超 / 完全ローカル"
+                                    "Moonshine + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -126,10 +124,8 @@ internal fun FirstRunOnboardingScreen(
                         when (selectedMode) {
                             ConversationEngineMode.LITE ->
                                 "Web版Liteと同じMoonshine日本語TinyとKitten TTS Nano / KikiをAndroid上で動かします。"
-                            ConversationEngineMode.STANDARD ->
-                                "Android向けにReazonSpeechとSupertonic 3 F3を使います。通常はこちらがおすすめです。"
                             ConversationEngineMode.FULL ->
-                                "Gemmaが応答を生成します。ダウンロード量が大きいためWi-Fiでの準備をおすすめします。"
+                                "Moonshineの文字起こしと元音声をGemmaへ渡して応答を生成します。音声はLiteと同じKikiです。大容量モデルのためWi-Fiでの準備をおすすめします。"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                     )
