@@ -38,8 +38,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 64
-        versionName = "1.4.0-beta12"
+        versionCode = 65
+        versionName = "1.4.0-beta13"
     }
 
     val prototypeSigningConfig = if (hasAllCustomSigningInputs) {
@@ -90,7 +90,7 @@ dependencies {
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
-    implementation(files("libs/sherpa-onnx-static-1.13.7.aar"))
+    implementation(files("libs/sherpa-onnx-static-1.13.8.aar"))
     implementation("org.apache.commons:commons-compress:1.28.0")
 
     testImplementation("junit:junit:4.13.2")

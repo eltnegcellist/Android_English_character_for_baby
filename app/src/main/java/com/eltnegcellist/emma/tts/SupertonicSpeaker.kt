@@ -50,7 +50,8 @@ class SupertonicSpeaker(
                     DiagnosticStore.mark(
                         context,
                         "supertonic_runtime_initialized",
-                        "voice=F3 sid=$F3_SPEAKER_ID threads=$THREADS steps=$NUM_STEPS",
+                        "voice=F3 sid=$F3_SPEAKER_ID speakers=${it.numSpeakers} " +
+                            "engineRate=${it.sampleRate} threads=$THREADS steps=$NUM_STEPS",
                     )
                 }
 
@@ -68,7 +69,10 @@ class SupertonicSpeaker(
                 )
 
                 val generationStarted = System.nanoTime()
-                val generated = active.tts.generateWithConfig(text.trim(), config)
+                val generated = active.tts.generateWithConfigAndCallback(
+                    text.trim(),
+                    config,
+                ) { 1 }
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
 
                 require(generated.samples.isNotEmpty()) {
@@ -255,6 +259,14 @@ class SupertonicSpeaker(
                 maxNumSentences = 1,
             ),
         )
+        val numSpeakers: Int = tts.numSpeakers()
+        val sampleRate: Int = tts.sampleRate()
+
+        init {
+            require(numSpeakers > F3_SPEAKER_ID) {
+                "Supertonic 3 F3を利用できません（speakers=$numSpeakers, sid=$F3_SPEAKER_ID）。"
+            }
+        }
 
         override fun close() {
             tts.release()
@@ -272,7 +284,7 @@ class SupertonicSpeaker(
         const val BABY_SPEED_FACTOR = 0.94f
         const val MIN_SAMPLE_RATE = 8_000
         const val MAX_SAMPLE_RATE = 96_000
-        const val DEFAULT_SUPERTONIC_SAMPLE_RATE = 44_100
+        const val DEFAULT_SUPERTONIC_SAMPLE_RATE = 24_000
         const val PLAYBACK_CHUNK_SAMPLES = 2048
         const val PLAYBACK_TIMEOUT_MS = 60_000L
 

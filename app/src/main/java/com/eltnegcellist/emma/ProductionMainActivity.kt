@@ -74,7 +74,7 @@ private fun ProductionEmmaApp() {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
     remember {
-        preferences.edit().remove("voice_backend").apply()
+        preferences.edit()\n            .remove("voice_backend")\n            .putBoolean("kokoro_only", false)\n            .putBoolean("supertonic_only", false)\n            .apply()
         true
     }
     var englishLevel by remember { mutableStateOf(EnglishLevel.fromSaved(preferences.getString("level", null))) }
@@ -115,7 +115,7 @@ private fun ProductionEmmaApp() {
     var aboutOpen by remember { mutableStateOf(false) }
     var parentFullPromptOpen by remember { mutableStateOf(false) }
     var onboardingOpen by remember {
-        mutableStateOf(!preferences.getBoolean("onboarding_completed_v3", false))
+        mutableStateOf(!preferences.getBoolean("onboarding_completed_v4", false))
     }
     var firstRunBusy by remember { mutableStateOf(false) }
     var firstRunReady by remember { mutableStateOf(false) }
@@ -174,7 +174,7 @@ private fun ProductionEmmaApp() {
     var liteSetupBusy by remember { mutableStateOf(false) }
     var liteSetupPhase by remember { mutableStateOf("") }
     var liteSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
-    var supertonicOnly by remember { mutableStateOf(preferences.getBoolean("supertonic_only", false)) }
+    var supertonicOnly by remember { mutableStateOf(false) }
     var supertonicImporting by remember { mutableStateOf(false) }
     var lastSpeechMillis by remember { mutableStateOf<Long?>(null) }
     var endpointStartedNanos by remember { mutableStateOf<Long?>(null) }
@@ -1278,7 +1278,7 @@ private fun ProductionEmmaApp() {
             onStartEmma = {
                 if (!firstRunBusy && firstRunReady) {
                     preferences.edit()
-                        .putBoolean("onboarding_completed_v3", true)
+                        .putBoolean("onboarding_completed_v4", true)
                         .putString("conversation_engine_mode", engineMode.savedValue)
                         .remove("voice_backend")
                         .apply()
@@ -1382,8 +1382,8 @@ private fun ProductionEmmaApp() {
                 keepScreenOn = it
                 preferences.edit().putBoolean("keep_screen_on", it).apply()
             },
-            onExportDiagnostics = { diagnosticsExporter.launch("emma-beta12-diagnostics.txt") },
-            onExportCrashDetails = { crashDetailsExporter.launch("emma-beta12-crash-details.zip") },
+            onExportDiagnostics = { diagnosticsExporter.launch("emma-beta13-diagnostics.txt") },
+            onExportCrashDetails = { crashDetailsExporter.launch("emma-beta13-crash-details.zip") },
         )
     } else {
         EmmaHomeScreen(
