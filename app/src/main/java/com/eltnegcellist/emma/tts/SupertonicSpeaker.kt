@@ -14,7 +14,6 @@ import com.k2fsa.sherpa.onnx.OfflineTtsSupertonicModelConfig
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -82,27 +81,21 @@ class SupertonicSpeaker(
                     "request=$diagnosticId sid=$F3_SPEAKER_ID steps=$NUM_STEPS " +
                         "speed=$effectiveSpeed chars=${text.trim().length}",
                 )
-                val firstCallbackSeen = AtomicBoolean(false)
-                val generated = active.tts.generateWithConfigAndCallback(
+                // The JNI callback bridge in sherpa-onnx expects a concrete
+                // invoke(float[]): Integer method. Android/D8 may compile an inline
+                // Kotlin lambda without that specialized method, which causes a
+                // native SIGABRT. We do not consume streaming chunks here, so use
+                // the non-callback API and play the returned audio after generation.
+                val generated = active.tts.generateWithConfig(
                     text.trim(),
                     config,
-                ) { samples ->
-                    if (firstCallbackSeen.compareAndSet(false, true)) {
-                        DiagnosticStore.mark(
-                            context,
-                            "supertonic_first_callback",
-                            "request=$diagnosticId samples=${samples.size}",
-                        )
-                    }
-                    1
-                }
+                )
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
                 DiagnosticStore.mark(
                     context,
                     "supertonic_generate_done",
                     "request=$diagnosticId samples=${generated.samples.size} " +
-                        "sampleRate=${generated.sampleRate} elapsedMs=$generationMs " +
-                        "callbackSeen=${firstCallbackSeen.get()}",
+                        "sampleRate=${generated.sampleRate} elapsedMs=$generationMs callback=disabled",
                 )
 
                 require(generated.samples.isNotEmpty()) {
