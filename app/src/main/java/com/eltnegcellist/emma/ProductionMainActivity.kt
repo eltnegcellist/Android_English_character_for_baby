@@ -844,7 +844,7 @@ private fun ProductionEmmaApp() {
                     }.getOrThrow()
                 }
 
-                if !SupertonicModelStore.isInstalled(context) {
+                if (!SupertonicModelStore.isInstalled(context)) {
                     mainHandler.post {
                         if (!disposed) {
                             fullSetupPhase = "Emmaの声（Supertonic 3）を準備しています"
