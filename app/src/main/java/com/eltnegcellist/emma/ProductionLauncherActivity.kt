@@ -15,8 +15,6 @@ class ProductionLauncherActivity : ComponentActivity() {
 
         getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
             .edit()
-            .putBoolean("kokoro_only", false)
-            .putBoolean("supertonic_only", false)
             .remove("voice_backend")
             .apply()
 
