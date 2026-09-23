@@ -74,7 +74,11 @@ private fun ProductionEmmaApp() {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
     remember {
-        preferences.edit()\n            .remove("voice_backend")\n            .putBoolean("kokoro_only", false)\n            .putBoolean("supertonic_only", false)\n            .apply()
+        preferences.edit()
+            .remove("voice_backend")
+            .putBoolean("kokoro_only", false)
+            .putBoolean("supertonic_only", false)
+            .apply()
         true
     }
     var englishLevel by remember { mutableStateOf(EnglishLevel.fromSaved(preferences.getString("level", null))) }
