@@ -18,7 +18,7 @@ Emma Lite uses the Tiny Streaming architecture and downloads the Japanese model 
 - License: Apache-2.0
 - Used for local English speech synthesis in Emma Lite.
 
-Emma uses the sherpa-onnx conversion package `kitten-nano-en-v0_8-int8` and the Kiki / `expr-voice-5-f` voice (speaker id 7).
+Emma uses the sherpa-onnx conversion package `kitten-nano-en-v0_8-int8` and the Kiki / `expr-voice-5-f` voice (speaker id 6).
 
 ## ReazonSpeech K2 v2
 
