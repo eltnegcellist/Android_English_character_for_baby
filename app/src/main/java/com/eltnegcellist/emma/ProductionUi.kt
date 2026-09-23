@@ -539,6 +539,13 @@ internal fun EmmaSettingsScreen(
                                     enabled = enabled,
                                     modifier = Modifier.fillMaxWidth(),
                                 ) { Text("Supertonic 3 F3（使用中）") }
+                                OutlinedButton(
+                                    onClick = if (previewing) onStopPreview else onPreview,
+                                    enabled = enabled || previewing,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(if (previewing) "試聴を停止" else "Supertonic 3 F3を試聴")
+                                }
                             } else {
                                 Button(
                                     onClick = onUseSupertonicVoice,
