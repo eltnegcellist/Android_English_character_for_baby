@@ -1,0 +1,23 @@
+.gradle/
+.idea/
+local.properties
+/build/
+/app/build/
+*.iml
+.DS_Store
+
+# Downloaded build dependencies
+app/libs/*.aar
+
+# Signing material and local secrets
+app/signing/
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+signing.properties
+secrets.properties
+.env
+.env.*
+!.env.example
