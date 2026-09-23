@@ -84,8 +84,8 @@ internal fun AboutEmmaScreen(
             }
 
             AboutSection(
-                title = "もっと自由に話すFull版もあります",
-                body = "通常のEmmaは、赤ちゃんへ短く分かりやすい英語をすばやく返すことを大切にしています。さらに、より自由に、あなたの話や直前の会話の流れに合わせてAIがその場で言葉を考えて話すFull版も用意しています。Full版は追加の大きなAIデータが必要なので、まずは通常のEmmaから始め、必要になったら設定から切り替えられます。",
+                title = "Lite・Standard・Full",
+                body = "Emma Liteは軽さを優先し、Web版と同じMoonshineとKitten TTSを使います。Emma StandardはAndroid向けにReazonSpeechとSupertonic 3を使い、認識精度と声の自然さを高めます。LiteとStandardは同じ短い赤ちゃん向け返答ロジックです。Emma FullではGemmaが直前の会話も踏まえて、その場で英語を考えて話します。",
             )
 
             AboutSection(

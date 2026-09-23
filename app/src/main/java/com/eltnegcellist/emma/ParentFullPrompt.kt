@@ -27,7 +27,7 @@ internal fun ParentFullPrompt(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    "通常のEmmaは、赤ちゃんへ短く分かりやすい英語で話しかけることを優先しています。",
+                    "Emma LiteとStandardは、赤ちゃんへ短く分かりやすい英語で話しかけることを優先しています。",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
@@ -43,7 +43,7 @@ internal fun ParentFullPrompt(
         },
         confirmButton = {
             Button(onClick = onUseFull) {
-                Text("Full版を使う")
+                Text("Emma Fullを使う")
             }
         },
         dismissButton = {
