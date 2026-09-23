@@ -548,6 +548,30 @@ internal fun EmmaSettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("不具合の調査", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "アプリが突然終了した後は、再起動してクラッシュ詳細を保存できます。",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    OutlinedButton(
+                        onClick = onExportCrashDetails,
+                        enabled = enabled,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("クラッシュ詳細を保存") }
+                    OutlinedButton(
+                        onClick = onExportDiagnostics,
+                        enabled = enabled,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("診断情報のみ保存") }
+                    Text(
+                        "クラッシュ詳細には、保存済みの音声が含まれる場合があります。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             Spacer(Modifier.height(16.dp))
         }
     }

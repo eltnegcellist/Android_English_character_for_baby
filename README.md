@@ -6,7 +6,7 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta12** (`versionCode 64`).
+The current public baseline is **v1.4.0-beta14** (`versionCode 66`).
 
 Android Emma now contains three editions. They share the same family settings, avatar, endpoint detection, baby-name handling, and local-first design. Lite and Standard also share the same `LiteResponseEngine`; their main difference is the speech stack.
 
@@ -53,7 +53,7 @@ Emma avatar
 ```
 
 - Japanese ASR: ReazonSpeech K2 v2 INT8
-- TTS: Supertonic 3 F3 (44.1 kHz output)
+- TTS: Supertonic 3 F3 female voice (24 kHz output)
 - Approximate model download: about 298 MB
 - Processing after setup: on-device
 - Response logic: same LiteResponseEngine as Lite
@@ -117,15 +117,15 @@ This public repository does **not** intentionally contain signing keys, keystore
 
 ## Building
 
-The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, sherpa-onnx 1.13.7, and Moonshine Voice 0.1.5.
+The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, sherpa-onnx 1.13.8, and Moonshine Voice 0.1.5.
 
 The sherpa-onnx Android runtime is intentionally not committed to this repository. Download the pinned AAR before building:
 
 ```bash
 mkdir -p app/libs
 curl -fL \
-  https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.7/sherpa-onnx-static-link-onnxruntime-1.13.7.aar \
-  -o app/libs/sherpa-onnx-static-1.13.7.aar
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-static-link-onnxruntime-1.13.8.aar \
+  -o app/libs/sherpa-onnx-static-1.13.8.aar
 ```
 
 Then run:

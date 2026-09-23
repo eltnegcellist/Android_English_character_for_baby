@@ -14,6 +14,7 @@ import com.k2fsa.sherpa.onnx.OfflineTtsSupertonicModelConfig
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -43,8 +44,14 @@ class SupertonicSpeaker(
         worker.execute {
             if (closed || requestId != id) return@execute
             val started = System.nanoTime()
+            val diagnosticId = id.take(8)
 
             runCatching {
+                DiagnosticStore.mark(
+                    context,
+                    "supertonic_engine_begin",
+                    "request=$diagnosticId model=${SupertonicModelStore.MODEL_NAME}",
+                )
                 val active = engine ?: Engine(context).also {
                     engine = it
                     DiagnosticStore.mark(
@@ -69,11 +76,34 @@ class SupertonicSpeaker(
                 )
 
                 val generationStarted = System.nanoTime()
+                DiagnosticStore.mark(
+                    context,
+                    "supertonic_generate_begin",
+                    "request=$diagnosticId sid=$F3_SPEAKER_ID steps=$NUM_STEPS " +
+                        "speed=$effectiveSpeed chars=${text.trim().length}",
+                )
+                val firstCallbackSeen = AtomicBoolean(false)
                 val generated = active.tts.generateWithConfigAndCallback(
                     text.trim(),
                     config,
-                ) { 1 }
+                ) { samples ->
+                    if (firstCallbackSeen.compareAndSet(false, true)) {
+                        DiagnosticStore.mark(
+                            context,
+                            "supertonic_first_callback",
+                            "request=$diagnosticId samples=${samples.size}",
+                        )
+                    }
+                    1
+                }
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
+                DiagnosticStore.mark(
+                    context,
+                    "supertonic_generate_done",
+                    "request=$diagnosticId samples=${generated.samples.size} " +
+                        "sampleRate=${generated.sampleRate} elapsedMs=$generationMs " +
+                        "callbackSeen=${firstCallbackSeen.get()}",
+                )
 
                 require(generated.samples.isNotEmpty()) {
                     "Supertonic 3 returned no audio samples."
@@ -98,8 +128,18 @@ class SupertonicSpeaker(
                 val peak = safeSamples.maxOf { kotlin.math.abs(it) }
 
                 val pcm = toPcm16(safeSamples)
+                DiagnosticStore.mark(
+                    context,
+                    "supertonic_playback_begin",
+                    "request=$diagnosticId samples=${pcm.size} sampleRate=$playbackSampleRate",
+                )
                 val firstAudioMs = play(id, pcm, playbackSampleRate, started)
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
+                DiagnosticStore.mark(
+                    context,
+                    "supertonic_playback_done",
+                    "request=$diagnosticId firstAudioMs=$firstAudioMs totalMs=$totalMs",
+                )
 
                 DiagnosticStore.mark(
                     context,
@@ -120,6 +160,12 @@ class SupertonicSpeaker(
                     }
                 }
             }.onFailure { error ->
+                DiagnosticStore.mark(
+                    context,
+                    "supertonic_java_error",
+                    "request=$diagnosticId type=${error.javaClass.simpleName} " +
+                        "message=${error.message.orEmpty()}",
+                )
                 main.post {
                     if (!closed && requestId == id) {
                         requestId = null
@@ -133,6 +179,15 @@ class SupertonicSpeaker(
     }
 
     fun stop() {
+        val stoppingRequest = requestId
+        val trackPresent = track != null
+        if (stoppingRequest != null || trackPresent) {
+            DiagnosticStore.mark(
+                context,
+                "supertonic_stop",
+                "request=${stoppingRequest?.take(8) ?: "none"} trackPresent=$trackPresent",
+            )
+        }
         requestId = null
         main.post { onAmplitude(0f) }
         track?.runCatching {
@@ -199,11 +254,13 @@ class SupertonicSpeaker(
 
         track = player
         check(player.state == AudioTrack.STATE_INITIALIZED) { "音声出力を初期化できません。" }
+        DiagnosticStore.mark(context, "supertonic_track_ready", "request=${id.take(8)}")
 
         var offset = 0
         var firstAudioMs = 0L
         try {
             player.play()
+            DiagnosticStore.mark(context, "supertonic_track_playing", "request=${id.take(8)}")
             while (offset < pcm.size && requestId == id && !closed) {
                 val count = minOf(PLAYBACK_CHUNK_SAMPLES, pcm.size - offset)
                 val written = player.write(pcm, offset, count, AudioTrack.WRITE_BLOCKING)
@@ -278,6 +335,7 @@ class SupertonicSpeaker(
         const val AUDIENCE_MODE_KEY = "audience_mode"
         const val BABY_AUDIENCE_VALUE = "BABY"
 
+        // voice.bin stores sorted F1..F5, M1..M5 styles; F3 is zero-based sid 2.
         const val F3_SPEAKER_ID = 2
         const val NUM_STEPS = 8
         const val THREADS = 2
