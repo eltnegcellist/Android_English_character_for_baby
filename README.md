@@ -56,7 +56,7 @@ Emma Full requires an additional local model download of more than 2 GB.
 
 ## Current version
 
-This public repository starts from **v1.4.0-beta3** (`versionCode 55`).
+This public repository starts from **v1.4.0-beta4** (`versionCode 56`).
 
 The standard mode includes 20 everyday baby-care scenes with five response variants per scene. These responses are fixed in the app at runtime so the standard mode remains lightweight.
 
