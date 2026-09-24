@@ -239,4 +239,23 @@ class LiteResponseEngineTest {
         assertFalse(response.scene == "bath")
     }
 
+    @Test
+    fun genericFallbackHasBroadVarietyAcrossRepeatedUnknownSpeech() {
+        val engine = LiteResponseEngine()
+        val outputs = (0 until 24).map {
+            engine.respond("これは分類できない普通の話だよ").also { response ->
+                assertEquals("generic", response.scene)
+            }.english
+        }
+
+        assertTrue(
+            "generic fallback should stay varied; unique=${outputs.toSet().size}",
+            outputs.toSet().size >= 20,
+        )
+        outputs.zipWithNext().forEach { (previous, next) ->
+            assertFalse("generic fallback repeated immediately", previous == next)
+        }
+    }
+
+
 }
