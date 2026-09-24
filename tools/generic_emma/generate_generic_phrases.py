@@ -112,9 +112,19 @@ def chat_completion(base_url: str, model: str, theme_id: str, theme: str,
     if left >= 0 and right > left:
         raw = raw[left:right + 1]
     parsed = json.loads(raw)
-    if not isinstance(parsed, list) or not all(isinstance(x, str) for x in parsed):
-        raise ValueError("Model output must be a JSON array of strings")
-    return parsed
+    if not isinstance(parsed, list):
+        raise ValueError("Model output must be a JSON array")
+    out: list[str] = []
+    for item in parsed:
+        if isinstance(item, list) and len(item) == 3 and all(isinstance(x, str) for x in item):
+            sentences = [x.strip() for x in item]
+            out.append(" ".join(sentences))
+        elif isinstance(item, str):
+            # Tolerate a flat fallback, then let validate() decide.
+            out.append(item)
+    if not out:
+        raise ValueError("Model output contained no usable candidates")
+    return out
 
 def validate(text: str) -> list[str]:
     reasons: list[str] = []
@@ -166,7 +176,7 @@ def main() -> int:
         accepted: list[str] = []
         rejected: list[dict[str, object]] = []
         attempts = 0
-        while len(accepted) < args.per_theme and attempts < 16:
+        while len(accepted) < args.per_theme and attempts < 12:
             attempts += 1
             batch = max(args.batch_size, args.per_theme - len(accepted))
             try:
