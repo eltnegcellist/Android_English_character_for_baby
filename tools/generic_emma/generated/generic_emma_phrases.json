@@ -1,204 +1,955 @@
 {
-  "prompt_version": "emma-lite-generic-v3-reviewed-scene-neutral",
+  "prompt_version": "emma-lite-generic-v4-human-review-safe",
   "generator_model": "Gemma-4-E2B-it-Q4_0",
   "review_note": "Gemma-generated candidates; review before product inclusion.",
   "themes": {
     "greeting": {
-      "direction": "Warm greetings only. Examples of concepts: hello, hi, Emma is here. Never describe the baby or surroundings.",
+      "direction": "Natural warm greetings only: hello, hi, hello again, Emma is here. Do not ask the baby to speak or move.",
       "accepted": [
-        "Hello there. I am here now. We start now.",
-        "Hello baby. I am here too. Let's talk.",
-        "Hello dear. Come over here. We go slow.",
-        "Hello there. Hi little one. We are here.",
-        "Welcome now. Hello baby. Time to speak.",
-        "Hello there. I am here. Let us talk.",
-        "Hi little one. This is you. I am here now.",
-        "Welcome now. Hello little one. Just say hello."
+        "Hi, little one. Just a hello. Emma is near.",
+        "Hello there. Take a moment. Here we are.",
+        "Hello there. Just a moment. Here we go.",
+        "Hello there. Hi little one. Emma is here.",
+        "Hello dear. Near and far. Emma is here.",
+        "Oh, ooh! Hello there. Just be.",
+        "Hello little. Here and there. Take your time.",
+        "Hello, little one. Emma is here. Time to chat.",
+        "Hi there. Let's be here. Hello again.",
+        "Hi, little one. Hello again. Let's wonder."
       ],
       "rejected": [
         {
-          "text": "Hi little one. I see you now. This is okay.",
+          "text": "Hello, sweet one. Emma is here now. Hi, little one.",
           "reasons": [
-            "banned=okay"
+            "banned=sweet"
           ]
         },
         {
-          "text": "Hi there. Time to play. You are here.",
+          "text": "Hello again. Take your time. I am here for you.",
+          "reasons": [
+            "sentence_words=5"
+          ]
+        },
+        {
+          "text": "Hello. Look around now. I am here too.",
+          "reasons": [
+            "sentence_words=1"
+          ]
+        },
+        {
+          "text": "Hi. Let's stay here. Near and far.",
+          "reasons": [
+            "sentence_words=1"
+          ]
+        },
+        {
+          "text": "Hello. Oh, ooh. Emma is here.",
+          "reasons": [
+            "sentence_words=1"
+          ]
+        },
+        {
+          "text": "Hi. No rush now. Take your time.",
+          "reasons": [
+            "sentence_words=1"
+          ]
+        },
+        {
+          "text": "Hello again. I am here. Warm wishes here.",
+          "reasons": [
+            "banned=warm"
+          ]
+        },
+        {
+          "text": "Hi there. Just hello. You are here.",
           "reasons": [
             "banned=you are"
           ]
         },
         {
-          "text": "Hi little one. I am near. You are safe.",
-          "reasons": [
-            "banned=you are"
-          ]
-        },
-        {
-          "text": "Hi little one. Hello dear one. Time to play.",
+          "text": "Hello there. Emma is here now. Time to play.",
           "reasons": [
             "banned=play"
+          ]
+        },
+        {
+          "text": "Hi little one. Come near here. I am here too.",
+          "reasons": [
+            "banned=come"
+          ]
+        },
+        {
+          "text": "Hello again. Just for you. Warm wishes come.",
+          "reasons": [
+            "banned=come"
+          ]
+        },
+        {
+          "text": "Hello. Soft sounds now. Time to rest.",
+          "reasons": [
+            "sentence_words=1",
+            "banned=soft"
+          ]
+        },
+        {
+          "text": "Hi. I am here. Time to see.",
+          "reasons": [
+            "sentence_words=1",
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Hello. Let's wait. Near and far.",
+          "reasons": [
+            "sentence_words=1"
+          ]
+        },
+        {
+          "text": "Hi little one. I am present. Good moments now.",
+          "reasons": [
+            "banned=good"
+          ]
+        },
+        {
+          "text": "Hello. Take your time. Slow pace now.",
+          "reasons": [
+            "sentence_words=1"
+          ]
+        },
+        {
+          "text": "Hello. Soft sounds. I am near.",
+          "reasons": [
+            "sentence_words=1",
+            "banned=soft"
+          ]
+        },
+        {
+          "text": "Hi sweet one. Hello again. Take your time.",
+          "reasons": [
+            "banned=sweet"
+          ]
+        },
+        {
+          "text": "Look here. Hello baby. You are here.",
+          "reasons": [
+            "banned=you are"
+          ]
+        },
+        {
+          "text": "Welcome now. Hi little one. Soft sounds.",
+          "reasons": [
+            "banned=soft"
+          ]
+        },
+        {
+          "text": "Hi there now. Let's be. All is good.",
+          "reasons": [
+            "banned=good"
+          ]
+        },
+        {
+          "text": "Hi sweet one. I am here. Just stay.",
+          "reasons": [
+            "banned=sweet"
+          ]
+        },
+        {
+          "text": "Hello, sweet one. We are near. Time to see.",
+          "reasons": [
+            "banned=see"
           ]
         }
       ]
     },
     "presence": {
-      "direction": "Gentle shared-presence language only: here we are, I am here, together for this moment. Never claim touch, closeness, safety, emotion, or ownership.",
+      "direction": "Natural shared-presence language only: Emma is here, here we are, together now, one little moment. Do not claim touch, emotion, safety, ownership, or closeness.",
       "accepted": [
-        "Here we are. I am here now. Just be.",
-        "I am here. Here we are. We are here too.",
-        "Here we go. Take your time. Near and far.",
-        "Ooh, ooh! Ahh, ahh! Let's just be.",
-        "Look around. Let's see here. Now and next.",
-        "Here we are. I am here. Together for this.",
-        "I wonder. Let's just wonder. Take your time.",
-        "Here we go. Near and far. Just this moment."
+        "Hello, little one. Here we are now. One little moment.",
+        "Emma is here. Together now. Just one moment.",
+        "Look with me. Here we go. Near and far.",
+        "Take your time. Let's wonder. Just a moment.",
+        "Ooh, ooh! Here is here. I am here now.",
+        "Ahh, ahh! Together now. Near and far.",
+        "Emma is here. Let's listen. Just one moment.",
+        "Here we are. Take your time. No rush.",
+        "Look around. One little moment. Here we are.",
+        "Here is here. I am here now. Just a moment."
       ],
-      "rejected": [
-        {
-          "text": "I am here. Just here now. You are here too.",
-          "reasons": [
-            "banned=you are"
-          ]
-        }
-      ]
+      "rejected": []
     },
     "looking": {
-      "direction": "Only invite looking: look around, look with me, take a look, look here, look there. Never claim that any object or visual feature exists.",
+      "direction": "Only invite visual attention: look around, look with me, take a look, look here, look there. Do not say that anything specific is visible.",
       "accepted": [
-        "Look around now. Take your time. Let's look.",
-        "Look with me. See near and far. Just look here.",
-        "Look over here. What is near? Take a look now.",
-        "Look with me. Let's look slow. Now and next.",
-        "Look around now. I wonder what. Just take a look.",
-        "Look around now. Take a look here. Look with me.",
-        "Look around now. Take a look here. Near and far.",
-        "Look over here. Take a look now. Look with me."
+        "Look at me now. Watch me now. We look together.",
+        "Let's look now. Take a look. Look around slow.",
+        "Look around now. Take a little look. Here is near.",
+        "Look around now. Look with me there. Take your time.",
+        "Look over here. We look with you. What is near now.",
+        "Look around now. Take a look now. Just look around.",
+        "Hello, little one. Look with me now. Take a look.",
+        "Look over here. Take your time. Near and far.",
+        "Look with me. Just look. Oh, ooh!",
+        "Look there now. Here and there. Let's look."
       ],
       "rejected": [
         {
-          "text": "Look here. See this place. Near and far.",
+          "text": "Look around now. Come look here. See something nice.",
           "reasons": [
-            "banned=see this"
+            "banned=come"
           ]
         },
         {
-          "text": "Look around now. Take your time. Let's see here.",
+          "text": "Look with me. Take a look. What do you see?",
           "reasons": [
-            "overused_opener"
+            "banned=see"
           ]
         },
         {
-          "text": "Look around now. Take a look. Look with me.",
+          "text": "Look over there. See what is there. Come look here.",
           "reasons": [
-            "overused_opener"
+            "banned=come"
+          ]
+        },
+        {
+          "text": "Here we look. See something now. Look over here.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Oh, ooh! Look. Look with me now. See that thing.",
+          "reasons": [
+            "sentence_count=4",
+            "sentence_words=1",
+            "banned=that"
+          ]
+        },
+        {
+          "text": "Look around now. Take a look. Let's see.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around now. Come with me. Take a look.",
+          "reasons": [
+            "banned=come"
+          ]
+        },
+        {
+          "text": "Look here. We can see. See right here.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look with me. See this way. Look over there.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Take a look. See around. Just look.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look now. See what's near. We can see.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look with me. See near there. Just look.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around. See things here. Look there.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Take a look. We see things. Look with me.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look now. See things near. Look around.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look over. See something near. Take a look.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around now. See things here. Take a peek.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look with me. See what's near. Look over there.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look here, dear one. See what is here. Take a look now.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around much. See things near. See something new.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look with me now. See things near you. Look over there.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Take a look here. See things close by. Look with me.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look around slow. See what is here. Take a peek now.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look with me now. See near and far. Look over there.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look here dear. See things close by. Take a look now.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look around much. See what is here. See something new.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around here. See things near. Take your time now.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look with me. We see things. Just watch things.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look there. See something there. Take a look now.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Oh, ooh! Look. See that thing. Just watch it.",
+          "reasons": [
+            "sentence_count=4",
+            "sentence_words=1",
+            "banned=it"
+          ]
+        },
+        {
+          "text": "Look with me. Let's look now. We see things.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Take a look. See something. Near and far.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around. See things here. Take your time.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look here. See near things. Let's just see.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look with me. See things close. We are looking.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "I wonder. Look around now. See things here.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look around now. Let's look near. See what is there.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look with me. Take a look now. See something there.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look at things. See what you see. Take your time.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look around now. Let's look close. See things all around.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look here. I see something. Take a peek now.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look with me. See what is near. Let's look now.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look over there. See something there. We look together.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look here. See this spot. Take a look here.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around here. See things now. We are here.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look with me. Time to see. What is near?",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Take a look. See what is there. Time to see.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look over there. See things now. Let's see.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look with me. See the view. It is here.",
+          "reasons": [
+            "banned=it"
+          ]
+        },
+        {
+          "text": "Take a look now. See things around. Time to see.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look here. See things now. We are here.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look around. See things now. Oh, ooh!",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "See with me. Let's see now. Near and far.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look there now. See things close. Time to see.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look around now. See what's there. Take a look.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look with me. See what we see. Here is something.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Take a look. Look over there. See something now.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look here. See this thing. It is right here.",
+          "reasons": [
+            "banned=it"
+          ]
+        },
+        {
+          "text": "Look with me. Let's look now. See things around.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look around. Take a slow look. See things close by.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look there. See what is near. It is over there.",
+          "reasons": [
+            "banned=it"
+          ]
+        },
+        {
+          "text": "Look here now. See things around. Take your time.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look with me. See what's happening. Let's observe.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around. See things nearby. Just look now.",
+          "reasons": [
+            "banned=things"
+          ]
+        },
+        {
+          "text": "Look there. See what is away. Here and there.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Look around now. See the space. Let's wonder.",
+          "reasons": [
+            "banned=see"
           ]
         }
       ]
     },
     "listening": {
-      "direction": "Only invite listening: listen with me, let's listen, pause and listen, listen here. Never claim that a sound or source exists.",
+      "direction": "Only invite listening: listen with me, let's listen, pause and listen, listen here, listen there. Do not claim that any sound exists.",
       "accepted": [
-        "Listen with me. Let's listen now. I want to hear.",
+        "Let's listen now. Pause and listen. I am here.",
+        "Listen here. Take a moment. Just listen.",
+        "Take your time. Just listen here. Let's wonder.",
+        "Listen with me. Let's listen now. Take your time.",
+        "Pause and listen. We can listen here. Just listen closely.",
+        "Take your time. Just listen softly. Let us listen slow.",
+        "Listen with me. Take your time. Let's listen now.",
         "Listen with me. Let's listen now. Pause and listen.",
-        "Listen with me. Pause and listen. Now and next.",
-        "Let's listen. Take your time. Near and far.",
-        "I wonder. Listen to this. No rush.",
-        "Listen here. Let's listen. Take a breath.",
-        "Ooh, ooh! Listen with me. Slow and steady.",
-        "Ah, ahh! Let's listen. Just a moment."
-      ],
-      "rejected": []
-    },
-    "curiosity": {
-      "direction": "Only express open curiosity: I wonder, let's wonder, what might we notice, let's see. Never claim a discovery or object exists.",
-      "accepted": [
-        "I wonder now. Let's wonder too. What might be?",
-        "I wonder now. Let's just look. What happens next?",
-        "Oh, ooh! Let's wonder. Now and next.",
-        "I wonder what? Let's see now. We can try.",
-        "What is this? Let's wonder. Take a look.",
-        "I wonder about. We can see more. Just look now.",
-        "Let's wonder. What happens next? Time to see.",
-        "I wonder what. Take your time. Near and far."
+        "Listen here now. Listen with me. Just listen here.",
+        "Let's listen now. Pause and listen here. Listen with me."
       ],
       "rejected": [
         {
-          "text": "Let's see this. I wonder how. We can find out.",
+          "text": "Listen with me. You can hear. Soft sounds now.",
           "reasons": [
-            "banned=see this"
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Listen with me. Very quiet now. Time to hear.",
+          "reasons": [
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Let's listen close. Do you hear me? Good to listen.",
+          "reasons": [
+            "banned=good"
+          ]
+        },
+        {
+          "text": "Pause and listen. Here is quiet. Just listen.",
+          "reasons": [
+            "banned=quiet"
+          ]
+        },
+        {
+          "text": "Listen here now. Soft sounds come. Let's listen.",
+          "reasons": [
+            "banned=come"
+          ]
+        },
+        {
+          "text": "Listen with me. Slow down now. I hear you.",
+          "reasons": [
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Listen close now. Hear the gentle sounds. Just listen.",
+          "reasons": [
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Listen here. I want you to hear. Pay close attention.",
+          "reasons": [
+            "sentence_words=5",
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Let's listen. Hear the soft sounds. Just listen along.",
+          "reasons": [
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Listen there. We are listening now. Hear everything around.",
+          "reasons": [
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Listen now. We are listening here. What we hear is nice.",
+          "reasons": [
+            "sentence_words=5",
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Let's listen. Hear the quiet parts. Just listen and wait.",
+          "reasons": [
+            "banned=hear"
+          ]
+        },
+        {
+          "text": "Listen here. We are listening now. All listening is good.",
+          "reasons": [
+            "banned=good"
+          ]
+        },
+        {
+          "text": "Pause and listen. Listen with us here. A good time to hear.",
+          "reasons": [
+            "sentence_words=5",
+            "banned=good"
+          ]
+        },
+        {
+          "text": "Listen here. Here we listen. I want you to listen.",
+          "reasons": [
+            "sentence_words=5",
+            "banned=want"
+          ]
+        },
+        {
+          "text": "Listen with me. Let's listen close. Take your time.",
+          "reasons": [
+            "banned=close"
+          ]
+        }
+      ]
+    },
+    "curiosity": {
+      "direction": "Open curiosity only: I wonder, let's wonder, what comes next, let's find out. Do not refer to an unknown thing or discovery.",
+      "accepted": [
+        "I wonder now. Let's wonder. What next?",
+        "Let's wonder. What comes. Time to wonder.",
+        "Let's wonder. What will be. Let's wonder.",
+        "I wonder. Take your time. Let's wonder.",
+        "Let's wonder now. What we find. Let's wonder.",
+        "I wonder what. Let's wonder too. Just let us wonder.",
+        "What comes next. We can wonder. Let's just wonder.",
+        "Let's wonder. Let's wonder here. Just wonder now.",
+        "I wonder now. Let's wonder. What comes next?",
+        "I wonder here. Let's wonder. Time to find out?"
+      ],
+      "rejected": [
+        {
+          "text": "I wonder. Let's wonder. So much to see.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "I wonder. Let's wonder a bit. See what happens.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Let's wonder. What about that? Time to see?",
+          "reasons": [
+            "too_many_questions",
+            "banned=that"
           ]
         }
       ]
     },
     "pace": {
-      "direction": "Only invite an unhurried pace: take your time, nice and slow, no rush, here we go. Never evaluate success or mood.",
+      "direction": "Only invite an unhurried pace: take your time, no rush, nice and slow, here we go, one moment. Do not instruct walking, breathing, stopping, or bodily movement.",
       "accepted": [
-        "Take your time. Be so slow. No rush now.",
-        "Here we go. Take a breath. Slow and steady.",
-        "Now and next. Just keep going. Take your pace.",
-        "Be gentle. This is easy. Slow down a bit.",
-        "No rush here. Take your time. Just be still.",
-        "Near and far. Take your slow steps. Go at your pace.",
-        "Just listen now. Take your time. No need to hurry.",
-        "Ooh, ooh! Take your slow pace. Just keep going."
-      ],
-      "rejected": []
-    },
-    "vocal_play": {
-      "direction": "Use scene-neutral vocal play such as ooh, ahh, hey, hi, paired with a neutral invitation. Do not claim any external sound, movement, beat, or object.",
-      "accepted": [
-        "Hi little one. Take your time. Let's listen.",
-        "Here we go. Near and far. Ahh, ahh!",
-        "I wonder. Let's wonder. Now and next.",
-        "Hey little one. Look with me. Ooh, ooh!",
-        "Hi there. Listen with me. Ahh, ahh!",
-        "Ooh, ooh! Here we go. Take your time.",
-        "Hi little one. Let's listen. Now and next.",
-        "Ahh, ahh! Near and far. I wonder."
+        "Take your time. No rush now. Let's be slow.",
+        "Here we go. Take a moment. Just one moment.",
+        "Near and far. Take your time. Easy going.",
+        "Let's wonder. Take your time. Slow and steady.",
+        "Just take time. Be very gentle. Here we go.",
+        "Slowly now. We go slow. Take a moment.",
+        "One moment. Just wait here. Take your time.",
+        "Here and there. Take your time. Just be here.",
+        "No rush now. Take your time. We go slow.",
+        "Be very slow. One moment now. Take your time."
       ],
       "rejected": [
         {
-          "text": "Hello there. Let's play now. Ooh, ooh!",
+          "text": "Be very still. Take your time. Just like this.",
+          "reasons": [
+            "banned=still"
+          ]
+        },
+        {
+          "text": "One moment now. Take a slow breath. Here we go.",
+          "reasons": [
+            "banned=breath"
+          ]
+        },
+        {
+          "text": "Let's take a breath. No rush at all. Just be here.",
+          "reasons": [
+            "banned=breath"
+          ]
+        },
+        {
+          "text": "Oh, ooh! Slow pace. Take your time. Let's wonder.",
+          "reasons": [
+            "sentence_count=4"
+          ]
+        },
+        {
+          "text": "Here and there. Take your time. Keep going.",
+          "reasons": [
+            "banned=keep going"
+          ]
+        },
+        {
+          "text": "Take a nice pace. No hurry now. Just enjoy.",
+          "reasons": [
+            "banned=nice"
+          ]
+        },
+        {
+          "text": "Take your time. No rush now. Just be here.",
+          "reasons": [
+            "overused_opener"
+          ]
+        },
+        {
+          "text": "Here we go. Just one step. Take your time.",
+          "reasons": [
+            "banned=step"
+          ]
+        },
+        {
+          "text": "Nice and slow. Let's take this. Take your time.",
+          "reasons": [
+            "banned=nice"
+          ]
+        },
+        {
+          "text": "Take your time. No rush at all. Be very still.",
+          "reasons": [
+            "banned=still",
+            "overused_opener"
+          ]
+        },
+        {
+          "text": "Take a moment. Be very calm. Take your time.",
+          "reasons": [
+            "banned=calm"
+          ]
+        },
+        {
+          "text": "Let's wonder. Take your time. Just be here.",
+          "reasons": [
+            "overused_opener"
+          ]
+        },
+        {
+          "text": "Take your time. No rush now. Here we go.",
+          "reasons": [
+            "overused_opener"
+          ]
+        },
+        {
+          "text": "Take your time. No rush now. Here we go.",
+          "reasons": [
+            "overused_opener"
+          ]
+        }
+      ]
+    },
+    "vocal_play": {
+      "direction": "Use Emma's own neutral vocal play such as ooh-ooh, ahh-ahh, hey, hi, paired with greetings or neutral invitations. Do not claim an external sound, beat, or movement.",
+      "accepted": [
+        "Oh, ooh! Ahh, ahh! Hello there.",
+        "Hmm, hmm. Look here now. Take your time.",
+        "Hi, little one. Oh, ooh! Near and far.",
+        "Ahh, ahh! Let's wonder. Take your time.",
+        "Ooh, ooh! I am here. Just stay.",
+        "Hi, little one. Ahh, ahh! Near and far.",
+        "Hello, little one. Ooh, ooh now. Ahh, ahh here.",
+        "Hey baby. Take your time. Near and far.",
+        "Ahh, ahh! Let's wonder. Ooh, ooh!",
+        "Ooh, ooh! Ahh, ahh! Hey, hello there."
+      ],
+      "rejected": [
+        {
+          "text": "Hey, little one. Soft sound now. What do you like?",
+          "reasons": [
+            "banned=sound"
+          ]
+        },
+        {
+          "text": "Hey, hey! Listen with me. Soft sounds now.",
+          "reasons": [
+            "banned=soft"
+          ]
+        },
+        {
+          "text": "Hmm, hmm. Let's try. Here we go.",
+          "reasons": [
+            "banned=try"
+          ]
+        },
+        {
+          "text": "Ooh, ooh! Time to play. Soft sounds now.",
           "reasons": [
             "banned=play"
           ]
         },
         {
-          "text": "Let's play. Take your time. I am here.",
+          "text": "Ooh, ooh! Ah, ahh! Here is fun.",
           "reasons": [
-            "banned=play"
+            "banned=fun"
           ]
         },
         {
-          "text": "Let's play now. Near and far. Here we go.",
+          "text": "Hi little one. Look around now. We have time.",
           "reasons": [
-            "banned=play"
+            "overused_opener"
           ]
         }
       ]
     },
     "attention": {
-      "direction": "Use abstract attention words only: here, there, near, far, now, next, look around. Never attach them to a concrete object or factual claim.",
+      "direction": "Use abstract attention language only: here and there, near and far, now and next, look around, listen around. Do not attach these words to a concrete object or event.",
       "accepted": [
-        "Look around. Near and far. Take your time.",
-        "I wonder. Listen with me. Here we go.",
-        "Now and next. Just a moment. Here is.",
-        "Near and far. Look with me. Take your time.",
-        "Hello little one. Here is here. Now and next.",
-        "Look around. I wonder now. Just a moment.",
-        "Take your time. Here we are here. Near and far.",
-        "Hello, little one. Near and far. Now and next."
+        "Near and far. I am here. Take your time.",
+        "Listen with me. Look around now. Oh, ooh!",
+        "Here and there. I am here now. Take your time.",
+        "Look with me. Near and far. Let's wonder.",
+        "Here we go. I am near. No rush now.",
+        "Listen around. Look at now. Ahh, ahh!",
+        "Look around now. Oh, ooh! Take your time.",
+        "Hello there. Near and far. Time now.",
+        "Look around. Let's wonder. Take your time.",
+        "Here and there. Let's explore. Take your time."
       ],
       "rejected": [
         {
-          "text": "Hello now. Here we are. Next thing.",
+          "text": "Hello, little one. Look around now. Let's see here.",
           "reasons": [
-            "banned=thing"
+            "banned=see",
+            "overused_opener"
+          ]
+        },
+        {
+          "text": "Take your time. Here and there. I am here.",
+          "reasons": [
+            "overused_opener"
+          ]
+        },
+        {
+          "text": "I am here. Let's see here. Near and far.",
+          "reasons": [
+            "banned=see"
+          ]
+        },
+        {
+          "text": "Listen with me. Near and far. Here we go.",
+          "reasons": [
+            "overused_opener"
+          ]
+        },
+        {
+          "text": "I wonder. Now and next. Soft sounds now.",
+          "reasons": [
+            "banned=soft"
           ]
         }
       ]
     }
   },
-  "accepted_total": 64
+  "accepted_total": 80
 }
