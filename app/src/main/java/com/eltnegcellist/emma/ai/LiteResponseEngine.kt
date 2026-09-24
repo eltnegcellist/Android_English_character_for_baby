@@ -31,7 +31,11 @@ internal class LiteResponseEngine {
             LitePhoneticSceneMatcher.match(
                 transcript = transcript,
                 scenePhrases = scenes.associate { scene ->
-                    scene.id to (scene.keywords + sceneSpeechHints[scene.id].orEmpty())
+                    scene.id to (
+                        scene.keywords +
+                            sceneChildcareAnchors[scene.id].orEmpty() +
+                            sceneSpeechHints[scene.id].orEmpty()
+                        )
                 },
                 sceneExclusions = sceneSpeechExclusions,
             )
@@ -85,6 +89,11 @@ internal class LiteResponseEngine {
             }
         }
 
+        val anchors = sceneChildcareAnchors[scene.id].orEmpty()
+            .asSequence()
+            .map(::normalize)
+            .filter { it.isNotEmpty() }
+            .toList()
         val hints = sceneSpeechHints[scene.id].orEmpty()
             .asSequence()
             .map(::normalize)
@@ -95,10 +104,12 @@ internal class LiteResponseEngine {
             .map(::normalize)
             .filter { it.isNotEmpty() }
             .toList()
+        val anchorMatches = anchors.count { transcript.contains(it) }
         val hintMatched = hints.any { transcript.contains(it) }
         val excluded = exclusions.any { transcript.contains(it) }
 
         if (excluded && !hintMatched) return 0
+        if (anchorMatches > 0) total = max(total, 6 + minOf(2, anchorMatches - 1))
         if (hintMatched) total = max(total, 4)
         return total
     }
@@ -245,6 +256,35 @@ internal class LiteResponseEngine {
          * these candidates offline with Gemma using the Full Baby-mode intent,
          * validate them, then bake only the resulting English strings into Lite.
          */
+        /**
+         * High-confidence childcare vocabulary. These are intentionally more
+         * specific than the general scene keywords: one anchor is enough to make
+         * a scene a strong candidate, while ambiguous words such as 手 / 足 / 歌
+         * stay in the ordinary scoring path.
+         */
+        private val sceneChildcareAnchors = mapOf(
+            "bath" to listOf("沐浴", "お風呂", "風呂", "湯船", "シャワー"),
+            "milk" to listOf("ミルク", "みるく", "みのく", "母乳", "おっぱい", "哺乳瓶", "授乳"),
+            "sleep" to listOf("ねんね", "おねんね", "おやすみ", "昼寝", "お昼寝", "寝る", "寝よう", "眠い", "眠そう"),
+            "wake" to listOf("おはよう", "起きた", "起きよう", "目覚め"),
+            "diaper" to listOf("おむつ", "オムツ", "おむづ", "うんち", "おしっこ"),
+            "clothes" to listOf("着替え", "お着替え", "パジャマ"),
+            "hug" to listOf("抱っこ", "だっこ", "ぎゅー", "抱きしめ"),
+            "hands" to listOf("おてて", "指つか", "指握", "手バタ"),
+            "feet" to listOf("あんよ", "足バタ", "キック", "つま先"),
+            "smile" to listOf("にこにこ", "ニコニコ", "笑顔", "笑った", "笑う", "にこっ"),
+            "cry" to listOf("泣く", "泣い", "泣き", "ぐず", "ぐずぐず", "えーん"),
+            "voice" to listOf("喃語", "クーイング", "おしゃべり", "あーって", "うーって", "あうあう"),
+            "tummy" to listOf("げっぷ", "ゲップ", "吐き戻", "お腹いっぱい", "おなかいっぱい"),
+            "play" to listOf("遊ぼ", "あそぼ", "おもちゃ", "ガラガラ", "ぬいぐるみ", "メリー"),
+            "outside" to listOf("散歩", "お散歩", "ベビーカー", "公園", "お外"),
+            "rain" to listOf("雨", "雨音"),
+            "sun" to listOf("お日様", "太陽", "晴れ", "ぽかぽか"),
+            "food" to listOf("離乳食", "ごはん", "ご飯", "いただきます", "スプーン"),
+            "book" to listOf("絵本", "ページめく"),
+            "music" to listOf("音楽", "歌お", "うたお", "リズム"),
+        )
+
         private val sceneSpeechHints = mapOf(
             "bath" to listOf(
                 "お風呂入", "風呂入", "おふろはい", "シャワー浴", "体洗", "洗お", "湯船入",
