@@ -15,17 +15,17 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-PROMPT_VERSION = "emma-lite-generic-v2-three-sentence-json"
+PROMPT_VERSION = "emma-lite-generic-v3-reviewed-scene-neutral"
 
 THEMES = {
-    "greeting": "Give a warm varied greeting without assuming time, mood, activity, place, or what the parent said.",
-    "together": "Create a gentle sense that Emma and the baby share this moment without assuming touch, safety, feelings, or needs.",
-    "looking": "Invite the baby to look or notice visually without naming any object, color, person, place, or actual event.",
-    "listening": "Invite the baby to listen or notice sound without claiming that a particular sound actually exists.",
-    "curiosity": "Express gentle curiosity and wonder without inventing facts and without requiring a verbal answer.",
-    "encouragement": "Invite slow noticing and curiosity without praising an achievement or assuming how the baby feels.",
-    "rhythm": "Use neutral sound-play or rhythm such as tap, pause, ooh, ahh without claiming the baby or an object is moving.",
-    "attention": "Gently vary attention between here, there, near, far, now, and next without assuming a concrete scene.",
+    "greeting": "Warm greetings only. Examples of concepts: hello, hi, Emma is here. Never describe the baby or surroundings.",
+    "presence": "Gentle shared-presence language only: here we are, I am here, together for this moment. Never claim touch, closeness, safety, emotion, or ownership.",
+    "looking": "Only invite looking: look around, look with me, take a look, look here, look there. Never claim that any object or visual feature exists.",
+    "listening": "Only invite listening: listen with me, let's listen, pause and listen, listen here. Never claim that a sound or source exists.",
+    "curiosity": "Only express open curiosity: I wonder, let's wonder, what might we notice, let's see. Never claim a discovery or object exists.",
+    "pace": "Only invite an unhurried pace: take your time, nice and slow, no rush, here we go. Never evaluate success or mood.",
+    "vocal_play": "Use scene-neutral vocal play such as ooh, ahh, hey, hi, paired with a neutral invitation. Do not claim any external sound, movement, beat, or object.",
+    "attention": "Use abstract attention words only: here, there, near, far, now, next, look around. Never attach them to a concrete object or factual claim.",
 }
 
 SYSTEM_PROMPT = """You write fixed offline baby-directed English lines for Emma Lite.
@@ -51,7 +51,19 @@ STRICT RULES:
 - Do not give medical, safety, or developmental advice.
 - Do not use a baby's name. The app handles names separately.
 - Make candidates meaningfully different.
-- Prefer simple rhythm, repetition, looking, listening, curiosity, and presence.
+- Prefer greetings, presence, looking invitations, listening invitations, open curiosity,
+  slow pacing, vocal play, and abstract attention.
+- NEVER say or imply that there is a thing, object, face, view, sky, light, sound, noise,
+  beat, movement, color, person, toy, or event present.
+- NEVER describe the baby as sweet, cute, calm, good, happy, loved, mine, a friend,
+  or anything else. Do not evaluate the baby at all.
+- NEVER say "look at this", "look at that", "see this", "see that", "hear that",
+  or similar phrases that presuppose a referent.
+- Safe patterns include concepts like "Hello, little one.", "Emma is here.",
+  "Look around.", "Look with me.", "Listen with me.", "Let's listen.",
+  "I wonder.", "Let's wonder.", "Take your time.", "No rush.", "Here we go.",
+  "Near and far.", "Now and next.", "Ooh, ooh!", and "Ahh, ahh!".
+  Vary them naturally; do not copy only the examples.
 
 OUTPUT FORMAT IS STRICT:
 Return ONLY one JSON array.
@@ -74,6 +86,12 @@ BANNED = {
     "rain", "sun", "sunshine", "food", "eat", "meal", "bite", "book", "page",
     "story", "music", "song", "sing", "hungry", "tired", "cold", "warm", "hot",
     "happy", "sad", "safe", "okay", "fine", "good job", "well done",
+    "thing", "things", "object", "objects", "face", "world", "sky", "view", "light",
+    "sound", "sounds", "noise", "beat", "rhythm", "move", "moves", "moving",
+    "bright", "dark", "big", "small", "soft", "loud", "quiet", "pretty", "nice",
+    "good", "great", "fun", "sweet", "cute", "love", "loved", "friend", "friends",
+    "mine", "close", "calm", "stay close", "look at this", "look at that",
+    "see this", "see that", "hear that", "hear it", "you are", "it is", "there is",
 }
 
 def parse_args() -> argparse.Namespace:
