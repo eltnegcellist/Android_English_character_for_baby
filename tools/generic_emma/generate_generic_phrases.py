@@ -15,17 +15,17 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-PROMPT_VERSION = "emma-lite-generic-v3-reviewed-scene-neutral"
+PROMPT_VERSION = "emma-lite-generic-v4-human-review-safe"
 
 THEMES = {
-    "greeting": "Warm greetings only. Examples of concepts: hello, hi, Emma is here. Never describe the baby or surroundings.",
-    "presence": "Gentle shared-presence language only: here we are, I am here, together for this moment. Never claim touch, closeness, safety, emotion, or ownership.",
-    "looking": "Only invite looking: look around, look with me, take a look, look here, look there. Never claim that any object or visual feature exists.",
-    "listening": "Only invite listening: listen with me, let's listen, pause and listen, listen here. Never claim that a sound or source exists.",
-    "curiosity": "Only express open curiosity: I wonder, let's wonder, what might we notice, let's see. Never claim a discovery or object exists.",
-    "pace": "Only invite an unhurried pace: take your time, nice and slow, no rush, here we go. Never evaluate success or mood.",
-    "vocal_play": "Use scene-neutral vocal play such as ooh, ahh, hey, hi, paired with a neutral invitation. Do not claim any external sound, movement, beat, or object.",
-    "attention": "Use abstract attention words only: here, there, near, far, now, next, look around. Never attach them to a concrete object or factual claim.",
+    "greeting": "Natural warm greetings only: hello, hi, hello again, Emma is here. Do not ask the baby to speak or move.",
+    "presence": "Natural shared-presence language only: Emma is here, here we are, together now, one little moment. Do not claim touch, emotion, safety, ownership, or closeness.",
+    "looking": "Only invite visual attention: look around, look with me, take a look, look here, look there. Do not say that anything specific is visible.",
+    "listening": "Only invite listening: listen with me, let's listen, pause and listen, listen here, listen there. Do not claim that any sound exists.",
+    "curiosity": "Open curiosity only: I wonder, let's wonder, what comes next, let's find out. Do not refer to an unknown thing or discovery.",
+    "pace": "Only invite an unhurried pace: take your time, no rush, nice and slow, here we go, one moment. Do not instruct walking, breathing, stopping, or bodily movement.",
+    "vocal_play": "Use Emma's own neutral vocal play such as ooh-ooh, ahh-ahh, hey, hi, paired with greetings or neutral invitations. Do not claim an external sound, beat, or movement.",
+    "attention": "Use abstract attention language only: here and there, near and far, now and next, look around, listen around. Do not attach these words to a concrete object or event.",
 }
 
 SYSTEM_PROMPT = """You write fixed offline baby-directed English lines for Emma Lite.
@@ -55,15 +55,19 @@ STRICT RULES:
   slow pacing, vocal play, and abstract attention.
 - NEVER say or imply that there is a thing, object, face, view, sky, light, sound, noise,
   beat, movement, color, person, toy, or event present.
-- NEVER describe the baby as sweet, cute, calm, good, happy, loved, mine, a friend,
-  or anything else. Do not evaluate the baby at all.
+- NEVER describe or evaluate the baby (for example sweet, cute, calm, good, happy,
+  loved, mine, friend, clever, brave).
+- NEVER ask the baby to talk, speak, say something, come somewhere, walk, step,
+  breathe, stop, stay still, slow down, or perform any bodily action.
+- NEVER use deictic placeholders like "this", "that", or "it" to imply an unknown referent.
 - NEVER say "look at this", "look at that", "see this", "see that", "hear that",
-  or similar phrases that presuppose a referent.
-- Safe patterns include concepts like "Hello, little one.", "Emma is here.",
-  "Look around.", "Look with me.", "Listen with me.", "Let's listen.",
-  "I wonder.", "Let's wonder.", "Take your time.", "No rush.", "Here we go.",
-  "Near and far.", "Now and next.", "Ooh, ooh!", and "Ahh, ahh!".
-  Vary them naturally; do not copy only the examples.
+  "listen to this", or similar phrases that presuppose something exists.
+- Every sentence must be natural, grammatical spoken English. No fragments such as
+  "Here is.", "I wonder about.", or "Here we are here.".
+- Safe concepts include "Hello, little one.", "Emma is here.", "Look around.",
+  "Look with me.", "Listen with me.", "Let's listen.", "I wonder.", "Let's wonder.",
+  "Take your time.", "No rush.", "Here we go.", "Near and far.", "Here and there.",
+  "Ooh, ooh!", and "Ahh, ahh!". Vary them naturally; do not merely copy examples.
 
 OUTPUT FORMAT IS STRICT:
 Return ONLY one JSON array.
@@ -90,8 +94,11 @@ BANNED = {
     "sound", "sounds", "noise", "beat", "rhythm", "move", "moves", "moving",
     "bright", "dark", "big", "small", "soft", "loud", "quiet", "pretty", "nice",
     "good", "great", "fun", "sweet", "cute", "love", "loved", "friend", "friends",
-    "mine", "close", "calm", "stay close", "look at this", "look at that",
-    "see this", "see that", "hear that", "hear it", "you are", "it is", "there is",
+    "mine", "close", "calm", "clever", "brave", "stay close", "look at this", "look at that",
+    "see this", "see that", "hear that", "hear it", "listen to this", "you are", "it is",
+    "there is", "talk", "speak", "say", "come", "walk", "step", "steps", "breathe",
+    "breath", "stop", "still", "slow down", "keep going", "try", "hurry", "want",
+    "hear", "see", "this", "that", "it", "they", "start",
 }
 
 def parse_args() -> argparse.Namespace:
