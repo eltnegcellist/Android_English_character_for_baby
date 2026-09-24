@@ -1,0 +1,81 @@
+{
+  "source_prompt_version": "emma-lite-generic-v4-human-review-safe",
+  "generator_model": "Gemma-4-E2B-it-Q4_0",
+  "source_total": 80,
+  "selected_total": 56,
+  "review_note": "Human-reviewed subset of Gemma-generated generic fallback replies. Exact generated strings retained; no rewriting.",
+  "themes": {
+    "greeting": [
+      "Hello there. Take a moment. Here we are.",
+      "Hello there. Just a moment. Here we go.",
+      "Hello there. Hi little one. Emma is here.",
+      "Hello dear. Near and far. Emma is here.",
+      "Oh, ooh! Hello there. Just be.",
+      "Hi there. Let's be here. Hello again.",
+      "Hi, little one. Hello again. Let's wonder."
+    ],
+    "presence": [
+      "Hello, little one. Here we are now. One little moment.",
+      "Emma is here. Together now. Just one moment.",
+      "Look with me. Here we go. Near and far.",
+      "Take your time. Let's wonder. Just a moment.",
+      "Ahh, ahh! Together now. Near and far.",
+      "Emma is here. Let's listen. Just one moment.",
+      "Here we are. Take your time. No rush.",
+      "Look around. One little moment. Here we are."
+    ],
+    "looking": [
+      "Look at me now. Watch me now. We look together.",
+      "Let's look now. Take a look. Look around slow.",
+      "Look around now. Look with me there. Take your time.",
+      "Look around now. Take a look now. Just look around.",
+      "Hello, little one. Look with me now. Take a look.",
+      "Look over here. Take your time. Near and far.",
+      "Look with me. Just look. Oh, ooh!",
+      "Look there now. Here and there. Let's look."
+    ],
+    "listening": [
+      "Let's listen now. Pause and listen. I am here.",
+      "Listen here. Take a moment. Just listen.",
+      "Take your time. Just listen here. Let's wonder.",
+      "Listen with me. Let's listen now. Take your time.",
+      "Pause and listen. We can listen here. Just listen closely.",
+      "Listen with me. Take your time. Let's listen now.",
+      "Listen with me. Let's listen now. Pause and listen.",
+      "Let's listen now. Pause and listen here. Listen with me."
+    ],
+    "curiosity": [
+      "I wonder now. Let's wonder. What next?",
+      "I wonder. Take your time. Let's wonder.",
+      "Let's wonder. Let's wonder here. Just wonder now.",
+      "I wonder now. Let's wonder. What comes next?"
+    ],
+    "pace": [
+      "Take your time. No rush now. Let's be slow.",
+      "Here we go. Take a moment. Just one moment.",
+      "Let's wonder. Take your time. Slow and steady.",
+      "Just take time. Be very gentle. Here we go.",
+      "Here and there. Take your time. Just be here.",
+      "No rush now. Take your time. We go slow."
+    ],
+    "vocal_play": [
+      "Oh, ooh! Ahh, ahh! Hello there.",
+      "Hmm, hmm. Look here now. Take your time.",
+      "Hi, little one. Oh, ooh! Near and far.",
+      "Ahh, ahh! Let's wonder. Take your time.",
+      "Hi, little one. Ahh, ahh! Near and far.",
+      "Hey baby. Take your time. Near and far.",
+      "Ahh, ahh! Let's wonder. Ooh, ooh!",
+      "Ooh, ooh! Ahh, ahh! Hey, hello there."
+    ],
+    "attention": [
+      "Near and far. I am here. Take your time.",
+      "Listen with me. Look around now. Oh, ooh!",
+      "Here and there. I am here now. Take your time.",
+      "Look with me. Near and far. Let's wonder.",
+      "Look around now. Oh, ooh! Take your time.",
+      "Look around. Let's wonder. Take your time.",
+      "Here and there. Let's explore. Take your time."
+    ]
+  }
+}
