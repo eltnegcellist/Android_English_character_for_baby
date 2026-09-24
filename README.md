@@ -6,7 +6,7 @@ The goal is not literal translation. The parent's Japanese speech is treated as 
 
 ## Current version
 
-The current public baseline is **v1.4.0-beta15** (`versionCode 67`).
+The current stable public baseline is **v1.4.0** (`versionCode 71`).
 
 Android Emma now contains two editions: **Lite** and **Full**. They share the same speech input/output stack; the main difference is how Emma decides what to say.
 
