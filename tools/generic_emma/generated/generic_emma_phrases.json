@@ -1,0 +1,277 @@
+{
+  "prompt_version": "emma-lite-generic-v2-three-sentence-json",
+  "generator_model": "Gemma-4-E2B-it-Q4_0",
+  "review_note": "Gemma-generated candidates; review before product inclusion.",
+  "themes": {
+    "greeting": {
+      "direction": "Give a warm varied greeting without assuming time, mood, activity, place, or what the parent said.",
+      "accepted": [
+        "Hello there. Look at me. You are sweet.",
+        "Hi dear one. You are loved. Let's talk.",
+        "Hello there. See this thing. It is fun.",
+        "Hi sweet one. Let's see now. You are here.",
+        "We are here now. Be very calm. What do you like?",
+        "See this thing. It is so bright. Hello, my love.",
+        "Hello there now. Look at my face. We are friends.",
+        "Hi little one. Look at me. I love you so."
+      ],
+      "rejected": [
+        {
+          "text": "Hi little one. Time to see. Good morning.",
+          "reasons": [
+            "banned=morning"
+          ]
+        },
+        {
+          "text": "Welcome now. Come here soon. We are happy.",
+          "reasons": [
+            "banned=happy"
+          ]
+        },
+        {
+          "text": "Hello baby. Let's play now. Look around.",
+          "reasons": [
+            "banned=play"
+          ]
+        },
+        {
+          "text": "Welcome here. What a nice day. Be happy.",
+          "reasons": [
+            "banned=happy"
+          ]
+        },
+        {
+          "text": "Hello there, sweet one. What a happy day. I see you now.",
+          "reasons": [
+            "banned=happy"
+          ]
+        },
+        {
+          "text": "Hi little dear. Time to play now. Come let's go.",
+          "reasons": [
+            "banned=play"
+          ]
+        },
+        {
+          "text": "Good morning time. Look at your hands. Hello to you.",
+          "reasons": [
+            "banned=morning"
+          ]
+        },
+        {
+          "text": "You are so cute. I want to see you. Good day, baby.",
+          "reasons": [
+            "sentence_words=5"
+          ]
+        },
+        {
+          "text": "Let's say hi. It is a nice day. Hello, little one.",
+          "reasons": [
+            "sentence_words=5"
+          ]
+        },
+        {
+          "text": "Hello there. You are sweet. Time to play.",
+          "reasons": [
+            "banned=play"
+          ]
+        }
+      ]
+    },
+    "together": {
+      "direction": "Create a gentle sense that Emma and the baby share this moment without assuming touch, safety, feelings, or needs.",
+      "accepted": [
+        "Look at me. See this. We are together.",
+        "We watch. See the thing. It is good now.",
+        "You are here. We are near. This is our time.",
+        "Look around. See the world. We share this.",
+        "Stay close. We are near. This is calm time.",
+        "We are here. You are here. So good now.",
+        "We are here. Look at me now. Time is good.",
+        "You are mine. See this view. Let's be still."
+      ],
+      "rejected": [
+        {
+          "text": "We are here. You are safe. This time is nice.",
+          "reasons": [
+            "banned=safe"
+          ]
+        },
+        {
+          "text": "This is fun. We play now. Come here soon.",
+          "reasons": [
+            "banned=play"
+          ]
+        }
+      ]
+    },
+    "looking": {
+      "direction": "Invite the baby to look or notice visually without naming any object, color, person, place, or actual event.",
+      "accepted": [
+        "Look here now. See this thing. It is nice.",
+        "Look at me. Watch my face. What do you see?",
+        "Look at this. See over there. What is that?",
+        "See me now. Look right here. You can see it.",
+        "Watch this way. Look at it close. It is so good.",
+        "See that thing. Look at it now. It is here.",
+        "Look around. See everything now. Look over there.",
+        "Look up high. See the sky. It is so big."
+      ],
+      "rejected": [
+        {
+          "text": "Look now. See that? See it here. So bright. Look at this.",
+          "reasons": [
+            "sentence_count=5"
+          ]
+        }
+      ]
+    },
+    "listening": {
+      "direction": "Invite the baby to listen or notice sound without claiming that a particular sound actually exists.",
+      "accepted": [
+        "Listen to sound. Hear it now. What is that?",
+        "Listen to sound. Hear that noise. Look over there.",
+        "Listen close now. Hear the soft sounds. Look around here.",
+        "Listen now. Hear my voice. What do you see?",
+        "Look around. What is there? See things move.",
+        "Hear my voice. Listen closely here. I am right here.",
+        "See that thing. It looks over there. You can watch it.",
+        "Hear the noise. It sounds very nice. Let's just listen."
+      ],
+      "rejected": [
+        {
+          "text": "Listen now. Hear this sound. What do you hear? Good listening.",
+          "reasons": [
+            "sentence_count=4"
+          ]
+        },
+        {
+          "text": "Look at me. Hear that noise. Listen to me now. Pretty sounds here.",
+          "reasons": [
+            "sentence_count=4",
+            "word_count=13"
+          ]
+        },
+        {
+          "text": "Hear a sound? Try it. Listen close, sweet one. See that noise?",
+          "reasons": [
+            "sentence_count=4",
+            "too_many_questions"
+          ]
+        },
+        {
+          "text": "Quiet time now. Hear sounds. Listen to what is there. Such soft sounds.",
+          "reasons": [
+            "sentence_count=4",
+            "word_count=13",
+            "sentence_words=5"
+          ]
+        },
+        {
+          "text": "Can you hear that? Yes. Listen to the sounds. I hear them too.",
+          "reasons": [
+            "sentence_count=4",
+            "word_count=13",
+            "sentence_words=1"
+          ]
+        },
+        {
+          "text": "Look around. Hear things. Listen to the world now. What do you see?",
+          "reasons": [
+            "sentence_count=4",
+            "word_count=13",
+            "sentence_words=5"
+          ]
+        },
+        {
+          "text": "Just listen. Hear softly. Listen to the sound. Good little ears.",
+          "reasons": [
+            "sentence_count=4"
+          ]
+        },
+        {
+          "text": "Hear that sound? So nice. Listen close now. Look and hear.",
+          "reasons": [
+            "sentence_count=4"
+          ]
+        },
+        {
+          "text": "Listen now. Hear that sound? Soft music plays.",
+          "reasons": [
+            "banned=music"
+          ]
+        }
+      ]
+    },
+    "curiosity": {
+      "direction": "Express gentle curiosity and wonder without inventing facts and without requiring a verbal answer.",
+      "accepted": [
+        "Look at that. What is it? See this now.",
+        "What is that? Let us see. Look close now.",
+        "See this thing. It looks new. What is it?",
+        "Look over. What is that? See it now.",
+        "Where is it? Let us find. Look here now.",
+        "What is it? It is nice. Let us see.",
+        "See this here. Look at this. What is it?",
+        "Do you see? It looks fun. Look now, see."
+      ],
+      "rejected": []
+    },
+    "encouragement": {
+      "direction": "Invite slow noticing and curiosity without praising an achievement or assuming how the baby feels.",
+      "accepted": [
+        "Look at you. See the world. It is fun.",
+        "Watch this. Look around now. So much to see.",
+        "Hello there. See me now. What do you see?",
+        "Little eyes. Look at things. They are bright.",
+        "Try to see. See that thing. It is there.",
+        "Hear my voice. Listen now. It is soft.",
+        "See this one. Look at this. It moves now.",
+        "Let's see. Look now. What is this?"
+      ],
+      "rejected": []
+    },
+    "rhythm": {
+      "direction": "Use neutral sound-play or rhythm such as tap, pause, ooh, ahh without claiming the baby or an object is moving.",
+      "accepted": [
+        "Tap tap tap. See that sound? Oh, listen now.",
+        "Soft sound. Hear it here. Good rhythm.",
+        "Oh, ahh. Look at that. Such a sound.",
+        "Tap, tap. Listen close. Nice rhythm.",
+        "Hush now. Soft sound here. Calm rhythm.",
+        "Oh, ooh. See that move. Pretty rhythm.",
+        "Tap tap tap. Hear the beat. Good sound.",
+        "Ah, ahh. Just like that. Nice rhythm."
+      ],
+      "rejected": []
+    },
+    "attention": {
+      "direction": "Gently vary attention between here, there, near, far, now, and next without assuming a concrete scene.",
+      "accepted": [
+        "Over there now. Look at that thing. It is right here.",
+        "Near you now. See that small thing. Look at it now.",
+        "Look far out. See something far. Look way over there.",
+        "Now and then. See that big thing. Look here now.",
+        "Next is here. See that thing next. Look at next now.",
+        "See me now. Look right over. You are very cute.",
+        "Look here now. See what is near. You are so bright.",
+        "Look here now. See that thing? It is right here."
+      ],
+      "rejected": [
+        {
+          "text": "Look at me. See the bright light. Good job now.",
+          "reasons": [
+            "banned=good job"
+          ]
+        },
+        {
+          "text": "Here is play. See that toy. Come look here.",
+          "reasons": [
+            "banned=toy"
+          ]
+        }
+      ]
+    }
+  },
+  "accepted_total": 64
+}
