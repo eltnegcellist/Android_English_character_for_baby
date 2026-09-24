@@ -1,0 +1,92 @@
+name: Generate Emma Lite generic replies with Gemma
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'tools/generic_emma/**'
+      - '.github/workflows/generate-generic-emma.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generic-emma-generation
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[generic-generated]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Build llama.cpp
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp.git /tmp/llama.cpp
+          cmake -S /tmp/llama.cpp -B /tmp/llama.cpp/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/llama.cpp/build --config Release -j2 --target llama-server
+          echo "/tmp/llama.cpp/build/bin" >> "$GITHUB_PATH"
+
+      - name: Start Gemma 4 E2B Q4
+        shell: bash
+        run: |
+          set -euo pipefail
+          llama-server             -hf ggml-org/gemma-4-E2B-it-GGUF:Q4_0             --reasoning off             --host 127.0.0.1 --port 8080             --ctx-size 4096 --threads 4             >/tmp/gemma-generic.log 2>&1 &
+          echo $! > /tmp/gemma-generic.pid
+          for i in $(seq 1 180); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/gemma-generic.log
+          exit 1
+
+      - name: Generate 8 x 10 generic replies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tools/generic_emma/generated
+          python3 tools/generic_emma/generate_generic_phrases.py             --base-url http://127.0.0.1:8080/v1             --model Gemma-4-E2B-it-Q4_0             --per-theme 10             --batch-size 10             --temperature 0.95             --output tools/generic_emma/generated/generic_emma_phrases.json
+
+      - name: Validate generated total
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("tools/generic_emma/generated/generic_emma_phrases.json")
+          data=json.loads(p.read_text())
+          assert data["accepted_total"] == 80, data["accepted_total"]
+          print("accepted_total =", data["accepted_total"])
+          PY
+
+      - name: Stop Gemma
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/gemma-generic.pid ]; then
+            kill "$(cat /tmp/gemma-generic.pid)" 2>/dev/null || true
+          fi
+
+      - name: Commit generated catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/generic_emma/generated/generic_emma_phrases.json
+          if git diff --cached --quiet; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git commit -m "[generic-generated] Add Gemma generic reply catalog"
+          git push origin HEAD:main
