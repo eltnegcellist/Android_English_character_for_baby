@@ -1,4 +1,5 @@
 name: Generate Emma Lite generic replies with Gemma
+# retry-marker: json-parser-v2
 
 on:
   push:
