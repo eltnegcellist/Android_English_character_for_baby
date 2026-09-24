@@ -76,6 +76,34 @@ class LiteResponseEngineTest {
         }
     }
 
+
+    @Test
+    fun childcareAnchorsActivelySelectSceneWithoutBroadFalsePositives() {
+        val samples = listOf(
+            "沐浴しようか" to "bath",
+            "授乳の時間だね" to "milk",
+            "母乳にしようか" to "milk",
+            "ねんねしようね" to "sleep",
+            "オムツだね" to "diaper",
+            "抱っこしよう" to "hug",
+            "クーイングしてるね" to "voice",
+            "吐き戻しちゃったね" to "tummy",
+            "離乳食だよ" to "food",
+            "絵本見ようか" to "book",
+            "ベビーカーで行こう" to "outside",
+        )
+
+        samples.forEach { (input, expected) ->
+            val response = LiteResponseEngine().respond(input)
+            assertEquals("childcare anchor scene for: $input", expected, response.scene)
+            assertTrue("childcare anchor score for: $input", response.score >= 6)
+        }
+
+        assertFalse(LiteResponseEngine().respond("手伝ってね").scene == "hands")
+        assertFalse(LiteResponseEngine().respond("足りないね").scene == "feet")
+        assertFalse(LiteResponseEngine().respond("歌舞伎だね").scene == "music")
+    }
+
     @Test
     fun ambiguousJapaneseDoesNotTriggerWrongScene() {
         val forbidden = listOf(
