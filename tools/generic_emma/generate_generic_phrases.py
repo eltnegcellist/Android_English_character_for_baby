@@ -160,13 +160,13 @@ def main() -> int:
         "themes": {},
     }
     global_seen: set[str] = set()
-    global_openers: set[str] = set()
+    opener_counts: dict[str, int] = {}
 
     for theme_id, theme in THEMES.items():
         accepted: list[str] = []
         rejected: list[dict[str, object]] = []
         attempts = 0
-        while len(accepted) < args.per_theme and attempts < 40:
+        while len(accepted) < args.per_theme and attempts < 16:
             attempts += 1
             batch = max(args.batch_size, args.per_theme - len(accepted))
             try:
@@ -184,13 +184,13 @@ def main() -> int:
                     continue
                 reasons = validate(text)
                 opener = opener_key(text)
-                if opener in global_openers:
-                    reasons.append("duplicate_opener")
+                if opener_counts.get(opener, 0) >= 2:
+                    reasons.append("overused_opener")
                 if reasons:
                     rejected.append({"text": text, "reasons": reasons})
                     continue
                 global_seen.add(key)
-                global_openers.add(opener)
+                opener_counts[opener] = opener_counts.get(opener, 0) + 1
                 accepted.append(text)
                 if len(accepted) >= args.per_theme:
                     break
