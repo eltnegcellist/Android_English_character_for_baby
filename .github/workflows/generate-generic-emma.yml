@@ -50,12 +50,12 @@ jobs:
           cat /tmp/gemma-generic.log
           exit 1
 
-      - name: Generate 8 x 8 generic replies
+      - name: Generate 8 x 10 generic replies
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p tools/generic_emma/generated
-          python3 tools/generic_emma/generate_generic_phrases.py             --base-url http://127.0.0.1:8080/v1             --model Gemma-4-E2B-it-Q4_0             --per-theme 8             --batch-size 8             --temperature 0.95             --output tools/generic_emma/generated/generic_emma_phrases.json
+          python3 tools/generic_emma/generate_generic_phrases.py             --base-url http://127.0.0.1:8080/v1             --model Gemma-4-E2B-it-Q4_0             --per-theme 10             --batch-size 10             --temperature 0.95             --output tools/generic_emma/generated/generic_emma_phrases.json
 
       - name: Validate generated total
         shell: bash
@@ -66,7 +66,7 @@ jobs:
           from pathlib import Path
           p=Path("tools/generic_emma/generated/generic_emma_phrases.json")
           data=json.loads(p.read_text())
-          assert data["accepted_total"] == 64, data["accepted_total"]
+          assert data["accepted_total"] == 80, data["accepted_total"]
           print("accepted_total =", data["accepted_total"])
           PY
 
