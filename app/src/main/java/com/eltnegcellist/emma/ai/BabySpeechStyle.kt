@@ -1,28 +1,26 @@
 package com.eltnegcellist.emma.ai
 
+/**
+ * Full BABY mode intentionally shares the same response-length envelope as Lite.
+ *
+ * Full still uses Gemma to choose the words dynamically, but it should not sound
+ * more verbose than Lite when speaking to the baby. Referencing Lite constants
+ * directly prevents the two modes from drifting apart again.
+ */
 internal object BabySpeechStyle {
-    const val MIN_WORDS = 20
-    const val MAX_WORDS = 32
-    const val MIN_SENTENCES = 5
-    const val MAX_SENTENCES = 7
-    const val MAX_WORDS_PER_SENTENCE = 5
+    const val MIN_WORDS = LiteSpeechStyle.MIN_WORDS
+    const val MAX_WORDS = LiteSpeechStyle.MAX_WORDS
+    const val MIN_SENTENCES = LiteSpeechStyle.MIN_SENTENCES
+    const val MAX_SENTENCES = LiteSpeechStyle.MAX_SENTENCES
+    const val MAX_WORDS_PER_SENTENCE = LiteSpeechStyle.MAX_WORDS_PER_SENTENCE
 
-    const val FIRST_WORDS_MAX_WORDS = 24
-    const val EASY_MAX_WORDS = 30
+    // Difficulty changes vocabulary/grammar, not response length in BABY mode.
+    const val FIRST_WORDS_MAX_WORDS = LiteSpeechStyle.MAX_WORDS
+    const val EASY_MAX_WORDS = LiteSpeechStyle.MAX_WORDS
 
-    // Match Full mode: use the configured spoken name when it has not appeared
-    // in either of the two most recent baby-directed replies.
+    // Use the configured spoken name when it has not appeared in either of the
+    // two most recent baby-directed replies.
     const val NAME_REPEAT_WINDOW = 2
 
-    // Generic fillers are intentionally short. Lite should sound like the Full
-    // baby prompt: several tiny phrases, not one long explanatory sentence.
-    val neutralClosers = listOf(
-        "Look right here with me.",
-        "Listen right here with me.",
-        "Here we go together now.",
-        "Nice and easy, little one.",
-        "Emma is right here now.",
-        "Hello, hello, little one, hello!",
-        "Stay right here with me.",
-    )
+    val neutralClosers = LiteSpeechStyle.neutralClosers
 }
