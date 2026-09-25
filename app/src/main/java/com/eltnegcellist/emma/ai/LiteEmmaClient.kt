@@ -1,6 +1,7 @@
 package com.eltnegcellist.emma.ai
 
 import android.content.Context
+import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineJapaneseAsr
 import com.eltnegcellist.emma.tts.DiagnosticStore
 
@@ -14,7 +15,7 @@ class LiteEmmaClient(
 
     fun isReady(): Boolean = asr.isReady()
 
-    fun initialize(): Result<Unit> = asr.initialize()
+    fun initialize(model: MoonshineAsrModel): Result<Unit> = asr.initialize(model)
 
     fun createEnglishIsland(
         wavAudio: ByteArray,
