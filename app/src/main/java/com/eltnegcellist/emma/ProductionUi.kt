@@ -317,7 +317,9 @@ internal fun EmmaSettingsScreen(
     previewing: Boolean,
     modelReady: Boolean,
     modelPresent: Boolean,
+    asrInstalled: Boolean,
     kittenInstalled: Boolean,
+    gemmaInstalled: Boolean,
     lastSpeechMillis: Long?,
     engineMode: ConversationEngineMode,
     asrModel: MoonshineAsrModel,
@@ -489,7 +491,7 @@ internal fun EmmaSettingsScreen(
                             }
 
                             ConversationEngineMode.FULL -> {
-                                if (!modelPresent) {
+                                if (!gemmaInstalled) {
                                     Text("Gemmaは2GB超の追加データが必要です。", style = MaterialTheme.typography.bodySmall)
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -506,19 +508,20 @@ internal fun EmmaSettingsScreen(
                                             modifier = Modifier.weight(1f),
                                         ) { Text("Gemmaを選択") }
                                     }
-                                } else {
+                                }
+                                if (!asrInstalled || !kittenInstalled) {
+                                    Button(
+                                        onClick = onPrepareLite,
+                                        enabled = enabled,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("Moonshine ${asrModel.shortLabel} + Kittenを準備") }
+                                }
+                                if (gemmaInstalled && asrInstalled && kittenInstalled) {
                                     Button(
                                         onClick = onLoadGemma,
                                         enabled = enabled,
                                         modifier = Modifier.fillMaxWidth(),
                                     ) { Text("Emma Fullを起動") }
-                                }
-                                if (!kittenInstalled) {
-                                    Button(
-                                        onClick = onPrepareLite,
-                                        enabled = enabled,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) { Text("Moonshine + Kittenを準備") }
                                 }
                             }
                         }
