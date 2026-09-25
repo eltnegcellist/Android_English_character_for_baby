@@ -1,91 +1,131 @@
 # Emma — Local English companion for families with babies
 
-Emma is an Android app that lets a parent speak naturally in Japanese while an on-device English character responds to the baby in short, simple English.
+Emma is a local-first English companion designed for families with babies.
 
-The goal is not literal translation. The parent's Japanese speech is treated as context for what is happening now, and Emma joins the moment as an English-speaking companion.
+親は普段どおり日本語で赤ちゃんに話しかけます。Emmaはその日本語を単純に英訳するのではなく、「いま何が起きているか」を理解するためのコンテキストとして扱い、その場面に合った短くやさしい英語で赤ちゃんに話しかけます。
 
-## Current version
+## Stable release
 
-The current stable public baseline is **v1.4.0** (`versionCode 71`).
+**Current stable Android release: v1.5.0**  
+**versionCode: 75**
 
-Android Emma now contains two editions: **Lite** and **Full**. They share the same speech input/output stack; the main difference is how Emma decides what to say.
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/emma-v1.5.0
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/emma-v1.5.0/EmmaLocal-v1.5.0-android-arm-debug.apk
+- Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
+
+v1.5.0 is the current stable application baseline. The stable tag/release is treated as fixed; later development should use a new version rather than replacing the v1.5.0 release.
+
+> The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
+
+## Editions
+
+Android Emma has two editions.
+
+| Edition | Response engine | Main purpose |
+| --- | --- | --- |
+| **Lite** | LiteResponseEngine | Lightweight, predictable, fully local responses |
+| **Full** | Gemma + recent conversation context | More flexible, context-aware responses |
+
+Lite and Full share the same basic speech input/output stack. The main difference is how Emma decides what to say.
 
 ## Emma Lite
 
 ```text
 Microphone
   ↓
-Moonshine Japanese Tiny/Small Streaming
+Moonshine Japanese Tiny / Small Streaming
   ↓
 LiteResponseEngine
   ↓
-Kitten TTS Nano 0.8 FP32 / Kiki
+Kitten TTS Nano 0.8 / Kiki
   ↓
 Emma avatar
 ```
 
-- Japanese ASR: Moonshine Tiny Streaming（Lite既定）/ Small Streaming（Full既定）。設定からどちらのエディションでも切替可能
-- TTS: Kitten TTS Nano 0.8 FP32, Kiki
-- Approximate speech-model download: about 64 MB
+- Japanese ASR: Moonshine Japanese Tiny / Small Streaming
+- Lite default: Tiny
+- TTS: Kitten TTS Nano 0.8 / Kiki
 - Processing after setup: on-device
+- Small ASR can also be selected manually
+
+Lite is designed to stay compact and predictable. It chooses from a curated response system rather than asking a generative model to create every utterance.
 
 ## Emma Full
 
-Full uses the same Moonshine/Kitten stack and adds Gemma. ASR model choice is independent from the edition: Lite defaults to Tiny, Full defaults to Small, and either can be selected manually.
+Full keeps the same speech stack and adds Gemma for response generation.
 
 ```text
 Microphone
-  ├─→ Moonshine Japanese Tiny/Small Streaming ─→ Japanese transcript ─┐
-  └──────────────────── original audio ──────────────────────────┤
-                                                                 ↓
-                                                        Gemma 4 E2B
-                                              + recent conversation history
-                                                                 ↓
-                                                        English response
-                                                                 ↓
-                                                Kitten TTS Nano / Kiki
-                                                                 ↓
-                                                          Emma avatar
+  ├─→ Moonshine Japanese Tiny / Small Streaming → Japanese transcript ─┐
+  └──────────────── original audio ────────────────────────────────────┤
+                                                                       ↓
+                                                              Gemma 4 E2B
+                                                    + recent conversation history
+                                                                       ↓
+                                                              English response
+                                                                       ↓
+                                                      Kitten TTS Nano / Kiki
+                                                                       ↓
+                                                                Emma avatar
 ```
 
-The Moonshine transcript is the **primary source for linguistic meaning**. The original audio is supplied to Gemma only as secondary context for information that text can lose, such as intonation, laughter, cooing, babbling, squealing, or crying. A clear transcript is not overridden by Gemma's own interpretation of the waveform.
+The Moonshine transcript is the primary source for linguistic meaning. Original audio can provide secondary context for information that text may lose, such as intonation, laughter, cooing, babbling, squealing, or crying.
 
 Full requires more than 2 GB of additional local Gemma model data.
 
-## First-run experience
+## First launch
 
-On first launch, the family chooses one of:
+On first launch, the family selects:
 
-- **Lite** — Moonshine Tiny by default + LiteResponseEngine + Kitten TTS Nano. Small ASR can be added manually
-- **Full** — Moonshine Small by default + Kitten TTS Nano + Gemma for context-aware response generation. Tiny remains selectable
+- **Lite** — Moonshine Tiny by default + LiteResponseEngine + Kitten TTS
+- **Full** — Moonshine Small by default + Gemma + Kitten TTS
 
-The selected edition is retained and can be changed later from Settings.
+The selected edition is saved and can later be changed from Settings.
 
-Existing saved `STANDARD`, legacy `LITE`, and `WEB_LITE` values are migrated to the current **Lite** edition.
+Legacy saved edition values are migrated to the current Lite/Full structure.
 
-## Shared speech stack
+## Shared features
 
 Lite and Full intentionally share:
 
-- Moonshine Japanese Tiny/Small Streaming for Japanese ASR (edition-independent selection),
-- Kitten TTS Nano 0.8 FP32 / Kiki for English speech,
-- baby-name pronunciation and optional `-chan` suffix,
-- family/gender settings,
-- appearance settings,
-- automatic endpoint detection and reply flow,
-- non-verbal baby response behavior,
-- screen-awake preference.
+- Moonshine Japanese Tiny / Small Streaming ASR
+- Kitten TTS Nano 0.8 / Kiki
+- automatic speech endpoint detection and reply flow
+- baby-name pronunciation settings
+- optional `-chan` suffix
+- family / gender settings
+- appearance settings
+- non-verbal baby response behavior
+- screen-awake preference
 
-The edition boundary is therefore simple:
+The edition boundary is intentionally simple:
 
-- **Lite** = fixed lightweight response knowledge
-- **Full** = Gemma generates the response from transcript + secondary audio context + conversation history
+- **Lite** = lightweight fixed response knowledge
+- **Full** = generative response using transcript + secondary audio context + recent conversation history
 
-## Privacy
+## Web edition
 
-Emma is designed around local processing. Recorded speech and generated conversation are not intended to be sent to a cloud AI API. Network access is used to download required model files.
+Emma also has a browser-based Lite edition that does not require APK installation.
 
-This public repository does **not** intentionally contain signing keys, keystores, passwords, API tokens, private runner configuration, or family-specific private data.
+**Open Emma Web:**  
+https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
+
+**Web repository:**  
+https://github.com/eltnegcellist/Web_EmmaLocal_English_for_babies
+
+The Web edition is Lite-only. Full is provided by the Android application.
+
+## Privacy and local processing
+
+Emma is designed around local processing.
+
+- Speech recognition runs locally after the required model files are downloaded.
+- Response selection/generation runs locally.
+- Speech synthesis runs locally.
+- Recorded speech and generated conversation are not intended to be sent to a cloud AI API.
+- Network access is primarily used for downloading required model files.
+
+This public repository does not intentionally contain signing keys, keystores, passwords, API tokens, private runner configuration, or family-specific private data.
 
 ## Requirements
 
@@ -93,12 +133,21 @@ This public repository does **not** intentionally contain signing keys, keystore
 - Microphone permission
 - Internet access for initial model downloads
 - Sufficient free storage for the selected edition
+- ARM Android device (`arm64-v8a` or `armeabi-v7a`)
 
-## Building
+## Build environment
 
-The project uses Java 17, Android Gradle Plugin 9.3.0, Kotlin 2.3.21, compileSdk 37.1, sherpa-onnx 1.13.8, and Moonshine Voice 0.1.5.
+The current project uses:
 
-The sherpa-onnx Android runtime is intentionally not committed to this repository. Download the pinned AAR before building:
+- Java 17
+- Android Gradle Plugin 9.3.0
+- Kotlin 2.3.21
+- compileSdk 37.1
+- targetSdk 36
+- sherpa-onnx 1.13.8
+- Moonshine Voice 0.1.5
+
+The sherpa-onnx Android runtime is intentionally not committed to the repository.
 
 ```bash
 mkdir -p app/libs
@@ -107,7 +156,7 @@ curl -fL \
   -o app/libs/sherpa-onnx-static-1.13.8.aar
 ```
 
-Then run:
+Then build with:
 
 ```bash
 gradle :app:testDebugUnitTest :app:assembleDebug
@@ -118,7 +167,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 - Moonshine Voice / Moonshine Japanese Tiny/Small Streaming — MIT
 - Kitten TTS Nano 0.8 — Apache-2.0
 - sherpa-onnx — Apache-2.0
-- LiteRT-LM / Gemma — used for optional Full mode
+- LiteRT-LM / Gemma — optional Full mode
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -126,7 +175,11 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 ## Project status
 
-Emma is experimental software. It is not intended to guarantee language-learning outcomes or replace professional guidance about child development.
+**v1.5.0 is the current stable baseline.**
+
+Emma remains an independently developed project and does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
+
+Future functional changes should be released under a new version so that v1.5.0 remains reproducible as the stable reference point.
 
 ## License
 
