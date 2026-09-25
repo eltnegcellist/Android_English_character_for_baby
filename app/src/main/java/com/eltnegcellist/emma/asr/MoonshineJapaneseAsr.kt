@@ -18,23 +18,31 @@ class MoonshineJapaneseAsr(
 
     fun isReady(): Boolean = transcriber != null
 
-    fun initialize(): Result<Unit> = runCatching {
-        require(MoonshineModelStore.isInstalled(appContext)) {
-            "Emma LiteのMoonshine日本語モデルがまだ導入されていません。"
+    fun initialize(model: MoonshineAsrModel): Result<Unit> = runCatching {
+        require(MoonshineModelStore.isInstalled(appContext, model)) {
+            "Moonshine 日本語${model.shortLabel}がまだ導入されていません。"
         }
 
         synchronized(lock) {
             transcriber?.close()
             val created = Transcriber()
-            val root = MoonshineModelStore.directory(appContext).absolutePath + File.separator
-            created.loadFromFiles(root, JNI.MOONSHINE_MODEL_ARCH_TINY_STREAMING)
+            val root = MoonshineModelStore.directory(appContext, model).absolutePath + File.separator
+            created.loadFromFiles(root, model.arch)
+            runCatching { created.setKeyterms(CHILDCARE_ASR_KEYTERMS) }
+                .onFailure { error ->
+                    DiagnosticStore.mark(
+                        appContext,
+                        "moonshine_keyterms_skipped",
+                        "model=${model.shortLabel} error=${error.message ?: error.javaClass.simpleName}",
+                    )
+                }
             transcriber = created
         }
 
         DiagnosticStore.mark(
             appContext,
             "lite_asr_initialized",
-            "engine=moonshine model=${MoonshineModelStore.MODEL_NAME} language=ja",
+            "engine=moonshine model=${model.modelName} language=ja keyterms=${CHILDCARE_ASR_KEYTERMS.size}",
         )
     }
 
@@ -66,5 +74,15 @@ class MoonshineJapaneseAsr(
             transcriber?.close()
             transcriber = null
         }
+    }
+
+    private companion object {
+        val CHILDCARE_ASR_KEYTERMS = listOf(
+            "沐浴", "お風呂", "ミルク", "母乳", "おっぱい", "哺乳瓶", "授乳",
+            "ねんね", "おやすみ", "昼寝", "おむつ", "うんち", "おしっこ",
+            "着替え", "抱っこ", "おてて", "あんよ", "にこにこ", "泣く",
+            "ぐずぐず", "喃語", "クーイング", "げっぷ", "吐き戻し", "おもちゃ",
+            "お散歩", "ベビーカー", "離乳食", "絵本", "音楽",
+        )
     }
 }
