@@ -40,6 +40,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.eltnegcellist.emma.ai.AudienceMode
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
+import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.ui.CompactEmmaAvatar
 import com.eltnegcellist.emma.ui.EmmaColorMode
 import com.eltnegcellist.emma.ui.EmmaVividPalette
@@ -319,10 +320,12 @@ internal fun EmmaSettingsScreen(
     kittenInstalled: Boolean,
     lastSpeechMillis: Long?,
     engineMode: ConversationEngineMode,
+    asrModel: MoonshineAsrModel,
     keepScreenOn: Boolean,
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
+    onAsrModel: (MoonshineAsrModel) -> Unit,
     onLevel: (EnglishLevel) -> Unit,
     onPreview: () -> Unit,
     onStopPreview: () -> Unit,
@@ -416,6 +419,40 @@ internal fun EmmaSettingsScreen(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("音声認識", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Moonshine Tiny / Small を選べます。Liteの初期値はTiny、Fullの初期値はSmallです。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    MoonshineAsrModel.entries.forEach { option ->
+                        if (asrModel == option) {
+                            Button(
+                                onClick = {},
+                                enabled = enabled,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("${option.label}（選択中）") }
+                        } else {
+                            OutlinedButton(
+                                onClick = { onAsrModel(option) },
+                                enabled = enabled,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("${option.label}に切り替える") }
+                        }
+                    }
+                    Text(
+                        if (asrModel == MoonshineAsrModel.SMALL) {
+                            "Smallは追加データが必要です。Tinyより高精度な場合がありますが、常に正確とは限りません。"
+                        } else {
+                            "Tinyは軽量で、Emmaをすばやく始める標準設定です。"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Emma ${engineMode.label}", style = MaterialTheme.typography.titleMedium)
 
                     val editionReady = modelReady && kittenInstalled
@@ -425,9 +462,9 @@ internal fun EmmaSettingsScreen(
                         Text(
                             when (engineMode) {
                                 ConversationEngineMode.LITE ->
-                                    "Moonshine 日本語Tinyで聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
+                                    "Moonshine 日本語${asrModel.shortLabel}で聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
                                 ConversationEngineMode.FULL ->
-                                    "Moonshineの文字起こしと元音声をGemmaが会話履歴と一緒に受け取り、Kitten TTS Nano / Kikiで話します。"
+                                    "Moonshine 日本語${asrModel.shortLabel}の文字起こしと元音声をGemmaが会話履歴と一緒に受け取り、Kitten TTS Nano / Kikiで話します。"
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
@@ -437,7 +474,11 @@ internal fun EmmaSettingsScreen(
                         when (engineMode) {
                             ConversationEngineMode.LITE -> {
                                 Text(
-                                    "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano 約31MB。合計約64MBです。",
+                                    if (asrModel == MoonshineAsrModel.TINY) {
+                                        "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano 約31MB。合計約64MBです。"
+                                    } else {
+                                        "Moonshine 日本語Smallの追加データ + Kitten TTS Nanoを準備します。"
+                                    },
                                     style = MaterialTheme.typography.bodySmall,
                                 )
                                 Button(
