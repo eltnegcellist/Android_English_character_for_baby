@@ -425,7 +425,7 @@ private fun ProductionEmmaApp() {
         liteSetupPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
         modelReady = false
         status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "Emma Liteを準備しています…"
+        statusMessage = "音声モデルを準備しています…"
 
         EmmaWorkQueue.execute {
             runCatching {
@@ -473,8 +473,13 @@ private fun ProductionEmmaApp() {
                         modelReady = true
                         status = ProductionEmmaStatus.IDLE
                         statusMessage = "Emma Liteの準備ができました。"
+                    } else if (modelPresent) {
+                        status = ProductionEmmaStatus.IDLE
+                        statusMessage = "Moonshine ${requestedAsr.shortLabel}の準備ができました。Fullを起動します…"
+                        mainHandler.post { if (!disposed) loadModel() }
                     } else {
                         status = ProductionEmmaStatus.IDLE
+                        statusMessage = "Moonshine ${requestedAsr.shortLabel}の準備ができました。"
                     }
                 }
             }.onFailure { error ->
@@ -485,7 +490,7 @@ private fun ProductionEmmaApp() {
                     liteSetupProgressPercent = null
                     modelPresent = modeModelsPresent(engineMode)
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Emma Liteの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                    statusMessage = "音声モデルの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
                     settingsOpen = true
                 }
             }
@@ -1181,7 +1186,11 @@ private fun ProductionEmmaApp() {
                 }
             },
             onAsrModel = { selected ->
-                if (!recording && !busy) activateAsrModel(selected)
+                if (!recording && !busy) {
+                    val needsDownload = !MoonshineModelStore.isInstalled(context, selected)
+                    activateAsrModel(selected)
+                    if (needsDownload) startLiteAutomaticSetup()
+                }
             },
             onLevel = { englishLevel = it; preferences.edit().putString("level", it.name).apply() },
             onPreview = {
