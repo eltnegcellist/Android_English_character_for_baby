@@ -27,6 +27,7 @@ import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.ai.GemmaEmmaClient
 import com.eltnegcellist.emma.ai.LiteEmmaClient
+import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
@@ -89,6 +90,19 @@ private fun ProductionEmmaApp() {
     }
     var engineMode by remember { mutableStateOf(initialEngineMode) }
     var onboardingMode by remember { mutableStateOf(initialEngineMode) }
+    var asrModelManuallySelected by remember {
+        mutableStateOf(preferences.getBoolean("asr_model_manual", false))
+    }
+    val initialAsrModel = remember {
+        if (preferences.getBoolean("asr_model_manual", false)) {
+            MoonshineAsrModel.fromSaved(preferences.getString("asr_model", null))
+        } else if (initialEngineMode == ConversationEngineMode.FULL) {
+            MoonshineAsrModel.SMALL
+        } else {
+            MoonshineAsrModel.TINY
+        }
+    }
+    var asrModel by remember { mutableStateOf(initialAsrModel) }
     var latestTranscript by remember { mutableStateOf("") }
     var autoRespond by remember { mutableStateOf(preferences.getBoolean("auto_respond", true)) }
     var keepScreenOn by remember { mutableStateOf(preferences.getBoolean("keep_screen_on", true)) }
@@ -127,9 +141,9 @@ private fun ProductionEmmaApp() {
         mutableStateOf(
             when (initialEngineMode) {
                 ConversationEngineMode.LITE ->
-                    MoonshineModelStore.isInstalled(context) && KittenModelStore.isInstalled(context)
+                    MoonshineModelStore.isInstalled(context, initialAsrModel) && KittenModelStore.isInstalled(context)
                 ConversationEngineMode.FULL ->
-                    MoonshineModelStore.isInstalled(context) &&
+                    MoonshineModelStore.isInstalled(context, initialAsrModel) &&
                         KittenModelStore.isInstalled(context) &&
                         GemmaModelStore.hasUsableModel(context)
             },
@@ -142,7 +156,7 @@ private fun ProductionEmmaApp() {
             initialEngineMode == ConversationEngineMode.FULL &&
                 (
                     !GemmaModelStore.hasUsableModel(context) ||
-                        !MoonshineModelStore.isInstalled(context) ||
+                        !MoonshineModelStore.isInstalled(context, initialAsrModel) ||
                         !KittenModelStore.isInstalled(context)
                 ),
         )
@@ -246,11 +260,14 @@ private fun ProductionEmmaApp() {
         return kittenInstalled && kitten.speak(text)
     }
 
-    fun modeModelsPresent(mode: ConversationEngineMode): Boolean = when (mode) {
+    fun modeModelsPresent(
+        mode: ConversationEngineMode,
+        selectedAsr: MoonshineAsrModel = asrModel,
+    ): Boolean = when (mode) {
         ConversationEngineMode.LITE ->
-            MoonshineModelStore.isInstalled(context) && KittenModelStore.isInstalled(context)
+            MoonshineModelStore.isInstalled(context, selectedAsr) && KittenModelStore.isInstalled(context)
         ConversationEngineMode.FULL ->
-            MoonshineModelStore.isInstalled(context) &&
+            MoonshineModelStore.isInstalled(context, selectedAsr) &&
                 KittenModelStore.isInstalled(context) &&
                 GemmaModelStore.hasUsableModel(context)
     }
@@ -275,20 +292,21 @@ private fun ProductionEmmaApp() {
         status = ProductionEmmaStatus.MODEL_LOADING
         statusMessage = "Emma ${engineMode.label}を起動しています…"
         val requestedMode = engineMode
+        val requestedAsr = asrModel
 
         EmmaWorkQueue.execute {
             val result = when (requestedMode) {
                 ConversationEngineMode.LITE -> {
                     gemma.close()
-                    lite.initialize()
+                    lite.initialize(requestedAsr)
                 }
                 ConversationEngineMode.FULL -> {
                     lite.close()
-                    gemma.initialize(modelFile.absolutePath)
+                    gemma.initialize(modelFile.absolutePath, requestedAsr)
                 }
             }
             mainHandler.post {
-                if (disposed || engineMode != requestedMode) return@post
+                if (disposed || engineMode != requestedMode || asrModel != requestedAsr) return@post
                 result.onSuccess {
                     modelReady = true
                     kittenInstalled = KittenModelStore.isInstalled(context)
@@ -306,6 +324,13 @@ private fun ProductionEmmaApp() {
 
     fun activateEngineMode(selected: ConversationEngineMode) {
         engineMode = selected
+        if (!asrModelManuallySelected) {
+            asrModel = if (selected == ConversationEngineMode.FULL) {
+                MoonshineAsrModel.SMALL
+            } else {
+                MoonshineAsrModel.TINY
+            }
+        }
         preferences.edit()
             .putString("conversation_engine_mode", selected.savedValue)
             .apply()
@@ -318,9 +343,9 @@ private fun ProductionEmmaApp() {
         status = ProductionEmmaStatus.IDLE
         statusMessage = when (selected) {
             ConversationEngineMode.LITE ->
-                if (modelPresent) "Liteを選びました。起動します…" else "Liteの音声モデルを準備してください。"
+                if (modelPresent) "Lite / ${asrModel.shortLabel}を選びました。起動します…" else "Liteの音声モデルを準備してください。"
             ConversationEngineMode.FULL ->
-                if (modelPresent) "Fullを選びました。起動します…" else "Fullを選びました。Moonshine・Kitten・Gemmaを準備してください。"
+                if (modelPresent) "Full / ${asrModel.shortLabel}を選びました。起動します…" else "Fullを選びました。Moonshine・Kitten・Gemmaを準備してください。"
         }
 
         EmmaWorkQueue.execute {
@@ -328,6 +353,31 @@ private fun ProductionEmmaApp() {
                 ConversationEngineMode.LITE -> gemma.close()
                 ConversationEngineMode.FULL -> lite.close()
             }
+        }
+        if (modelPresent) {
+            mainHandler.post { if (!disposed) loadModel() }
+        }
+    }
+
+    fun activateAsrModel(selected: MoonshineAsrModel) {
+        if (selected == asrModel) return
+        asrModel = selected
+        asrModelManuallySelected = true
+        preferences.edit()
+            .putString("asr_model", selected.savedValue)
+            .putBoolean("asr_model_manual", true)
+            .apply()
+        modelReady = false
+        modelPresent = modeModelsPresent(engineMode, selected)
+        status = ProductionEmmaStatus.IDLE
+        statusMessage = if (modelPresent) {
+            "音声認識を${selected.shortLabel}に切り替えます…"
+        } else {
+            "Moonshine 日本語${selected.shortLabel}を準備してください。"
+        }
+        EmmaWorkQueue.execute {
+            lite.close()
+            gemma.close()
         }
         if (modelPresent) {
             mainHandler.post { if (!disposed) loadModel() }
