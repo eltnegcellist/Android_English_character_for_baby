@@ -1152,13 +1152,21 @@ private fun ProductionEmmaApp() {
             onOpenAbout = { aboutOpen = true },
             onEngineMode = { selected ->
                 if (!recording && !busy && selected != engineMode) {
+                    val targetAsr = if (asrModelManuallySelected) {
+                        asrModel
+                    } else if (selected == ConversationEngineMode.FULL) {
+                        MoonshineAsrModel.SMALL
+                    } else {
+                        MoonshineAsrModel.TINY
+                    }
+                    if (!asrModelManuallySelected) asrModel = targetAsr
                     if (
                         selected == ConversationEngineMode.FULL &&
                         (
-                !GemmaModelStore.hasUsableModel(context) ||
-                        !MoonshineModelStore.isInstalled(context) ||
-                        !KittenModelStore.isInstalled(context)
-            )
+                            !GemmaModelStore.hasUsableModel(context) ||
+                                !MoonshineModelStore.isInstalled(context, targetAsr) ||
+                                !KittenModelStore.isInstalled(context)
+                        )
                     ) {
                         fullSetupError = null
                         fullSetupProgressPercent = null
@@ -1239,9 +1247,11 @@ private fun ProductionEmmaApp() {
                         .putString("audience_mode", "PARENT")
                         .apply()
 
+                    val targetAsr = if (asrModelManuallySelected) asrModel else MoonshineAsrModel.SMALL
+                    if (!asrModelManuallySelected) asrModel = targetAsr
                     val fullNeedsSetup =
                         !GemmaModelStore.hasUsableModel(context) ||
-                        !MoonshineModelStore.isInstalled(context) ||
+                        !MoonshineModelStore.isInstalled(context, targetAsr) ||
                         !KittenModelStore.isInstalled(context)
 
                     if (fullNeedsSetup) {
