@@ -19,13 +19,13 @@ Moonshine Japanese Tiny/Small Streaming
   ↓
 LiteResponseEngine
   ↓
-Kitten TTS Nano 0.8 INT8 / Kiki
+Kitten TTS Nano 0.8 FP32 / Kiki
   ↓
 Emma avatar
 ```
 
 - Japanese ASR: Moonshine Tiny Streaming（Lite既定）/ Small Streaming（Full既定）。設定からどちらのエディションでも切替可能
-- TTS: Kitten TTS Nano 0.8 INT8, Kiki
+- TTS: Kitten TTS Nano 0.8 FP32, Kiki
 - Approximate speech-model download: about 64 MB
 - Processing after setup: on-device
 
@@ -68,7 +68,7 @@ Existing saved `STANDARD`, legacy `LITE`, and `WEB_LITE` values are migrated to 
 Lite and Full intentionally share:
 
 - Moonshine Japanese Tiny/Small Streaming for Japanese ASR (edition-independent selection),
-- Kitten TTS Nano 0.8 / Kiki for English speech,
+- Kitten TTS Nano 0.8 FP32 / Kiki for English speech,
 - baby-name pronunciation and optional `-chan` suffix,
 - family/gender settings,
 - appearance settings,
