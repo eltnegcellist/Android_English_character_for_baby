@@ -12,12 +12,12 @@ import java.security.DigestInputStream
 import java.security.MessageDigest
 
 object KittenModelStore {
-    const val MODEL_NAME = "kitten-nano-en-v0_8-int8"
+    const val MODEL_NAME = "kitten-nano-en-v0_8-fp32"
     const val MODEL_URL =
         "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/$MODEL_NAME.tar.bz2"
     const val ARCHIVE_SHA256 =
-        "6fa5be852612ce761094ba74ee6123b4fc4acfefa79bf64dc63acae4a83af2fd"
-    const val APPROX_DOWNLOAD_MB = 31
+        "16092117bfe591ddcd58d078e1454603b8e1caea46f85653b2c2efae76bd883e"
+    const val APPROX_DOWNLOAD_MB = 64
 
     fun directory(context: Context): File =
         File(context.filesDir, "tts/$MODEL_NAME")
@@ -33,7 +33,7 @@ object KittenModelStore {
             InAppModelDownloader.download(
                 url = MODEL_URL,
                 destination = archive,
-                minimumBytes = 29_000_000L,
+                minimumBytes = 60_000_000L,
                 freeSpaceMarginBytes = 192L * 1024L * 1024L,
             ) { state ->
                 progress(state.percent?.let { (it * 70) / 100 })
@@ -107,6 +107,12 @@ object KittenModelStore {
                 error("Kitten TTSモデルを配置できませんでした。")
             }
             backup.deleteRecursively()
+
+            // The FP32 model has a different directory name, so an existing
+            // INT8 install is never mistaken for the new voice model. Remove
+            // the legacy copy only after the FP32 install has completed.
+            File(context.filesDir, "tts/kitten-nano-en-v0_8-int8").deleteRecursively()
+
             progress(100)
         } finally {
             staging.deleteRecursively()
@@ -125,11 +131,11 @@ object KittenModelStore {
     }
 
     private fun isInstalledAt(dir: File): Boolean {
-        val model = File(dir, "model.int8.onnx")
+        val model = File(dir, "model.fp32.onnx")
         val voices = File(dir, "voices.bin")
         val tokens = File(dir, "tokens.txt")
         val espeak = File(dir, "espeak-ng-data")
-        return model.isFile && model.length() > 20_000_000L &&
+        return model.isFile && model.length() > 45_000_000L &&
             voices.isFile && voices.length() > 0L &&
             tokens.isFile && tokens.length() > 0L &&
             espeak.isDirectory && (espeak.list()?.isNotEmpty() == true)
