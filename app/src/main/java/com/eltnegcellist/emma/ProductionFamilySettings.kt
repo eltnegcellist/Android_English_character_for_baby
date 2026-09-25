@@ -60,8 +60,8 @@ internal fun ProductionFamilySettings(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = enabled,
                 singleLine = true,
-                label = { Text("名前（任意）") },
-                placeholder = { Text("例：はな / Hana") },
+                label = { Text("名前（任意・日本語）") },
+                placeholder = { Text("例：はな") },
             )
 
             Text("性別", style = MaterialTheme.typography.titleSmall)
