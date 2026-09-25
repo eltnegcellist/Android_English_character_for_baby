@@ -18,7 +18,10 @@ class MoonshineJapaneseAsr(
 
     fun isReady(): Boolean = transcriber != null
 
-    fun initialize(model: MoonshineAsrModel): Result<Unit> = runCatching {
+    fun initialize(
+        model: MoonshineAsrModel,
+        useChildcareKeyterms: Boolean,
+    ): Result<Unit> = runCatching {
         require(MoonshineModelStore.isInstalled(appContext, model)) {
             "Moonshine 日本語${model.shortLabel}がまだ導入されていません。"
         }
@@ -28,21 +31,23 @@ class MoonshineJapaneseAsr(
             val created = Transcriber()
             val root = MoonshineModelStore.directory(appContext, model).absolutePath + File.separator
             created.loadFromFiles(root, model.arch)
-            runCatching { created.setKeyterms(CHILDCARE_ASR_KEYTERMS) }
-                .onFailure { error ->
-                    DiagnosticStore.mark(
-                        appContext,
-                        "moonshine_keyterms_skipped",
-                        "model=${model.shortLabel} error=${error.message ?: error.javaClass.simpleName}",
-                    )
-                }
+            if (useChildcareKeyterms) {
+                runCatching { created.setKeyterms(CHILDCARE_ASR_KEYTERMS) }
+                    .onFailure { error ->
+                        DiagnosticStore.mark(
+                            appContext,
+                            "moonshine_keyterms_skipped",
+                            "model=${model.shortLabel} error=${error.message ?: error.javaClass.simpleName}",
+                        )
+                    }
+            }
             transcriber = created
         }
 
         DiagnosticStore.mark(
             appContext,
             "lite_asr_initialized",
-            "engine=moonshine model=${model.modelName} language=ja keyterms=${CHILDCARE_ASR_KEYTERMS.size}",
+            "engine=moonshine model=${model.modelName} language=ja childcareKeyterms=$useChildcareKeyterms",
         )
     }
 
