@@ -419,9 +419,10 @@ private fun ProductionEmmaApp() {
     fun startLiteAutomaticSetup() {
         if (disposed || liteSetupBusy) return
 
+        val requestedAsr = asrModel
         liteSetupBusy = true
         liteSetupProgressPercent = 0
-        liteSetupPhase = "Moonshine 日本語Tinyを準備しています…"
+        liteSetupPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
         modelReady = false
         status = ProductionEmmaStatus.MODEL_IMPORTING
         statusMessage = "Emma Liteを準備しています…"
@@ -429,12 +430,12 @@ private fun ProductionEmmaApp() {
         EmmaWorkQueue.execute {
             runCatching {
                 lite.close()
-                if (!MoonshineModelStore.isInstalled(context)) {
-                    MoonshineModelStore.downloadAndInstall(context) { percent ->
+                if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
+                    MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
                         mainHandler.post {
                             if (!disposed) {
                                 liteSetupProgressPercent = percent
-                                liteSetupPhase = "Moonshine 日本語Tinyを準備しています…"
+                                liteSetupPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
                             }
                         }
                     }.getOrThrow()
@@ -457,7 +458,9 @@ private fun ProductionEmmaApp() {
                     }.getOrThrow()
                 }
 
-                lite.initialize().getOrThrow()
+                if (engineMode == ConversationEngineMode.LITE) {
+                    lite.initialize(requestedAsr).getOrThrow()
+                }
             }.onSuccess {
                 mainHandler.post {
                     if (disposed) return@post
@@ -492,6 +495,14 @@ private fun ProductionEmmaApp() {
     fun startFirstRunSetup(selectedMode: ConversationEngineMode) {
         if (disposed || firstRunBusy) return
 
+        val requestedAsr = if (asrModelManuallySelected) {
+            asrModel
+        } else if (selectedMode == ConversationEngineMode.FULL) {
+            MoonshineAsrModel.SMALL
+        } else {
+            MoonshineAsrModel.TINY
+        }
+        asrModel = requestedAsr
         firstRunBusy = true
         firstRunReady = false
         firstRunError = null
@@ -514,14 +525,14 @@ private fun ProductionEmmaApp() {
 
                 when (selectedMode) {
                     ConversationEngineMode.LITE -> {
-                        if (!MoonshineModelStore.isInstalled(context)) {
+                        if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
                             mainHandler.post {
                                 if (!disposed) {
-                                    firstRunPhase = "Moonshine 日本語Tinyを準備しています…"
+                                    firstRunPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
                                     firstRunProgressPercent = 0
                                 }
                             }
-                            MoonshineModelStore.downloadAndInstall(context) { percent ->
+                            MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
                                 mainHandler.post {
                                     if (!disposed) firstRunProgressPercent = percent
                                 }
@@ -546,17 +557,17 @@ private fun ProductionEmmaApp() {
                                 firstRunProgressPercent = null
                             }
                         }
-                        lite.initialize().getOrThrow()
+                        lite.initialize(requestedAsr).getOrThrow()
                     }
                     ConversationEngineMode.FULL -> {
-                        if (!MoonshineModelStore.isInstalled(context)) {
+                        if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
                             mainHandler.post {
                                 if (!disposed) {
-                                    firstRunPhase = "Moonshine 日本語Tinyを準備しています…"
+                                    firstRunPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
                                     firstRunProgressPercent = 0
                                 }
                             }
-                            MoonshineModelStore.downloadAndInstall(context) { percent ->
+                            MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
                                 mainHandler.post { if (!disposed) firstRunProgressPercent = percent }
                             }.getOrThrow()
                         }
@@ -590,7 +601,7 @@ private fun ProductionEmmaApp() {
                                 firstRunProgressPercent = null
                             }
                         }
-                        gemma.initialize(modelFile.absolutePath).getOrThrow()
+                        gemma.initialize(modelFile.absolutePath, requestedAsr).getOrThrow()
                     }
                 }
             }.onSuccess {
@@ -628,6 +639,8 @@ private fun ProductionEmmaApp() {
     fun startFullAutomaticSetup() {
         if (disposed || fullSetupBusy) return
 
+        val requestedAsr = if (asrModelManuallySelected) asrModel else MoonshineAsrModel.SMALL
+        asrModel = requestedAsr
         fullSetupBusy = true
         fullSetupError = null
         fullSetupProgressPercent = null
@@ -640,14 +653,14 @@ private fun ProductionEmmaApp() {
                 lite.close()
                 gemma.close()
 
-                if (!MoonshineModelStore.isInstalled(context)) {
+                if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
                     mainHandler.post {
                         if (!disposed) {
-                            fullSetupPhase = "Moonshine 日本語Tinyを準備しています…"
+                            fullSetupPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
                             fullSetupProgressPercent = 0
                         }
                     }
-                    MoonshineModelStore.downloadAndInstall(context) { percent ->
+                    MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
                         mainHandler.post { if (!disposed) fullSetupProgressPercent = percent }
                     }.getOrThrow()
                 }
@@ -937,7 +950,7 @@ private fun ProductionEmmaApp() {
             initialEngineMode == ConversationEngineMode.FULL &&
             (
                 !GemmaModelStore.hasUsableModel(context) ||
-                        !MoonshineModelStore.isInstalled(context) ||
+                        !MoonshineModelStore.isInstalled(context, initialAsrModel) ||
                         !KittenModelStore.isInstalled(context)
             )
         ) {
@@ -1096,7 +1109,7 @@ private fun ProductionEmmaApp() {
             progressPercent = fullSetupProgressPercent,
             errorMessage = fullSetupError,
             gemmaNeeded = !GemmaModelStore.hasUsableModel(context),
-            moonshineNeeded = !MoonshineModelStore.isInstalled(context),
+            moonshineNeeded = !MoonshineModelStore.isInstalled(context, asrModel),
             kittenNeeded = !kittenInstalled,
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
@@ -1107,7 +1120,7 @@ private fun ProductionEmmaApp() {
                         engineMode == ConversationEngineMode.FULL &&
                         (
                 !GemmaModelStore.hasUsableModel(context) ||
-                        !MoonshineModelStore.isInstalled(context) ||
+                        !MoonshineModelStore.isInstalled(context, asrModel) ||
                         !KittenModelStore.isInstalled(context)
             )
                     ) {
@@ -1133,6 +1146,7 @@ private fun ProductionEmmaApp() {
             kittenInstalled = kittenInstalled,
             lastSpeechMillis = lastSpeechMillis,
             engineMode = engineMode,
+            asrModel = asrModel,
             keepScreenOn = keepScreenOn,
             onBack = { settingsOpen = false },
             onOpenAbout = { aboutOpen = true },
@@ -1154,6 +1168,9 @@ private fun ProductionEmmaApp() {
                         activateEngineMode(selected)
                     }
                 }
+            },
+            onAsrModel = { selected ->
+                if (!recording && !busy) activateAsrModel(selected)
             },
             onLevel = { englishLevel = it; preferences.edit().putString("level", it.name).apply() },
             onPreview = {
