@@ -1,5 +1,6 @@
 package com.eltnegcellist.emma
 
+import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,6 +29,7 @@ internal fun FullModeSetupScreen(
     errorMessage: String?,
     gemmaNeeded: Boolean,
     moonshineNeeded: Boolean,
+    asrModel: MoonshineAsrModel,
     kittenNeeded: Boolean,
     onPrepare: () -> Unit,
     onCancel: () -> Unit,
@@ -62,9 +64,9 @@ internal fun FullModeSetupScreen(
                 ) {
                     Text("初回のみ必要なデータを取得します", style = MaterialTheme.typography.titleMedium)
                     if (moonshineNeeded) {
-                        Text("Moonshine 日本語Tiny（約32MB）を準備します。", style = MaterialTheme.typography.bodyMedium)
+                        Text("Moonshine 日本語${asrModel.shortLabel}を準備します。", style = MaterialTheme.typography.bodyMedium)
                     } else {
-                        Text("Moonshine 日本語Tinyは導入済みです。", style = MaterialTheme.typography.bodyMedium)
+                        Text("Moonshine 日本語${asrModel.shortLabel}は導入済みです。", style = MaterialTheme.typography.bodyMedium)
                     }
                     if (kittenNeeded) {
                         Text("Kitten TTS Nano / Kiki（約31MB）を準備します。", style = MaterialTheme.typography.bodyMedium)
