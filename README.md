@@ -15,7 +15,7 @@ Android Emma now contains two editions: **Lite** and **Full**. They share the sa
 ```text
 Microphone
   ↓
-Moonshine Japanese Tiny Streaming
+Moonshine Japanese Tiny/Small Streaming
   ↓
 LiteResponseEngine
   ↓
@@ -24,18 +24,18 @@ Kitten TTS Nano 0.8 INT8 / Kiki
 Emma avatar
 ```
 
-- Japanese ASR: Moonshine Tiny Streaming
+- Japanese ASR: Moonshine Tiny Streaming（Lite既定）/ Small Streaming（Full既定）。設定からどちらのエディションでも切替可能
 - TTS: Kitten TTS Nano 0.8 INT8, Kiki
 - Approximate speech-model download: about 64 MB
 - Processing after setup: on-device
 
 ## Emma Full
 
-Full reuses the exact same ASR and TTS stack. The only large addition is Gemma.
+Full uses the same Moonshine/Kitten stack and adds Gemma. ASR model choice is independent from the edition: Lite defaults to Tiny, Full defaults to Small, and either can be selected manually.
 
 ```text
 Microphone
-  ├─→ Moonshine Japanese Tiny Streaming ─→ Japanese transcript ─┐
+  ├─→ Moonshine Japanese Tiny/Small Streaming ─→ Japanese transcript ─┐
   └──────────────────── original audio ──────────────────────────┤
                                                                  ↓
                                                         Gemma 4 E2B
@@ -56,8 +56,8 @@ Full requires more than 2 GB of additional local Gemma model data.
 
 On first launch, the family chooses one of:
 
-- **Lite** — Moonshine + LiteResponseEngine + Kitten TTS Nano, about 64 MB of speech models
-- **Full** — the same Moonshine + Kitten stack, plus Gemma for context-aware response generation
+- **Lite** — Moonshine Tiny by default + LiteResponseEngine + Kitten TTS Nano. Small ASR can be added manually
+- **Full** — Moonshine Small by default + Kitten TTS Nano + Gemma for context-aware response generation. Tiny remains selectable
 
 The selected edition is retained and can be changed later from Settings.
 
@@ -67,7 +67,7 @@ Existing saved `STANDARD`, legacy `LITE`, and `WEB_LITE` values are migrated to 
 
 Lite and Full intentionally share:
 
-- Moonshine Japanese Tiny Streaming for Japanese ASR,
+- Moonshine Japanese Tiny/Small Streaming for Japanese ASR (edition-independent selection),
 - Kitten TTS Nano 0.8 / Kiki for English speech,
 - baby-name pronunciation and optional `-chan` suffix,
 - family/gender settings,
@@ -115,7 +115,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ## Models and major dependencies
 
-- Moonshine Voice / Moonshine Japanese Tiny Streaming — MIT
+- Moonshine Voice / Moonshine Japanese Tiny/Small Streaming — MIT
 - Kitten TTS Nano 0.8 — Apache-2.0
 - sherpa-onnx — Apache-2.0
 - LiteRT-LM / Gemma — used for optional Full mode
