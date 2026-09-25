@@ -85,7 +85,7 @@ internal fun FirstRunOnboardingScreen(
                                 ConversationEngineMode.LITE ->
                                     "Moonshine Tiny + LiteResponseEngine + Kitten TTS Nano / 約64MB / 完全ローカル"
                                 ConversationEngineMode.FULL ->
-                                    "Moonshine Tiny + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
+                                    "Moonshine Small + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -125,7 +125,7 @@ internal fun FirstRunOnboardingScreen(
                             ConversationEngineMode.LITE ->
                                 "Moonshine日本語Tinyで聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
                             ConversationEngineMode.FULL ->
-                                "Liteと同じMoonshineとKittenを使い、Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
+                                "Moonshine日本語Smallで聞き取り、KittenはLiteと共通です。Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                     )
