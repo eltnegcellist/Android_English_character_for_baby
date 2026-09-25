@@ -367,20 +367,64 @@ private fun ProductionEmmaApp() {
             .putString("asr_model", selected.savedValue)
             .putBoolean("asr_model_manual", true)
             .apply()
+
         modelReady = false
         modelPresent = modeModelsPresent(engineMode, selected)
-        status = ProductionEmmaStatus.IDLE
-        statusMessage = if (modelPresent) {
-            "音声認識を${selected.shortLabel}に切り替えます…"
+        status = if (MoonshineModelStore.isInstalled(context, selected)) {
+            ProductionEmmaStatus.MODEL_LOADING
         } else {
-            "Moonshine 日本語${selected.shortLabel}を準備してください。"
+            ProductionEmmaStatus.MODEL_IMPORTING
         }
+        statusMessage = if (MoonshineModelStore.isInstalled(context, selected)) {
+            "音声認識を${selected.shortLabel}に切り替えています…"
+        } else {
+            "Moonshine 日本語${selected.shortLabel}をダウンロードしています…"
+        }
+
         EmmaWorkQueue.execute {
             lite.close()
             gemma.close()
-        }
-        if (modelPresent) {
-            mainHandler.post { if (!disposed) loadModel() }
+
+            val result = runCatching {
+                if (!MoonshineModelStore.isInstalled(context, selected)) {
+                    MoonshineModelStore.downloadAndInstall(context, selected) { percent ->
+                        mainHandler.post {
+                            if (!disposed && asrModel == selected) {
+                                statusMessage = if (percent != null) {
+                                    "Moonshine 日本語${selected.shortLabel}をダウンロードしています… $percent%"
+                                } else {
+                                    "Moonshine 日本語${selected.shortLabel}をダウンロードしています…"
+                                }
+                            }
+                        }
+                    }.getOrThrow()
+                }
+            }
+
+            mainHandler.post {
+                if (disposed || asrModel != selected) return@post
+                result.onSuccess {
+                    modelPresent = modeModelsPresent(engineMode, selected)
+                    if (modelPresent) {
+                        // Only the ASR clients were closed above. KittenSpeaker is
+                        // intentionally kept alive so changing Tiny/Small cannot
+                        // break or unnecessarily reload TTS.
+                        loadModel()
+                    } else {
+                        status = ProductionEmmaStatus.IDLE
+                        statusMessage = when (engineMode) {
+                            ConversationEngineMode.LITE ->
+                                "Moonshine ${selected.shortLabel}は準備できました。Kitten TTSを準備してください。"
+                            ConversationEngineMode.FULL ->
+                                "Moonshine ${selected.shortLabel}は準備できました。KittenまたはGemmaの準備を確認してください。"
+                        }
+                    }
+                }.onFailure { error ->
+                    modelPresent = modeModelsPresent(engineMode, selected)
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "Moonshine ${selected.shortLabel}の準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                }
+            }
         }
     }
 
