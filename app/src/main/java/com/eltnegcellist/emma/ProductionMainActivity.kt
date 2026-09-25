@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -44,6 +45,12 @@ private const val BABY_VOCAL_CONTEXT = "赤ちゃんが声を出している"
 class ProductionMainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Emma's speech is ordinary media playback, not call/VoIP audio.
+        // Keep hardware volume keys attached to the media stream while the app
+        // is in the foreground, even though the microphone is also active.
+        volumeControlStream = AudioManager.STREAM_MUSIC
+
         DiagnosticStore.collectOnStartup(this)
         setContent {
             EmmaTheme {
