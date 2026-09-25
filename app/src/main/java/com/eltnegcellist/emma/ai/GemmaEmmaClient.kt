@@ -237,9 +237,9 @@ class GemmaEmmaClient(context: Context) {
 
                     Baby-directed style:
                     - Aim for about ${BabySpeechStyle.MIN_WORDS}-${BabySpeechStyle.MAX_WORDS} spoken words when the context supports it. Never exceed $generationWordLimit words before any app-level name fallback.
-                    - Prefer ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} very short sentences, usually 2-${BabySpeechStyle.MAX_WORDS_PER_SENTENCE} words each. If the context is extremely small, 4 sentences is acceptable.
-                    - Keep EACH phrase easy even though the whole response is longer.
-                    - Build a little sequence around the SAME supported moment: get attention, react, repeat one or two key words/actions across multiple sentences, then add a simple playful invitation or sound.
+                    - Use exactly ${BabySpeechStyle.MAX_SENTENCES} very short sentences, usually 2-${BabySpeechStyle.MAX_WORDS_PER_SENTENCE} words each.
+                    - Keep every phrase easy and compact.
+                    - Match Lite's rhythm: react to the SAME supported moment, repeat one useful key word/action, then add one simple playful line or sound.
                     - End every short sentence with punctuation so the voice can speak one complete sentence naturally, then pause before the next sentence.
                     - Use very common, concrete, easy-to-hear words.
                     - Warm repetition and playful sound words are encouraged when they fit naturally: "splash, splash", "yum-yum", "beep-beep", "night-night", "up, up", "clap, clap".
@@ -250,12 +250,12 @@ class GemmaEmmaClient(context: Context) {
                     - Do not sound like a teacher explaining English. Sound like a warm person spending a few seconds talking directly to a baby.
 
                     Examples of the transformation:
-                    Parent: お風呂入ろうね → "Bath time! Let's go! Splash, splash! So much fun!"
-                    Parent: ミルクいっぱい飲んだね → "Yummy milk! Big drink! Mmm, yummy! All done!"
-                    Parent: 眠そうだね → "So sleepy. Soft eyes. Night-night. Rest, little one."
-                    Parent: 雨降ってるね → "Rain, rain! Pitter-patter! Listen, listen! Rain outside!"
-                    Parent: 手をぎゅっとしてるね → "Tiny hands! Squeeze, squeeze! Hold tight! Little hands!"
-                    Context: $BABY_VOCAL_CONTEXT → "Hi, little one! I hear your voice! Hello, hello! I'm listening!"
+                    Parent: お風呂入ろうね → "Bath time! Splash, splash! Here we go!"
+                    Parent: ミルクいっぱい飲んだね → "Yummy milk! Sip, sip! All done!"
+                    Parent: 眠そうだね → "So sleepy. Night-night. Rest, little one."
+                    Parent: 雨降ってるね → "Rain, rain! Pitter-patter! Listen, listen!"
+                    Parent: 手をぎゅっとしてるね → "Tiny hands! Squeeze, squeeze! Wiggle, wiggle!"
+                    Context: $BABY_VOCAL_CONTEXT → "Hello, little one! I hear you! I'm listening!"
                 """.trimIndent()
 
                 else -> """
@@ -319,7 +319,7 @@ class GemmaEmmaClient(context: Context) {
                 "audience=${audienceMode.name} infantVocal=$infantVocalEvent babyGender=${babyGender.name} nameConfigured=${configuredBabyName.isNotBlank()} spokenNameReady=${spokenBabyName.isNotBlank()} mustUseName=$shouldUseBabyName wordLimit=$generationWordLimit historyTurns=${conversationHistory.size} previousQuestion=$previousWasQuestion ${memoryDetail()}",
             )
             val generationStarted = System.nanoTime()
-            val generationMaxTokens = if (audienceMode == AudienceMode.BABY) 192 else 256
+            val generationMaxTokens = if (audienceMode == AudienceMode.BABY) 96 else 256
             val english = activeEngine.createConversation(config(prompt, generationMaxTokens, if (audienceMode == AudienceMode.BABY) 0.60 else 0.50)).use { conversation ->
                 val response = conversation.sendMessage(Contents.of(
                     Content.AudioBytes(wavAudio),
@@ -333,7 +333,7 @@ class GemmaEmmaClient(context: Context) {
                                 if (shouldUseBabyName) {
                                     "Speak directly to the baby now. Include the spoken name \"$spokenBabyName\" exactly once. Make ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} short complete sentences: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 } else {
-                                    "Speak directly to the baby now. Make ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} short complete sentences: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
+                                    "Speak directly to the baby now. Make exactly ${BabySpeechStyle.MAX_SENTENCES} short complete sentences and stay within $generationWordLimit words total: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 }
                             } else {
                                 "Reply to the parent as Emma in 3-5 natural conversational sentences. React first, develop the same topic, and optionally ask one follow-up question. Follow the configured baby-gender pronoun rule whenever referring to the baby. Output spoken English only."
