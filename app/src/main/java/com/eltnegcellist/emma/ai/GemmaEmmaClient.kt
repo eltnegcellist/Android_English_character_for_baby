@@ -2,6 +2,7 @@ package com.eltnegcellist.emma.ai
 
 import android.content.Context
 import android.os.Debug
+import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineJapaneseAsr
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.google.ai.edge.litertlm.Backend
@@ -74,7 +75,7 @@ class GemmaEmmaClient(context: Context) {
         }
     }
 
-    fun initialize(modelPath: String): Result<Unit> = runCatching {
+    fun initialize(modelPath: String, asrModel: MoonshineAsrModel): Result<Unit> = runCatching {
         val modelFile = File(modelPath)
         require(modelFile.isFile) { "Gemma model file was not found." }
         require(modelFile.length() > 2_000_000_000L) {
@@ -87,7 +88,7 @@ class GemmaEmmaClient(context: Context) {
             "modelMb=${modelFile.length() / MIB} ${memoryDetail()}",
         )
         val cacheDirectory = File(appContext.cacheDir, "litertlm").apply { mkdirs() }
-        moonshine.initialize().getOrThrow()
+        moonshine.initialize(asrModel).getOrThrow()
 
         synchronized(lock) {
             engine?.close()
