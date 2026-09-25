@@ -331,7 +331,7 @@ class GemmaEmmaClient(context: Context) {
                                 "Moonshine found no intelligible Japanese. Inspect the attached audio only for a CLEAR infant vocalization. If it is not clearly an infant vocalization, output exactly \"$NO_RESPONSE\". If it is clear, respond warmly to the baby in short spoken English only."
                             } else if (audienceMode == AudienceMode.BABY) {
                                 if (shouldUseBabyName) {
-                                    "Speak directly to the baby now. Include the spoken name \"$spokenBabyName\" exactly once. Make ${BabySpeechStyle.MIN_SENTENCES}-${BabySpeechStyle.MAX_SENTENCES} short complete sentences: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
+                                    "Speak directly to the baby now. Include the spoken name \"$spokenBabyName\" exactly once. Make exactly ${BabySpeechStyle.MAX_SENTENCES} short complete sentences and stay within $generationWordLimit words total: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 } else {
                                     "Speak directly to the baby now. Make exactly ${BabySpeechStyle.MAX_SENTENCES} short complete sentences and stay within $generationWordLimit words total: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 }
