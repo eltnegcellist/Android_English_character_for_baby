@@ -1110,6 +1110,7 @@ private fun ProductionEmmaApp() {
             errorMessage = fullSetupError,
             gemmaNeeded = !GemmaModelStore.hasUsableModel(context),
             moonshineNeeded = !MoonshineModelStore.isInstalled(context, asrModel),
+            asrModel = asrModel,
             kittenNeeded = !kittenInstalled,
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
