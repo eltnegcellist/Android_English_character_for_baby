@@ -88,7 +88,7 @@ class GemmaEmmaClient(context: Context) {
             "modelMb=${modelFile.length() / MIB} ${memoryDetail()}",
         )
         val cacheDirectory = File(appContext.cacheDir, "litertlm").apply { mkdirs() }
-        moonshine.initialize(asrModel).getOrThrow()
+        moonshine.initialize(asrModel, useChildcareKeyterms = false).getOrThrow()
 
         synchronized(lock) {
             engine?.close()
