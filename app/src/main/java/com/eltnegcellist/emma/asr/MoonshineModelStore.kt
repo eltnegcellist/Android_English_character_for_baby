@@ -2,40 +2,38 @@ package com.eltnegcellist.emma.asr
 
 import android.content.Context
 import ai.moonshine.voice.AssetDownloader
-import ai.moonshine.voice.JNI
 import ai.moonshine.voice.ModelSpec
 import java.io.File
 
 object MoonshineModelStore {
-    const val MODEL_NAME = "moonshine-tiny-streaming-ja"
-    const val APPROX_DOWNLOAD_MB = 32
-
-    private val spec: ModelSpec
-        get() = ModelSpec.stt(
+    private fun spec(model: MoonshineAsrModel): ModelSpec =
+        ModelSpec.stt(
             "ja",
-            JNI.MOONSHINE_MODEL_ARCH_TINY_STREAMING,
+            model.arch,
             false,
         )
 
-    fun directory(context: Context): File =
-        File(context.filesDir, "asr/$MODEL_NAME")
+    fun directory(context: Context, model: MoonshineAsrModel): File =
+        File(context.filesDir, "asr/${model.modelName}")
 
-    fun isInstalled(context: Context): Boolean = runCatching {
-        val dir = directory(context)
-        dir.isDirectory && AssetDownloader().isModelPresent(dir, spec)
+    fun isInstalled(context: Context, model: MoonshineAsrModel): Boolean = runCatching {
+        val dir = directory(context, model)
+        dir.isDirectory && AssetDownloader().isModelPresent(dir, spec(model))
     }.getOrDefault(false)
 
     fun downloadAndInstall(
         context: Context,
+        model: MoonshineAsrModel,
         progress: (Int?) -> Unit,
     ): Result<Unit> = runCatching {
-        val dir = directory(context)
+        val dir = directory(context, model)
         require(dir.exists() || dir.mkdirs()) {
             "Moonshineのモデルフォルダを作成できませんでした。"
         }
 
+        val modelSpec = spec(model)
         val downloader = AssetDownloader()
-        downloader.ensureModelPresent(dir, spec) { _, fileIndex, totalFiles, downloaded, total ->
+        downloader.ensureModelPresent(dir, modelSpec) { _, fileIndex, totalFiles, downloaded, total ->
             val fileFraction = if (total > 0L) {
                 (downloaded.toDouble() / total.toDouble()).coerceIn(0.0, 1.0)
             } else {
@@ -51,8 +49,8 @@ object MoonshineModelStore {
             progress(overall)
         }
 
-        require(downloader.isModelPresent(dir, spec)) {
-            "Moonshine 日本語Tinyに必要なファイルが不足しています。"
+        require(downloader.isModelPresent(dir, modelSpec)) {
+            "Moonshine 日本語${model.shortLabel}に必要なファイルが不足しています。"
         }
         progress(100)
     }
