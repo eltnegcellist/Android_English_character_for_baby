@@ -48,7 +48,7 @@ class KittenSpeaker(
                     DiagnosticStore.mark(
                         context,
                         "kitten_runtime_initialized",
-                        "voice=Kiki sid=$KIKI_SPEAKER_ID threads=$THREADS speed=$KITTEN_SPEED",
+                        "model=Nano-FP32 voice=Kiki sid=$KIKI_SPEAKER_ID threads=$THREADS speed=$KITTEN_SPEED",
                     )
                 }
 
@@ -205,7 +205,7 @@ class KittenSpeaker(
             config = OfflineTtsConfig(
                 model = OfflineTtsModelConfig(
                     kitten = OfflineTtsKittenModelConfig(
-                        model = File(dir, "model.int8.onnx").path,
+                        model = File(dir, "model.fp32.onnx").path,
                         voices = File(dir, "voices.bin").path,
                         tokens = File(dir, "tokens.txt").path,
                         dataDir = File(dir, "espeak-ng-data").path,
