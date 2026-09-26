@@ -15,7 +15,10 @@ class LiteEmmaClient(
 
     fun isReady(): Boolean = asr.isReady()
 
-    fun initialize(model: MoonshineAsrModel): Result<Unit> = asr.initialize(model, useChildcareKeyterms = true)
+    fun resetConversationContext() = responses.resetConversationContext()
+
+    fun initialize(model: MoonshineAsrModel): Result<Unit> =
+        asr.initialize(model, useChildcareKeyterms = true)
 
     fun createEnglishIsland(
         wavAudio: ByteArray,
