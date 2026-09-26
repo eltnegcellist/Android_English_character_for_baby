@@ -80,6 +80,9 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            pickFirsts += "**/libonnxruntime.so"
+        }
     }
 }
 
@@ -92,10 +95,10 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.23.2")
     implementation("ai.moonshine:moonshine-voice:0.1.5")
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
 
     testImplementation("junit:junit:4.13.2")
