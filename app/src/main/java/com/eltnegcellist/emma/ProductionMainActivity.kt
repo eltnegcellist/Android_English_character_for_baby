@@ -138,7 +138,7 @@ private fun ProductionEmmaApp() {
 
     var status by remember { mutableStateOf(ProductionEmmaStatus.IDLE) }
     var statusMessage by remember {
-        mutableStateOf("Emmaを準備しています。")
+        mutableStateOf("みつことばを準備しています。")
     }
     var latestEmmaText by remember { mutableStateOf("") }
     var recording by remember { mutableStateOf(false) }
@@ -287,8 +287,8 @@ private fun ProductionEmmaApp() {
             modelReady = false
             status = ProductionEmmaStatus.ERROR
             statusMessage = when (engineMode) {
-                ConversationEngineMode.LITE -> "Emma LiteのMoonshineとKitten TTSを先に準備してください。"
-                ConversationEngineMode.FULL -> "Emma FullのMoonshine・Kitten・Gemmaを先に準備してください。"
+                ConversationEngineMode.LITE -> "みつことば LiteのMoonshineとKitten TTSを先に準備してください。"
+                ConversationEngineMode.FULL -> "みつことば FullのMoonshine・Kitten・Gemmaを先に準備してください。"
             }
             settingsOpen = true
             return
@@ -297,7 +297,7 @@ private fun ProductionEmmaApp() {
         modelPresent = true
         modelReady = false
         status = ProductionEmmaStatus.MODEL_LOADING
-        statusMessage = "Emma ${engineMode.label}を起動しています…"
+        statusMessage = "みつことば ${engineMode.label}を起動しています…"
         val requestedMode = engineMode
         val requestedAsr = asrModel
 
@@ -318,11 +318,11 @@ private fun ProductionEmmaApp() {
                     modelReady = true
                     kittenInstalled = KittenModelStore.isInstalled(context)
                     status = ProductionEmmaStatus.IDLE
-                    statusMessage = "Emma ${requestedMode.label}の準備ができました。"
+                    statusMessage = "みつことば ${requestedMode.label}の準備ができました。"
                 }.onFailure { error ->
                     modelReady = false
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Emmaの起動に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                    statusMessage = "みつことばの起動に失敗しました: ${error.message ?: error.javaClass.simpleName}"
                     settingsOpen = true
                 }
             }
@@ -523,7 +523,7 @@ private fun ProductionEmmaApp() {
                     if (engineMode == ConversationEngineMode.LITE) {
                         modelReady = true
                         status = ProductionEmmaStatus.IDLE
-                        statusMessage = "Emma Liteの準備ができました。"
+                        statusMessage = "みつことば Liteの準備ができました。"
                     } else if (modelPresent) {
                         status = ProductionEmmaStatus.IDLE
                         statusMessage = "Moonshine ${requestedAsr.shortLabel}の準備ができました。Fullを起動します…"
@@ -563,9 +563,9 @@ private fun ProductionEmmaApp() {
         firstRunReady = false
         firstRunError = null
         firstRunProgressPercent = 0
-        firstRunPhase = "Emma ${selectedMode.label}を準備しています…"
+        firstRunPhase = "みつことば ${selectedMode.label}を準備しています…"
         status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "Emmaの初期設定をしています…"
+        statusMessage = "みつことばの初期設定をしています…"
         engineMode = selectedMode
         preferences.edit()
             .putString("conversation_engine_mode", selectedMode.savedValue)
@@ -609,7 +609,7 @@ private fun ProductionEmmaApp() {
                         }
                         mainHandler.post {
                             if (!disposed) {
-                                firstRunPhase = "Emma Liteを起動しています…"
+                                firstRunPhase = "みつことば Liteを起動しています…"
                                 firstRunProgressPercent = null
                             }
                         }
@@ -653,7 +653,7 @@ private fun ProductionEmmaApp() {
                         }
                         mainHandler.post {
                             if (!disposed) {
-                                firstRunPhase = "Emma Fullを起動しています…"
+                                firstRunPhase = "みつことば Fullを起動しています…"
                                 firstRunProgressPercent = null
                             }
                         }
@@ -672,7 +672,7 @@ private fun ProductionEmmaApp() {
                     firstRunProgressPercent = 100
                     firstRunPhase = "準備できました"
                     status = ProductionEmmaStatus.IDLE
-                    statusMessage = "Emma ${selectedMode.label}の初期設定が完了しました。"
+                    statusMessage = "みつことば ${selectedMode.label}の初期設定が完了しました。"
                 }
             }.onFailure { error ->
                 mainHandler.post {
@@ -686,7 +686,7 @@ private fun ProductionEmmaApp() {
                     firstRunError = error.message
                         ?: "初期設定を完了できませんでした。通信環境と空き容量を確認してください。"
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Emmaの初期設定を完了できませんでした。"
+                    statusMessage = "みつことばの初期設定を完了できませんでした。"
                 }
             }
         }
@@ -702,7 +702,7 @@ private fun ProductionEmmaApp() {
         fullSetupProgressPercent = null
         fullSetupPhase = "Fullの準備を始めています…"
         status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "Emma Fullを準備しています…"
+        statusMessage = "みつことば Fullを準備しています…"
 
         EmmaWorkQueue.execute {
             runCatching {
@@ -771,7 +771,7 @@ private fun ProductionEmmaApp() {
                     fullSetupError = error.message
                         ?: "Fullの準備を完了できませんでした。通信環境と空き容量を確認してください。"
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Emma Fullの準備を完了できませんでした。"
+                    statusMessage = "みつことば Fullの準備を完了できませんでした。"
                 }
             }
         }
@@ -815,7 +815,7 @@ private fun ProductionEmmaApp() {
         }
         if (!modelReady) {
             status = ProductionEmmaStatus.ERROR
-            statusMessage = "Emmaの準備完了後にセッションを開始してください。"
+            statusMessage = "みつことばの準備完了後にセッションを開始してください。"
             settingsOpen = true
             return
         }
@@ -849,7 +849,7 @@ private fun ProductionEmmaApp() {
         }
         if (!modelReady || !activeReady) {
             status = ProductionEmmaStatus.ERROR
-            statusMessage = "Emmaがまだ準備できていません。"
+            statusMessage = "みつことばがまだ準備できていません。"
             return
         }
 
@@ -939,7 +939,7 @@ private fun ProductionEmmaApp() {
                     latestEmmaText = english
                     status = ProductionEmmaStatus.SPEAKING
                     statusMessage =
-                        if (infantVocalEvent) "Emmaが赤ちゃんに話しかけています。" else "Emmaが話しています。"
+                        if (infantVocalEvent) "AIが赤ちゃんに話しかけています。" else "AIが話しています。"
                     voiceError = null
                     if (!speakEmma(english)) {
                         recorder.resumeBuffering(clearExisting = true)
@@ -966,7 +966,7 @@ private fun ProductionEmmaApp() {
                         latestTranscript = "ことばではない声を聞きました"
                         latestEmmaText = response
                         status = ProductionEmmaStatus.SPEAKING
-                        statusMessage = "Emmaが赤ちゃんに話しかけています。"
+                        statusMessage = "AIが赤ちゃんに話しかけています。"
                         voiceError = null
                         DiagnosticStore.mark(
                             context,
@@ -990,7 +990,7 @@ private fun ProductionEmmaApp() {
                         } else {
                             status = ProductionEmmaStatus.ERROR
                             statusMessage =
-                                "Emmaの生成に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                                "みつことばの生成に失敗しました: ${error.message ?: error.javaClass.simpleName}"
                         }
                     }
                 }
@@ -1060,7 +1060,7 @@ private fun ProductionEmmaApp() {
                             }, 140L)
                         } else if (!generating && status != ProductionEmmaStatus.SPEAKING) {
                             status = ProductionEmmaStatus.LISTENING
-                            statusMessage = "聞き取りました。「今返事して」でEmmaが返します。"
+                            statusMessage = "聞き取りました。「今返事して」でAIが返します。"
                         }
                     }
                 }
@@ -1149,7 +1149,7 @@ private fun ProductionEmmaApp() {
                     onboardingOpen = false
                     autoStartPending = true
                     status = ProductionEmmaStatus.IDLE
-                    statusMessage = "Emma ${engineMode.label}を始めます。"
+                    statusMessage = "みつことば ${engineMode.label}を始めます。"
                 }
             },
         )
