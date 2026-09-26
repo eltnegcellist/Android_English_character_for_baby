@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.eltnegcellist.emma.ai.AiCharacterName
+import com.eltnegcellist.emma.ai.BabyNamePronunciation
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.ai.GemmaEmmaClient
@@ -268,12 +269,28 @@ private fun ProductionEmmaApp() {
         )
     }
 
+    fun currentJapaneseBabyNameHint(): String {
+        val saved = preferences.getString("baby_name", "").orEmpty()
+        val override = preferences.getString("baby_spoken_name", "").orEmpty()
+        val hasJapaneseSource = saved.any { ch ->
+            ch in '\u3040'..'\u30ff' ||
+                ch in '\u3400'..'\u4dbf' ||
+                ch in '\u4e00'..'\u9fff' ||
+                ch in '\uf900'..'\ufaff'
+        }
+        return if (hasJapaneseSource) {
+            BabyNamePronunciation.toSpokenEnglish(saved, override)
+        } else {
+            ""
+        }
+    }
+
     fun speakEmma(text: String): Boolean {
         lastSpeechMillis = null
         ttsRequestedAfterEndpointMillis = endpointStartedNanos?.let { started ->
             (System.nanoTime() - started) / 1_000_000L
         }
-        return kittenInstalled && kitten.speak(text)
+        return kittenInstalled && kitten.speak(text, currentJapaneseBabyNameHint())
     }
 
     fun modeModelsPresent(

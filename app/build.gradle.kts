@@ -1,3 +1,5 @@
+import org.gradle.api.file.RelativePath
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -27,6 +29,24 @@ val hasAllCustomSigningInputs = signingInputs.all { !it.isNullOrBlank() }
 
 require(!hasAnyCustomSigningInput || hasAllCustomSigningInputs) {
     "Emma signing is only partially configured. Provide all four signing values or none."
+}
+
+val fullOrtAar by configurations.creating
+val extractedFullOrt = layout.buildDirectory.dir("generated/full-ort")
+val extractFullOrtRuntime = tasks.register<Sync>("extractFullOrtRuntime") {
+    from({
+        zipTree(fullOrtAar.singleFile)
+    }) {
+        include(
+            "classes.jar",
+            "jni/arm64-v8a/libonnxruntime.so",
+            "jni/arm64-v8a/libonnxruntime4j_jni.so",
+            "jni/armeabi-v7a/libonnxruntime.so",
+            "jni/armeabi-v7a/libonnxruntime4j_jni.so",
+        )
+        includeEmptyDirs = false
+    }
+    into(extractedFullOrt)
 }
 
 android {
@@ -67,6 +87,10 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("main").jniLibs.srcDir(extractedFullOrt.get().asFile.resolve("jni"))
+    }
+
     buildFeatures {
         compose = true
     }
@@ -79,6 +103,9 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            pickFirsts += "**/libonnxruntime.so"
         }
     }
 }
@@ -102,4 +129,16 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+}
+
+
+tasks.matching {
+    it.name == "preBuild" ||
+        it.name.endsWith("NativeLibs") ||
+        it.name.endsWith("JniLibFolders") ||
+        it.name.startsWith("compile") ||
+        it.name.startsWith("mergeExtDex") ||
+        it.name.startsWith("check") && it.name.endsWith("DuplicateClasses")
+}.configureEach {
+    dependsOn(extractFullOrtRuntime)
 }
