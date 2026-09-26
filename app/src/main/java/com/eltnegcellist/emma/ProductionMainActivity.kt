@@ -971,14 +971,14 @@ private fun ProductionEmmaApp() {
                         error.message?.contains("聞き取れませんでした") == true
 
                     recorder.resumeBuffering(clearExisting = true)
-                    if (automatic && noMeaningfulSpeech) {
+                    if (noMeaningfulSpeech) {
                         latestEmmaText = ""
                         status = ProductionEmmaStatus.LISTENING
                         statusMessage = "意味のあることばを待っています。"
                         DiagnosticStore.mark(
                             context,
                             "meaningless_turn_suppressed",
-                            "message=${error.message ?: ""}",
+                            "automatic=$automatic message=${error.message ?: ""}",
                         )
                     } else {
                         status = ProductionEmmaStatus.ERROR
