@@ -68,6 +68,21 @@ jobs:
           test "$ORT_SIZE" -gt 8000000
           test "$JNI_SIZE" -gt 50000
 
+          if unzip -l "$APK" | grep -Eiq 'espeak|piper|sherpa'; then
+            echo "Forbidden legacy TTS dependency found in APK."
+            unzip -l "$APK" | grep -Ei 'espeak|piper|sherpa' || true
+            exit 1
+          fi
+
+          rm -rf /tmp/mitsukotoba-native-check
+          mkdir -p /tmp/mitsukotoba-native-check
+          unzip -q "$APK" 'lib/arm64-v8a/*.so' -d /tmp/mitsukotoba-native-check
+          if find /tmp/mitsukotoba-native-check -name '*.so' -print0 | \
+             xargs -0 -r strings | grep -Eiq 'espeak_Initialize|piper[_-]phonemize|sherpa-onnx'; then
+            echo "Forbidden legacy TTS symbols found in packaged native libraries."
+            exit 1
+          fi
+
       - name: Prepare and verify APK
         id: apk
         shell: bash
