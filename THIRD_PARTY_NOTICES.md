@@ -2,31 +2,44 @@
 
 Emma downloads or uses third-party software and model files. Each component remains subject to its own license.
 
-## Moonshine Voice / Moonshine Japanese Tiny Streaming
+## Moonshine Voice / Moonshine Japanese Streaming
 
 - Upstream: https://github.com/moonshine-ai/moonshine
 - Android package: ai.moonshine:moonshine-voice:0.1.5
 - License: MIT
 - Used for Japanese speech recognition in Emma Lite and Emma Full.
 
-Emma Lite and Emma Full use the Tiny Streaming architecture and downloads the Japanese model files on first setup.
+Emma downloads the selected Japanese Tiny/Small Streaming model files during setup.
 
-## Kitten TTS Nano 0.8
+## Kitten TTS Nano 0.8 FP32
 
-- Upstream model: https://huggingface.co/KittenML/kitten-tts-nano-0.8-int8
+- Upstream model: https://huggingface.co/KittenML/kitten-tts-nano-0.8-fp32
 - Upstream project: https://github.com/KittenML/KittenTTS
 - License: Apache-2.0
+- Voice: Kiki / `expr-voice-5-f`
 - Used for local English speech synthesis in Emma Lite and Emma Full.
 
-Emma uses the sherpa-onnx conversion package `kitten-nano-en-v0_8-int8` and the Kiki / `expr-voice-5-f` voice (speaker id 6).
+Emma downloads the official FP32 ONNX model and `voices.npz` directly from the
+KittenML model repository. The experimental non-GPL TTS branch does not use the
+sherpa-onnx Kitten frontend or eSpeak NG data.
 
-## sherpa-onnx
+## ONNX Runtime Android
 
-- Upstream: https://github.com/k2-fsa/sherpa-onnx
-- License: Apache-2.0
-- Used as the Android inference runtime for Kitten TTS.
+- Upstream: https://github.com/microsoft/onnxruntime
+- Android package: com.microsoft.onnxruntime:onnxruntime-android:1.20.0
+- License: MIT
+- Used to execute the Kitten TTS ONNX model directly on Android.
 
-Emma currently pins sherpa-onnx 1.13.8.
+## CMU Pronouncing Dictionary (CMUDict)
+
+- Upstream: https://github.com/cmusphinx/cmudict
+- Pinned commit: `74790861f652b15e4ac49015a90074ad62a27690`
+- License: BSD-style CMUdict license
+- Used as the primary English pronunciation dictionary for Kitten TTS.
+
+Emma converts CMUDict ARPABET entries to the IPA symbol inventory expected by
+Kitten TTS, with local context rules for homographs and a dedicated pronunciation
+path for the configured Japanese baby name.
 
 ## LiteRT-LM and Gemma
 
