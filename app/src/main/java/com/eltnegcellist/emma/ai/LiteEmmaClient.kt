@@ -22,7 +22,10 @@ class LiteEmmaClient(
         level: EnglishLevel,
         onTranscript: (String) -> Unit,
     ): Result<String> = runCatching {
-        val transcript = asr.transcribe(wavAudio).getOrThrow()
+        val transcript = asr.transcribe(wavAudio).getOrThrow().trim()
+        require(MeaningfulJapaneseUtterance.isMeaningful(transcript)) {
+            "意味のある発話を聞き取れませんでした。"
+        }
         onTranscript(transcript)
 
         val audience = AudienceMode.fromSaved(preferences.getString("audience_mode", null))
