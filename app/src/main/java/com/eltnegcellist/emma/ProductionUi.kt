@@ -89,7 +89,7 @@ internal fun EmmaHomeScreen(
                             onClick = onStartSession,
                             enabled = modelReady && !busy,
                             modifier = Modifier.fillMaxWidth(),
-                        ) { Text("Emmaと話す") }
+                        ) { Text("3人で話す") }
                     } else {
                         OutlinedButton(
                             onClick = onStopSession,
@@ -115,11 +115,11 @@ internal fun EmmaHomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column {
-                    Text("Emma", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
-                    Text("おうちの英語パートナー", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("みつことば", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
+                    Text("親と赤ちゃんとAI、3人でつくる英語の時間", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(onClick = onOpenAbout) { Text("Emmaとは？") }
+                    TextButton(onClick = onOpenAbout) { Text("みつことばとは？") }
                     TextButton(onClick = onOpenSettings) { Text("設定") }
                 }
             }
@@ -196,7 +196,7 @@ internal fun EmmaHomeScreen(
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text("自動で返事", style = MaterialTheme.typography.titleSmall)
-                        Text("話し終わりを検出してEmmaが返します", style = MaterialTheme.typography.bodySmall)
+                        Text("話し終わりを検出してAIが返します", style = MaterialTheme.typography.bodySmall)
                     }
                     Switch(checked = autoRespond, onCheckedChange = onToggleAutoRespond, enabled = visualState != EmmaVisualState.SPEAKING)
                 }
@@ -263,7 +263,7 @@ private fun AudienceSelector(
             }
             Text(
                 if (engineMode != ConversationEngineMode.FULL) {
-                    "Emma ${engineMode.label}は「赤ちゃんへ」専用です。親との自由会話や、より柔軟な応答はFullで利用できます。"
+                    "みつことば ${engineMode.label}は「赤ちゃんへ」専用です。親との自由会話や、より柔軟な応答はFullで利用できます。"
                 } else {
                     mode.description
                 },
@@ -300,7 +300,7 @@ private fun ConversationExchange(transcript: String, emmaText: String) {
                     modifier = Modifier.fillMaxWidth(0.88f),
                 ) {
                     Column(Modifier.padding(14.dp)) {
-                        Text("Emma", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text("みつことば", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Spacer(Modifier.height(4.dp))
                         Text(emmaText, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
@@ -357,10 +357,10 @@ internal fun EmmaSettingsScreen(
                     TextButton(onClick = onBack) { Text("← 戻る") }
                     Column(Modifier.padding(start = 4.dp)) {
                         Text("設定", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
-                        Text("家族とEmmaの設定", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("家族とみつことばの設定", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                TextButton(onClick = onOpenAbout) { Text("Emmaとは？") }
+                TextButton(onClick = onOpenAbout) { Text("みつことばとは？") }
             }
 
             ProductionFamilySettings(enabled = enabled)
@@ -375,7 +375,7 @@ internal fun EmmaSettingsScreen(
                     Column(Modifier.weight(1f)) {
                         Text("Android版の動作", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            "Emma利用中は画面をスリープさせない",
+                            "みつことば利用中は画面をスリープさせない",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -390,7 +390,7 @@ internal fun EmmaSettingsScreen(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Emmaのエディション", style = MaterialTheme.typography.titleMedium)
+                    Text("Lite / Full", style = MaterialTheme.typography.titleMedium)
                     Text(
                         "Lite / Full から選べます。",
                         style = MaterialTheme.typography.bodySmall,
@@ -402,13 +402,13 @@ internal fun EmmaSettingsScreen(
                                 onClick = {},
                                 enabled = enabled,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Emma ${option.label}（選択中）") }
+                            ) { Text("みつことば ${option.label}（選択中）") }
                         } else {
                             OutlinedButton(
                                 onClick = { onEngineMode(option) },
                                 enabled = enabled,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Emma ${option.label}に切り替える") }
+                            ) { Text("みつことば ${option.label}に切り替える") }
                         }
                         Text(
                             option.description,
@@ -446,7 +446,7 @@ internal fun EmmaSettingsScreen(
                         if (asrModel == MoonshineAsrModel.SMALL) {
                             "Smallは追加データが必要です。Tinyより高精度な場合がありますが、常に正確とは限りません。"
                         } else {
-                            "Tinyは軽量で、Emmaをすばやく始める標準設定です。"
+                            "Tinyは軽量で、みつことばをすばやく始める標準設定です。"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -455,7 +455,7 @@ internal fun EmmaSettingsScreen(
             }
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Emma ${engineMode.label}", style = MaterialTheme.typography.titleMedium)
+                    Text("みつことば ${engineMode.label}", style = MaterialTheme.typography.titleMedium)
 
                     val editionReady = modelReady && kittenInstalled
 
@@ -487,7 +487,7 @@ internal fun EmmaSettingsScreen(
                                     onClick = onPrepareLite,
                                     enabled = enabled,
                                     modifier = Modifier.fillMaxWidth(),
-                                ) { Text("Emma Liteを準備") }
+                                ) { Text("みつことば Liteを準備") }
                             }
 
                             ConversationEngineMode.FULL -> {
@@ -521,13 +521,13 @@ internal fun EmmaSettingsScreen(
                                         onClick = onLoadGemma,
                                         enabled = enabled,
                                         modifier = Modifier.fillMaxWidth(),
-                                    ) { Text("Emma Fullを起動") }
+                                    ) { Text("みつことば Fullを起動") }
                                 }
                             }
                         }
                     }
 
-                    Text("Emmaの声：Kitten TTS Nano / Kiki", style = MaterialTheme.typography.titleSmall)
+                    Text("AIの声：Kitten TTS Nano / Kiki", style = MaterialTheme.typography.titleSmall)
                     if (kittenInstalled) {
                         OutlinedButton(
                             onClick = if (previewing) onStopPreview else onPreview,
@@ -582,7 +582,7 @@ internal fun LiteModelInstallDialog(
             dismissOnClickOutside = false,
         ),
         title = {
-            Text("Emmaを準備しています")
+            Text("みつことばを準備しています")
         },
         text = {
             Column(
@@ -619,7 +619,7 @@ private fun AppearanceSettings(enabled: Boolean) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("見た目", style = MaterialTheme.typography.titleMedium)
-            Text("Emmaの色", style = MaterialTheme.typography.titleSmall)
+            Text("キャラクターの色", style = MaterialTheme.typography.titleSmall)
             Box {
                 OutlinedButton(onClick = { colorExpanded = true }, enabled = enabled) { Text(colorMode.label) }
                 DropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
