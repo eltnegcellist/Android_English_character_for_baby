@@ -4,20 +4,20 @@
 
 みつことばは、**赤ちゃんに英語を聞かせるだけではなく、親・赤ちゃん・AIの3人で英語が生まれる時間をつくる**ためのローカル英語アプリです。
 
-親は普段どおり日本語で赤ちゃんに話しかけます。AIキャラクターの初期名は **Emma**。Emmaは日本語を直訳するのではなく、「今なにをしているか」の文脈として受け取り、その場に合う短い英語を赤ちゃんへ返します。名前は設定で変更でき、ぬいぐるみなど別のキャラクターとして使うこともできます。
+親は普段どおり日本語で赤ちゃんに話しかけます。まず相手になるのは **AI**。AIは日本語を直訳するのではなく、「今なにをしているか」の文脈として受け取り、その場に合う英語を返します。AIキャラクターの初期名は **Emma** で、名前は設定から変更できます。
 
 乳児の外国語学習研究では、**ただ音声や映像を与えることと、社会的な相手と関わりながら経験することでは学習が異なる可能性**が示されています。みつことばは、スマホを渡して終わりにするのではなく、親も一緒に参加する3者の相互作用を家庭につくることを目指しています。
 
 ### 安定版
 
-**現在のAndroid安定版：v1.7.1**  
-**versionCode：79**
+**現在のAndroid安定版：v1.8.0**  
+**versionCode：80**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.7.1
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.7.1/Mitsukotoba-v1.7.1-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.8.0
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.8.0/Mitsukotoba-v1.8.0-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.7.1は、親・赤ちゃん・AIの3者を表す正式ロゴをランチャーアイコンとアプリ内ブランド表示へ採用した安定版です。v1.7.0で追加したEmmaの名前変更・自己紹介・「ここで返事して」も引き続き利用できます。
+v1.8.0は、初回画面を親・赤ちゃん・AIの3者インタラクション中心に再設計し、AI→Emmaの順に紹介する導線、引用番号つき研究説明、「呼びかけ / 会話」モードを導入した安定版です。Fullの「会話」は親だけでなく、親・赤ちゃん・AIの共有場面に継続参加する設計です。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -115,6 +115,15 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 - [American Academy of Pediatrics (2026)](https://doi.org/10.1542/peds.2025-075320) — *Digital Ecosystems, Children, and Adolescents: Policy Statement*. Pediatrics 157(2), e2025075320.
 - [World Health Organization (2019)](https://www.who.int/publications/i/item/9789241550536) — *Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age*.
 - [Johnson et al. (1991)](https://doi.org/10.1016/0010-0277(91)90045-6) — *Newborns' preferential tracking of face-like stimuli and its subsequent decline*. Cognition 40(1–2), 1–19.
+
+### 「呼びかけ」と「会話」
+
+みつことばの2つのインタラクションは、相手を「赤ちゃん向け / 親向け」に分けるのではなく、**3人がどう関わるか**で分けます。
+
+- **呼びかけ** — 親子の今の場面を手がかりに、AIが短い英語を差し込みます。親と赤ちゃんのやり取りが主役です。
+- **会話** — 親の発話や直前の流れを踏まえ、AIも親・赤ちゃんとの3者のやり取りに継続して参加します。
+
+Liteでは「呼びかけ」を利用できます。Fullでは「呼びかけ」と「会話」の両方を利用できます。内部の保存値は既存設定との互換性のため維持しています。
 
 ### 会話を自分で区切る
 
@@ -276,11 +285,11 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### プロジェクト状況
 
-**v1.6.1を現在の安定基準版とします。**
+**v1.8.0を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.6.1を再現可能な「みつことば」安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.8.0を再現可能な「みつことば」安定基準版として保持します。
 
 ### ライセンス
 
@@ -300,14 +309,14 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.7.1**  
-**versionCode: 79**
+**Current stable Android release: v1.8.0**  
+**versionCode: 80**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.7.1
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.7.1/Mitsukotoba-v1.7.1-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.8.0
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.8.0/Mitsukotoba-v1.8.0-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.7.0 restores Emma as the default configurable AI character, adds first-turn self-introduction, and adds a manual turn cutoff control. v1.6.1 remains available as the previous research-guidance baseline.
+v1.8.0 redesigns onboarding around the parent-baby-AI interaction, introduces the AI role before the configurable Emma character identity, adds numbered research citations, and renames the interaction modes to Callout and Conversation.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -560,11 +569,11 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 ### Project Status
 
-**v1.6.1 is the current stable baseline.**
+**v1.8.0 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.6.1 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.8.0 remains reproducible as the stable Mitsukotoba reference point.
 
 ### License
 
