@@ -152,11 +152,12 @@ class GemmaEmmaClient(context: Context) {
                 "after_full_moonshine_transcription",
                 "chars=${transcript.length} durationMs=$transcriptMillis success=${transcript.isNotBlank()} ${memoryDetail()}",
             )
-            if (transcript.isNotBlank()) {
-                onTranscript(transcript)
+            require(MeaningfulJapaneseUtterance.isMeaningful(transcript)) {
+                "意味のある発話を聞き取れませんでした。"
             }
+            onTranscript(transcript)
             require(transcript.length < 1200) { "聞き取り結果が長すぎます。短く話して再試行してください。" }
-            val transcriptForPrompt = transcript.ifBlank { NO_CLEAR_SPEECH_CONTEXT }
+            val transcriptForPrompt = transcript
 
             val now = System.currentTimeMillis()
             if (lastTurnAtMillis > 0L && now - lastTurnAtMillis > HISTORY_TIMEOUT_MS) {
@@ -177,11 +178,9 @@ class GemmaEmmaClient(context: Context) {
             val configuredBabyName = configuredBabyName()
             val spokenBabyName = configuredSpokenBabyName(configuredBabyName)
             val babyGender = configuredBabyGender()
-            val audioOnlyTurn = transcript.isBlank()
-            val infantVocalEvent = audioOnlyTurn
-            // If Moonshine found no linguistic content, Full may use the original audio only to
-            // recognize a clear infant vocalization. Such turns are always directed to the baby.
-            val audienceMode = if (audioOnlyTurn) AudienceMode.BABY else configuredAudienceMode()
+            val audioOnlyTurn = false
+            val infantVocalEvent = false
+            val audienceMode = configuredAudienceMode()
             val outputMaxWords = when (audienceMode) {
                 AudienceMode.BABY -> when (level) {
                     EnglishLevel.FIRST_WORDS -> BabySpeechStyle.FIRST_WORDS_MAX_WORDS
@@ -301,8 +300,10 @@ class GemmaEmmaClient(context: Context) {
                 Conversation rules shared by both modes:
                 - Never merely translate or paraphrase the Japanese. Add a genuine, context-appropriate response.
                 - Avoid repeating the same opener, praise, question pattern, or "Oh/Wow" across nearby turns.
-                - Use recent conversation to resolve context such as "それ", "さっき", configured names, and follow-up remarks.
-                - Stay on the same topic unless the parent changes it. The current transcript has priority over older turns.
+                - Use the previous 2-3 parent turns especially strongly to resolve context such as "それ", "さっき", configured names, and follow-up remarks.
+                - Treat the most recently established concrete topic (for example milk, bath, sleep, diaper, book, or play) as still active across short generic follow-ups unless the current parent speech clearly introduces another topic.
+                - Do not jump to a new topic merely because the current turn omits the topic word. Keep continuity for roughly 2-3 turns when recent context supports it.
+                - Switch topics immediately when the current transcript clearly introduces a different concrete topic. The current transcript has priority over older turns.
                 - Do not invent concrete actions, objects, events, feelings, colors, sizes, or facts unsupported by the transcript or recent context.
                 - Follow the baby-name and baby-gender rules above exactly. A configured spoken name is a permitted English proper name.
                 - Ignore unclear portions marked [不明].
