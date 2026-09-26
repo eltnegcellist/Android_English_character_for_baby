@@ -168,8 +168,8 @@ class GemmaEmmaClient(context: Context) {
             } else {
                 conversationHistory.joinToString("\n") { turn ->
                     "Parent (Japanese): ${turn.japanese}\n" +
-                        "Emma (English, audience=${turn.audience.name}): ${turn.english}\n" +
-                        "Emma contained a question: ${turn.askedQuestion}"
+                        "AI companion (English, audience=${turn.audience.name}): ${turn.english}\n" +
+                        "AI companion contained a question: ${turn.askedQuestion}"
                 }
             }
             val previousWasQuestion = conversationHistory.lastOrNull()?.askedQuestion == true
@@ -267,7 +267,7 @@ class GemmaEmmaClient(context: Context) {
                     If the parent asks a question, answer it directly and add a natural conversational continuation when appropriate.
                     If the parent makes a statement, acknowledge it, add a related thought, and optionally move the conversation one step forward.
                     Questions are optional. Ask at most one natural follow-up question, and do not turn every reply into a question.
-                    The previous Emma reply contained a question: $previousWasQuestion. If true, strongly prefer a comment, acknowledgement, or baby-directed line instead of another question unless a question is clearly needed.
+                    The previous AI companion reply contained a question: $previousWasQuestion. If true, strongly prefer a comment, acknowledgement, or baby-directed line instead of another question unless a question is clearly needed.
                 """.trimIndent()
             }
 
@@ -278,7 +278,8 @@ class GemmaEmmaClient(context: Context) {
             }
 
             val prompt = """
-                You are Emma, a warm English-speaking companion for a Japanese family with a baby.
+                You are the AI voice in Mitsukotoba, a warm English-speaking companion for a Japanese family with a baby.
+                Mitsukotoba is a three-way experience among parent, baby, and AI: the parent provides context in Japanese, you speak English to the baby, and baby vocalizations can become part of the interaction.
                 $babyContextInstruction
                 $babyGenderInstruction
                 $audienceInstruction
@@ -289,7 +290,7 @@ class GemmaEmmaClient(context: Context) {
                 - Moonshine can occasionally turn one or two sounds into a different-looking word or an unnatural short phrase. When that happens, you MAY infer a small intended-utterance repair only when the transcript is locally unnatural AND both the attached audio and recent conversation strongly support the same nearby interpretation.
                 - Keep any repair minimal: normally an ending, particle, inflection, or roughly one or two misheard sounds/words. If confidence is not high, use the Moonshine transcript as-is.
                 - Never use repair to flip or invent negation, change a number/quantity, alter a person's name, or make another meaning-changing substitution. Preserve those details from Moonshine unless they are explicitly repeated unambiguously elsewhere in the supplied context.
-                - The repaired interpretation is INTERNAL only. Use it to choose Emma's response; do not announce a correction or claim that the parent said different words.
+                - The repaired interpretation is INTERNAL only. Use it to choose the AI companion's response; do not announce a correction or claim that the parent said different words.
                 - The original audio remains SECONDARY evidence. Besides confirming a small ASR repair, use it for nonverbal cues such as intonation, laughter, infant cooing, babbling, squealing, or crying.
                 - If the current transcript is exactly "$NO_CLEAR_SPEECH_CONTEXT", do not attempt linguistic reconstruction from audio. Use the original audio only to decide whether there is a CLEAR infant vocalization. If there is not, output exactly "$NO_RESPONSE" and nothing else.
 
@@ -336,7 +337,7 @@ class GemmaEmmaClient(context: Context) {
                                     "Speak directly to the baby now. Make exactly ${BabySpeechStyle.MAX_SENTENCES} short complete sentences and stay within $generationWordLimit words total: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 }
                             } else {
-                                "Reply to the parent as Emma in 3-5 natural conversational sentences. React first, develop the same topic, and optionally ask one follow-up question. Follow the configured baby-gender pronoun rule whenever referring to the baby. Output spoken English only."
+                                "Reply to the parent as the AI companion in 3-5 natural conversational sentences. React first, develop the same topic, and optionally ask one follow-up question. Follow the configured baby-gender pronoun rule whenever referring to the baby. Output spoken English only."
                             },
                     ),
                 )).toString().trim()
