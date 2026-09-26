@@ -6,12 +6,6 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
-import com.k2fsa.sherpa.onnx.GenerationConfig
-import com.k2fsa.sherpa.onnx.OfflineTts
-import com.k2fsa.sherpa.onnx.OfflineTtsConfig
-import com.k2fsa.sherpa.onnx.OfflineTtsKittenModelConfig
-import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
-import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
 import kotlin.math.abs
@@ -29,9 +23,9 @@ class KittenSpeaker(
     @Volatile private var requestId: String? = null
     @Volatile private var track: AudioTrack? = null
     @Volatile private var closed = false
-    private var engine: Engine? = null
+    private var engine: KittenOnnxEngine? = null
 
-    fun speak(text: String): Boolean {
+    fun speak(text: String, japaneseNameHint: String = ""): Boolean {
         if (closed || text.isBlank() || !KittenModelStore.isInstalled(context)) return false
 
         stop()
@@ -43,36 +37,30 @@ class KittenSpeaker(
             val started = System.nanoTime()
 
             runCatching {
-                val active = engine ?: Engine(context).also {
+                val active = engine ?: KittenOnnxEngine(KittenModelStore.directory(context)).also {
                     engine = it
                     DiagnosticStore.mark(
                         context,
                         "kitten_runtime_initialized",
-                        "model=Nano-FP32 voice=Kiki sid=$KIKI_SPEAKER_ID threads=$THREADS speed=$KITTEN_SPEED",
+                        "model=Nano-FP32 voice=Kiki runtime=onnxruntime-direct phonemizer=cmudict speed=$KITTEN_SPEED",
                     )
                 }
 
                 val generationStarted = System.nanoTime()
-                val generated = active.tts.generateWithConfig(
-                    text.trim(),
-                    GenerationConfig(
-                        speed = KITTEN_SPEED,
-                        sid = KIKI_SPEAKER_ID,
-                    ),
-                )
+                val generated = active.generate(text.trim(), japaneseNameHint)
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
-                require(generated.samples.isNotEmpty() && generated.samples.all { it.isFinite() }) {
+                require(generated.isNotEmpty() && generated.all { it.isFinite() }) {
                     "Kitten TTS Nano returned invalid audio."
                 }
 
-                val pcm = toPcm16(generated.samples)
-                val firstAudioMs = play(id, pcm, generated.sampleRate, started)
+                val pcm = toPcm16(generated)
+                val firstAudioMs = play(id, pcm, KittenOnnxEngine.OUTPUT_SAMPLE_RATE, started)
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
 
                 DiagnosticStore.mark(
                     context,
                     "kitten_generation",
-                    "voice=Kiki sid=$KIKI_SPEAKER_ID speed=$KITTEN_SPEED chars=${text.length} " +
+                    "voice=Kiki speed=$KITTEN_SPEED chars=${text.length} " +
                         "samples=${pcm.size} generationMs=$generationMs firstAudioMs=$firstAudioMs totalMs=$totalMs",
                 )
                 firstAudioMs to totalMs
@@ -198,35 +186,9 @@ class KittenSpeaker(
         return firstAudioMs
     }
 
-    private class Engine(context: Context) : AutoCloseable {
-        private val dir = KittenModelStore.directory(context)
-        val tts = OfflineTts(
-            assetManager = null,
-            config = OfflineTtsConfig(
-                model = OfflineTtsModelConfig(
-                    kitten = OfflineTtsKittenModelConfig(
-                        model = File(dir, "model.fp32.onnx").path,
-                        voices = File(dir, "voices.bin").path,
-                        tokens = File(dir, "tokens.txt").path,
-                        dataDir = File(dir, "espeak-ng-data").path,
-                    ),
-                    numThreads = THREADS,
-                    debug = false,
-                    provider = "cpu",
-                ),
-                maxNumSentences = 1,
-            ),
-        )
-
-        override fun close() {
-            tts.release()
-        }
-    }
 
     private companion object {
-        const val KIKI_SPEAKER_ID = 7
         const val KITTEN_SPEED = 0.8f
-        const val THREADS = 2
         const val PLAYBACK_CHUNK_SAMPLES = 2048
         const val PLAYBACK_TIMEOUT_MS = 60_000L
         const val TTS_TARGET_PEAK = 0.92f

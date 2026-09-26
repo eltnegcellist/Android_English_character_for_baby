@@ -1,3 +1,5 @@
+import org.gradle.api.file.RelativePath
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -27,6 +29,28 @@ val hasAllCustomSigningInputs = signingInputs.all { !it.isNullOrBlank() }
 
 require(!hasAnyCustomSigningInput || hasAllCustomSigningInputs) {
     "Emma signing is only partially configured. Provide all four signing values or none."
+}
+
+val fullOrtAar by configurations.creating
+val extractedFullOrtJni = layout.buildDirectory.dir("generated/full-ort-jni")
+val extractFullOrtJni = tasks.register<Sync>("extractFullOrtJni") {
+    from({
+        zipTree(fullOrtAar.singleFile)
+    }) {
+        include(
+            "jni/arm64-v8a/libonnxruntime.so",
+            "jni/arm64-v8a/libonnxruntime4j_jni.so",
+            "jni/armeabi-v7a/libonnxruntime.so",
+            "jni/armeabi-v7a/libonnxruntime4j_jni.so",
+        )
+        eachFile {
+            val segments = relativePath.segments
+            val abi = segments[1]
+            relativePath = RelativePath(true, abi, name)
+        }
+        includeEmptyDirs = false
+    }
+    into(extractedFullOrtJni)
 }
 
 android {
@@ -67,6 +91,10 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("main").jniLibs.srcDir(extractedFullOrtJni)
+    }
+
     buildFeatures {
         compose = true
     }
@@ -80,6 +108,9 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            pickFirsts += "**/libonnxruntime.so"
+        }
     }
 }
 
@@ -92,14 +123,19 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    compileOnly("com.microsoft.onnxruntime:onnxruntime-android:1.23.2")
+    add(fullOrtAar.name, "com.microsoft.onnxruntime:onnxruntime-android:1.23.2@aar")
     implementation("ai.moonshine:moonshine-voice:0.1.5")
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
-    implementation(files("libs/sherpa-onnx-static-1.13.8.aar"))
-    implementation("org.apache.commons:commons-compress:1.28.0")
 
     testImplementation("junit:junit:4.13.2")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+}
+
+
+tasks.matching { it.name.endsWith("NativeLibs") }.configureEach {
+    dependsOn(extractFullOrtJni)
 }
