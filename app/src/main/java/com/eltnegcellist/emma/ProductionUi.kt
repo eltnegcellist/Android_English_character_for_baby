@@ -154,6 +154,18 @@ internal fun EmmaHomeScreen(
                 mouthLevel = mouthLevel,
                 modifier = Modifier.fillMaxWidth(),
             )
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
+                shape = MaterialTheme.shapes.extraLarge,
+            ) {
+                Text(
+                    aiName,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
