@@ -164,7 +164,11 @@ class GemmaEmmaClient(context: Context) {
             val now = System.currentTimeMillis()
             if (lastTurnAtMillis > 0L && now - lastTurnAtMillis > HISTORY_TIMEOUT_MS) {
                 conversationHistory.clear()
+                topicTracker.reset()
             }
+
+            val topicContext = topicTracker.observe(transcript)
+            val topicContextBlock = topicContext.toPromptBlock()
 
             val historyText = if (conversationHistory.isEmpty()) {
                 "(no previous turns)"
@@ -301,6 +305,10 @@ class GemmaEmmaClient(context: Context) {
 
                 Conversation rules shared by both modes:
                 - Never merely translate or paraphrase the Japanese. Add a genuine, context-appropriate response.
+                - A lightweight topic tracker may provide concrete childcare context such as milk, bath, sleep, diaper, book, or play.
+                - The tracker intentionally ignores generic/no-topic turns. Never treat "generic" or the absence of a detected topic as a topic.
+                - When a concrete carried topic is supplied and the current parent speech is vague, strongly prefer continuing that concrete topic instead of drifting to a generic response.
+                - If the current transcript clearly introduces a different concrete topic, switch immediately. The current transcript always overrides older tracker history.
                 - Avoid repeating the same opener, praise, question pattern, or "Oh/Wow" across nearby turns.
                 - Use the previous 5 parent turns especially strongly to resolve context such as "それ", "さっき", configured names, and follow-up remarks.
                 - Treat the most recently established concrete topic (for example milk, bath, sleep, diaper, book, or play) as still active across short generic follow-ups unless the current parent speech clearly introduces another topic.
