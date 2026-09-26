@@ -12,7 +12,7 @@ enum class MoonshineAsrModel(
 ) {
     TINY(
         savedValue = "tiny",
-        label = "軽量・標準（Tiny）",
+        label = "軽量（Tiny）",
         shortLabel = "Tiny",
         modelName = "moonshine-tiny-streaming-ja",
         arch = JNI.MOONSHINE_MODEL_ARCH_TINY_STREAMING,
@@ -20,7 +20,7 @@ enum class MoonshineAsrModel(
     ),
     SMALL(
         savedValue = "small",
-        label = "高精度（Small）",
+        label = "高精度・標準（Small）",
         shortLabel = "Small",
         modelName = "moonshine-small-streaming-ja",
         arch = JNI.MOONSHINE_MODEL_ARCH_SMALL_STREAMING,
@@ -29,6 +29,6 @@ enum class MoonshineAsrModel(
 
     companion object {
         fun fromSaved(value: String?): MoonshineAsrModel =
-            entries.firstOrNull { it.savedValue == value } ?: TINY
+            entries.firstOrNull { it.savedValue == value } ?: SMALL
     }
 }
