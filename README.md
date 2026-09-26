@@ -4,7 +4,7 @@
 
 みつことばは、**赤ちゃんに英語を聞かせるだけではなく、親・赤ちゃん・AIの3人で英語が生まれる時間をつくる**ためのローカル英語アプリです。
 
-親は普段どおり日本語で赤ちゃんに話しかけます。AIはそれを直訳するのではなく、「今なにをしているか」の文脈として受け取り、その場に合う短い英語を赤ちゃんへ返します。赤ちゃんの声や反応も、次のやり取りのきっかけになります。
+親は普段どおり日本語で赤ちゃんに話しかけます。AIキャラクターの初期名は **Emma**。Emmaは日本語を直訳するのではなく、「今なにをしているか」の文脈として受け取り、その場に合う短い英語を赤ちゃんへ返します。名前は設定で変更でき、ぬいぐるみなど別のキャラクターとして使うこともできます。
 
 乳児の外国語学習研究では、**ただ音声や映像を与えることと、社会的な相手と関わりながら経験することでは学習が異なる可能性**が示されています。みつことばは、スマホを渡して終わりにするのではなく、親も一緒に参加する3者の相互作用を家庭につくることを目指しています。
 
@@ -86,6 +86,8 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 
 大切にしているのは、**スマホを赤ちゃんに渡して終わりにしないこと**です。親も同じ場に参加し、AIの英語をきっかけに赤ちゃんへ話しかけ、赤ちゃんの反応にまた応える。画面の有無より、親・赤ちゃん・AIの3人が同じ時間を共有することを重視しています。
 
+画面を見せたくない場合は、端末をぬいぐるみの後ろなど、赤ちゃんの手が届かず放熱できる場所に置き、Emmaの声だけを聞かせる使い方もできます。AIの名前はぬいぐるみに合わせて変更できます。端末を布で覆ったり、充電中の端末をぬいぐるみの下や赤ちゃんの寝床へ置いたりしないでください。
+
 #### 6. なぜAIには顔があるのか
 
 新生児が、スクランブルされた配置や空白の刺激よりも、顔らしく配置された刺激をより長く追視することを示した研究があります。
@@ -113,6 +115,10 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 - [American Academy of Pediatrics (2026)](https://doi.org/10.1542/peds.2025-075320) — *Digital Ecosystems, Children, and Adolescents: Policy Statement*. Pediatrics 157(2), e2025075320.
 - [World Health Organization (2019)](https://www.who.int/publications/i/item/9789241550536) — *Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age*.
 - [Johnson et al. (1991)](https://doi.org/10.1016/0010-0277(91)90045-6) — *Newborns' preferential tracking of face-like stimuli and its subsequent decline*. Cognition 40(1–2), 1–19.
+
+### 会話を自分で区切る
+
+通常は発話終了を自動検出して返答します。終了検出がうまくいかない場合や、ここまでで返してほしい場合は、会話中の **「ここで返事して」** を押してください。その時点までの録音を確定し、発話終了を待たずにMoonshineへ渡して返答します。自動返答をONにしたままでも使えます。
 
 ### エディション
 
@@ -288,7 +294,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 Mitsukotoba is a local-first English app designed not simply to play English to a baby, but to create **a three-way interaction in which parent, baby, and AI share the same moment**.
 
-The parent speaks naturally in Japanese. The AI does not translate the sentence literally; it uses the speech as context for what is happening now and responds directly to the baby in short English. Baby vocalizations and reactions can become part of the next exchange.
+The parent speaks naturally in Japanese. The default AI character is **Emma**. Emma uses the speech as context rather than translating it literally, and responds directly to the baby in short English. The character name can be changed in Settings, including for use with a favorite toy or plush character.
 
 Research on infant foreign-language learning suggests that passive audio or video exposure may not be equivalent to socially interactive experience. Mitsukotoba is designed around that distinction: not handing a phone to a baby and walking away, but bringing an English-speaking AI into an interaction in which the caregiver remains involved.
 
@@ -366,7 +372,7 @@ The American Academy of Pediatrics' 2026 Policy Statement takes a broader digita
 
 Mitsukotoba does not prescribe whether a family should or should not let a baby look at the screen. A baby may look at the AI face, the caregiver's face, a toy, bathwater, or something else in the room.
 
-What matters to the design is that the caregiver does not simply hand over the phone and disengage. Mitsukotoba is intended to be used as a shared interaction among **parent, baby, and AI**.
+What matters to the design is that the caregiver does not simply hand over the phone and disengage. Mitsukotoba is intended to be used as a shared interaction among **parent, baby, and AI**. Families who prefer not to show the display can place the phone behind a plush toy or other character, out of the baby's reach and without covering the device, and use the AI voice as that character. Do not place a charging phone under fabric, inside bedding, or in the baby's sleep space.
 
 #### 6. Why does the AI have a face?
 
@@ -393,6 +399,10 @@ It is an attempt to translate one research theme into a practical home design:
 - [American Academy of Pediatrics (2026)](https://doi.org/10.1542/peds.2025-075320) — *Digital Ecosystems, Children, and Adolescents: Policy Statement*. Pediatrics 157(2), e2025075320.
 - [World Health Organization (2019)](https://www.who.int/publications/i/item/9789241550536) — *Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age*.
 - [Johnson et al. (1991)](https://doi.org/10.1016/0010-0277(91)90045-6) — *Newborns' preferential tracking of face-like stimuli and its subsequent decline*. Cognition 40(1–2), 1–19.
+
+### Manually End a Turn
+
+Mitsukotoba normally detects the end of speech automatically. If endpoint detection is slow or you want a reply immediately, tap **“Reply now”** while speaking. The app stops the current listening turn at that point and processes the audio collected so far. This works even when automatic response is enabled.
 
 ### Editions
 
