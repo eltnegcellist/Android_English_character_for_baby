@@ -162,7 +162,7 @@ internal fun EmmaAvatar(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text("Emmaは誰に話す？", style = MaterialTheme.typography.titleSmall)
+        Text("AIは誰に話す？", style = MaterialTheme.typography.titleSmall)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
@@ -369,7 +369,7 @@ internal fun EmmaAvatar(
             }
         }
 
-        Text("Emmaの色", style = MaterialTheme.typography.titleSmall)
+        Text("キャラクターの色", style = MaterialTheme.typography.titleSmall)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
