@@ -275,8 +275,8 @@ class LiteResponseEngineTest {
         assertEquals("milk", engine.respond("ミルク飲もうね").scene)
         assertEquals("milk", engine.respond("どうかな").scene)
         assertEquals("milk", engine.respond("おいしいね").scene)
-        assertEquals("milk", engine.respond("いっぱい飲んだね").scene)
-        assertEquals("milk", engine.respond("まだいけるかな").scene)
+        assertEquals("milk", engine.respond("いい感じだね").scene)
+        assertEquals("milk", engine.respond("そのままでいいよ").scene)
         assertEquals("milk", engine.respond("よかったね").scene)
 
         val afterWindow = engine.respond("かわいいね")
