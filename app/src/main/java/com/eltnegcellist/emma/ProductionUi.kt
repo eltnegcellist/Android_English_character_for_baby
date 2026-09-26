@@ -120,7 +120,7 @@ internal fun EmmaHomeScreen(
                     Text("親と赤ちゃんとAI、3人でつくる英語の時間", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(onClick = onOpenAbout) { Text("みつことばとは？") }
+                    TextButton(onClick = onOpenAbout) { Text("英語学習に使える理由") }
                     TextButton(onClick = onOpenSettings) { Text("設定") }
                 }
             }
@@ -277,7 +277,7 @@ private fun AudienceSelector(
             }
             Text(
                 if (engineMode != ConversationEngineMode.FULL) {
-                    "みつことば ${engineMode.label}は「赤ちゃんへ」専用です。親との自由会話や、より柔軟な応答はFullで利用できます。"
+                    "みつことば Liteでは「呼びかけ」を使えます。AIも3者のやり取りへ継続参加する「会話」はFullで利用できます。"
                 } else {
                     mode.description
                 },
