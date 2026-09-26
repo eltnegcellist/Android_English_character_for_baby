@@ -82,7 +82,7 @@ internal fun ProductionSpeechSettings(
             Text(
                 when {
                     babyName.isBlank() -> "名前は未設定です。"
-                    resolvedSpokenName.isNotBlank() -> "Emmaが呼ぶ名前：$resolvedSpokenName"
+                    resolvedSpokenName.isNotBlank() -> "みつことばが呼ぶ名前：$resolvedSpokenName"
                     else -> "読み方が必要な場合は英字で指定してください。"
                 },
                 style = MaterialTheme.typography.bodySmall,
@@ -127,7 +127,7 @@ internal fun ProductionSpeechSettings(
                     enabled = previewing || enabled,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text(if (previewing) "試聴を停止" else "Emmaの声を試す")
+                    Text(if (previewing) "試聴を停止" else "みつことばの声を試す")
                 }
             }
             Text("会話中は設定を変更できません。", style = MaterialTheme.typography.bodySmall)
