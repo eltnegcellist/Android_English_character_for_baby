@@ -443,7 +443,7 @@ internal fun EmmaSettingsScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("音声認識", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Moonshine Tiny / Small を選べます。Liteの初期値はTiny、Fullの初期値はSmallです。",
+                        "Moonshine Tiny / Small を選べます。現在の標準はSmallです。Tinyは軽さを優先したい場合に選べます。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -466,7 +466,7 @@ internal fun EmmaSettingsScreen(
                         if (asrModel == MoonshineAsrModel.SMALL) {
                             "Smallは追加データが必要です。Tinyより高精度な場合がありますが、常に正確とは限りません。"
                         } else {
-                            "Tinyは軽量で、みつことばをすばやく始める標準設定です。"
+                            "Tinyは軽量です。Smallより聞き取りを誤りやすい場合があるため、モデルサイズを優先したい場合に使います。"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
