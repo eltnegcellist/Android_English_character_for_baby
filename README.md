@@ -10,14 +10,14 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.7.0**  
-**versionCode：78**
+**現在のAndroid安定版：v1.7.1**  
+**versionCode：79**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.7.0
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.7.0/Mitsukotoba-v1.7.0-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.7.1
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.7.1/Mitsukotoba-v1.7.1-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.7.0は、AIキャラクター名（既定Emma）の復活・名前変更・最初の自己紹介・「ここで返事して」による手動区切りを追加した安定版です。v1.6.1は研究背景とスクリーン利用説明を拡充した前安定版として保持します。
+v1.7.1は、親・赤ちゃん・AIの3者を表す正式ロゴをランチャーアイコンとアプリ内ブランド表示へ採用した安定版です。v1.7.0で追加したEmmaの名前変更・自己紹介・「ここで返事して」も引き続き利用できます。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -300,11 +300,11 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.7.0**  
-**versionCode: 78**
+**Current stable Android release: v1.7.1**  
+**versionCode: 79**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.7.0
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.7.0/Mitsukotoba-v1.7.0-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.7.1
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.7.1/Mitsukotoba-v1.7.1-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
 v1.7.0 restores Emma as the default configurable AI character, adds first-turn self-introduction, and adds a manual turn cutoff control. v1.6.1 remains available as the previous research-guidance baseline.
