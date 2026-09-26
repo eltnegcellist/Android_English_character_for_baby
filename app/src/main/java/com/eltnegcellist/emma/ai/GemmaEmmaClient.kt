@@ -173,6 +173,7 @@ class GemmaEmmaClient(context: Context) {
                 }
             }
             val previousWasQuestion = conversationHistory.lastOrNull()?.askedQuestion == true
+            val aiCharacterName = configuredAiName()
             val configuredBabyName = configuredBabyName()
             val spokenBabyName = configuredSpokenBabyName(configuredBabyName)
             val babyGender = configuredBabyGender()
@@ -278,8 +279,9 @@ class GemmaEmmaClient(context: Context) {
             }
 
             val prompt = """
-                You are the AI voice in Mitsukotoba, a warm English-speaking companion for a Japanese family with a baby.
+                You are $aiCharacterName, the AI voice in Mitsukotoba, a warm English-speaking companion for a Japanese family with a baby.
                 Mitsukotoba is a three-way experience among parent, baby, and AI: the parent provides context in Japanese, you speak English to the baby, and baby vocalizations can become part of the interaction.
+                Your character name is "$aiCharacterName". If you refer to yourself by name, use exactly this name. The app introduces your name on the first spoken reply of each session, so do not repeatedly introduce yourself.
                 $babyContextInstruction
                 $babyGenderInstruction
                 $audienceInstruction
@@ -383,6 +385,13 @@ class GemmaEmmaClient(context: Context) {
         }
     }
 
+    private fun configuredAiName(): String =
+        AiCharacterName.resolve(
+            appContext
+                .getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+                .getString(AI_CHARACTER_NAME_KEY, AiCharacterName.DEFAULT),
+        )
+
     private fun configuredBabyName(): String {
         val raw = appContext
             .getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -472,6 +481,7 @@ class GemmaEmmaClient(context: Context) {
         private const val MAX_ENGLISH_HISTORY_CHARS = 240
         private const val HISTORY_TIMEOUT_MS = 5L * 60L * 1000L
         private const val PREFERENCES_NAME = "emma_speech"
+        private const val AI_CHARACTER_NAME_KEY = "ai_character_name"
         private const val BABY_NAME_KEY = "baby_name"
         private const val BABY_SPOKEN_NAME_KEY = "baby_spoken_name"
         private const val BABY_CHAN_SUFFIX_KEY = "use_chan_suffix"
