@@ -40,12 +40,12 @@ internal fun AboutEmmaScreen(
             }
 
             Text(
-                "Emmaとは？",
+                "みつことばとは？",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                "親子のいつもの会話の中に、英語の話し手をもう一人加えることを目指したアプリです。",
+                "親と赤ちゃんとAI、3人でつくる英語の時間。家庭のいつもの会話に、英語の話し手をもう一人加えるためのアプリです。",
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -60,8 +60,8 @@ internal fun AboutEmmaScreen(
             )
 
             AboutSection(
-                title = "Emmaの設計思想",
-                body = "理想を言えば、英語話者が毎日の親子の時間に入り、赤ちゃんや親の様子に合わせて、その瞬間に合う英語を話してくれる環境です。しかし、それを家庭でいつも実現するのは簡単ではありません。そこでEmmaは、親が普段どおり日本語で赤ちゃんに話しかけ、その内容を手がかりに、Emmaが赤ちゃんへ英語で反応する仕組みにしました。",
+                title = "なぜ「みつことば」？",
+                body = "名前の由来は、親・赤ちゃん・AIの3人です。親は普段どおり日本語で話し、AIはその内容から今の場面を受け取り、赤ちゃんへ短い英語で話しかけます。赤ちゃんの声や喃語も、次のやり取りのきっかけになります。理想は、その場に英語話者がもう一人いるような、文脈のある英語の時間です。",
             )
 
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -72,7 +72,7 @@ internal fun AboutEmmaScreen(
                     Text("たとえば", style = MaterialTheme.typography.titleMedium)
                     Text("親：「お風呂入ろうね」", style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        "Emma： “Bath time!” “Splash, splash!” “Here we go!”",
+                        "みつことば AI： “Bath time!” “Splash, splash!” “Here we go!”",
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     Text(
@@ -85,12 +85,12 @@ internal fun AboutEmmaScreen(
 
             AboutSection(
                 title = "Lite・Full",
-                body = "Emma LiteとFullは、音声の入口と出口を共通化しています。どちらもMoonshineで日本語を聞き取り、Kitten TTS Nano / Kikiで話します。Liteは軽量なLiteResponseEngineから返答を選びます。FullはGemmaを追加し、Moonshineの文字起こしを言葉の第一情報として使いながら、元音声のイントネーションや赤ちゃんの発声などの非言語情報、直前の会話も補助的に受け取り、その場で英語を考えます。",
+                body = "みつことば LiteとFullは、音声の入口と出口を共通化しています。どちらもMoonshineで日本語を聞き取り、Kitten TTS Nano / Kikiで話します。Liteは軽量なLiteResponseEngineから返答を選びます。FullはGemmaを追加し、Moonshineの文字起こしを言葉の第一情報として使いながら、元音声のイントネーションや赤ちゃんの発声などの非言語情報、直前の会話も補助的に受け取り、その場で英語を考えます。",
             )
 
             AboutSection(
-                title = "なぜEmmaには顔があるの？",
-                body = "新生児が、スクランブルされた配置や空白の刺激よりも、顔らしく配置された刺激をより長く追視することを示した研究があります。Emmaは単なる音声プレーヤーではなく、「誰かがこちらに話しかけている」感覚へ少しでも近づけるため、顔・口の動き・まばたき・表情を持つキャラクターとして設計しています。長時間画面を見せること自体を目的としているわけではありません。",
+                title = "なぜAIには顔があるの？",
+                body = "新生児が、スクランブルされた配置や空白の刺激よりも、顔らしく配置された刺激をより長く追視することを示した研究があります。みつことばのAIは単なる音声プレーヤーではなく、「誰かがこちらに話しかけている」感覚へ少しでも近づけるため、顔・口の動き・まばたき・表情を持つキャラクターとして設計しています。長時間画面を見せること自体を目的としているわけではありません。",
             )
 
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -99,15 +99,15 @@ internal fun AboutEmmaScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        "研究が証明していることと、Emmaが目指していること",
+                        "研究が証明していることと、みつことばが目指していること",
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        "Kuhlらの研究が調べたのは、生身の人間との社会的な外国語経験です。AIキャラクターのEmmaが同じ学習効果を生むことは、現時点で直接証明されていません。",
+                        "Kuhlらの研究が調べたのは、生身の人間との社会的な外国語経験です。みつことばのAIキャラクターが同じ学習効果を生むことは、現時点で直接証明されていません。",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Text(
-                        "Emmaは、その研究から得られた「ただ音を流すだけでなく、相互作用のある言語経験が重要かもしれない」という示唆を、家庭でできる形へ近づけようとする試みです。",
+                        "みつことばは、その研究から得られた「ただ音を流すだけでなく、相互作用のある言語経験が重要かもしれない」という示唆を、親・赤ちゃん・AIの3人で家庭の日常へ近づけようとする試みです。",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                     )
