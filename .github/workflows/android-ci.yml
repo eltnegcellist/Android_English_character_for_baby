@@ -53,6 +53,23 @@ jobs:
       - name: Test and build
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug --stacktrace
 
+      - name: Verify full ONNX Runtime is packaged
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          unzip -p "$APK" "lib/arm64-v8a/libonnxruntime.so" > /tmp/libonnxruntime.so
+          unzip -p "$APK" "lib/arm64-v8a/libonnxruntime4j_jni.so" > /tmp/libonnxruntime4j_jni.so
+          ORT_SIZE="$(stat -c%s /tmp/libonnxruntime.so)"
+          JNI_SIZE="$(stat -c%s /tmp/libonnxruntime4j_jni.so)"
+          echo "Packaged libonnxruntime.so: $ORT_SIZE bytes"
+          echo "Packaged libonnxruntime4j_jni.so: $JNI_SIZE bytes"
+          # Moonshine ships a ~6.5 MB minimal ORT that cannot load arbitrary .onnx.
+          # Kitten requires the full same-version ORT from onnxruntime-android.
+          test "$ORT_SIZE" -gt 8000000
+          test "$JNI_SIZE" -gt 100000
+
       - name: Prepare and verify APK
         id: apk
         shell: bash
