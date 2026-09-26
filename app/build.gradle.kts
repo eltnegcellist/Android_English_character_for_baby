@@ -95,9 +95,8 @@ dependencies {
     implementation("ai.moonshine:moonshine-voice:0.1.5")
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
-    implementation(files("libs/sherpa-onnx-static-1.13.8.aar"))
-    implementation("org.apache.commons:commons-compress:1.28.0")
 
     testImplementation("junit:junit:4.13.2")
 
