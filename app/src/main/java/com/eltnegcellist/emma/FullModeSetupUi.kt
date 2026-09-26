@@ -45,7 +45,7 @@ internal fun FullModeSetupScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                "Emma Fullを準備",
+                "Fullを準備",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.SemiBold,
             )
