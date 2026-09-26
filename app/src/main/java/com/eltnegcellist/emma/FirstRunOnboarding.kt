@@ -29,6 +29,8 @@ internal fun FirstRunOnboardingScreen(
     phase: String,
     progressPercent: Int?,
     errorMessage: String?,
+    aiName: String,
+    onAiNameChange: (String) -> Unit,
     onModeSelected: (ConversationEngineMode) -> Unit,
     onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
@@ -112,7 +114,11 @@ internal fun FirstRunOnboardingScreen(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.fillMaxWidth(),
             )
-            ProductionFamilySettings(enabled = !busy)
+            ProductionFamilySettings(
+                enabled = !busy,
+                aiName = aiName,
+                onAiNameChange = onAiNameChange,
+            )
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
