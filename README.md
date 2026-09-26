@@ -10,16 +10,14 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.5.0**  
-**versionCode：75**
+**現在のAndroid安定版：v1.6.0**  
+**versionCode：76**
 
-> v1.5.0は改名前の「Emma」表記で公開された安定基準版です。次回のアプリ版から「みつことば」表記に統一します。
-
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/emma-v1.5.0
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/emma-v1.5.0/EmmaLocal-v1.5.0-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.6.0
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.6.0/Mitsukotoba-v1.6.0-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.5.0を現在の安定基準版として固定し、今後の機能変更は別バージョンとして公開します。
+v1.6.0は「みつことば」へのブランド統一後、最初の安定版です。旧称Emmaのv1.5.0は改名前の安定基準版としてそのまま保持します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -235,11 +233,11 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### プロジェクト状況
 
-**v1.5.0を現在の安定基準版とします。**
+**v1.6.0を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.5.0を再現可能な安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.6.0を再現可能な「みつことば」安定基準版として保持します。
 
 ### ライセンス
 
@@ -257,16 +255,14 @@ Mitsukotoba is not intended to be a literal Japanese-to-English translator. The 
 
 ### Stable Release
 
-**Current stable Android release: v1.5.0**  
-**versionCode: 75**
+**Current stable Android release: v1.6.0**  
+**versionCode: 76**
 
-> v1.5.0 was published under the previous name “Emma” and remains the stable baseline. The next app release will use the Mitsukotoba branding.
-
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/emma-v1.5.0
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/emma-v1.5.0/EmmaLocal-v1.5.0-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.6.0
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.6.0/Mitsukotoba-v1.6.0-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.5.0 is treated as the current stable baseline. Future functional changes should be released under a new version instead of replacing this release.
+v1.6.0 is the first stable release under the Mitsukotoba brand. The previous v1.5.0 Emma release remains available as the pre-rebrand stable baseline.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -482,11 +478,11 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 ### Project Status
 
-**v1.5.0 is the current stable baseline.**
+**v1.6.0 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.5.0 remains reproducible as the stable reference point.
+Future functional changes should be released under a new version so that v1.6.0 remains reproducible as the stable Mitsukotoba reference point.
 
 ### License
 
