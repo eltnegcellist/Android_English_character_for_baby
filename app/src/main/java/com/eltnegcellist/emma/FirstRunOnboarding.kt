@@ -16,8 +16,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -37,12 +43,15 @@ internal fun FirstRunOnboardingScreen(
     errorMessage: String?,
     aiName: String,
     onAiNameChange: (String) -> Unit,
+    startWithTiny: Boolean,
+    onStartWithTinyChange: (Boolean) -> Unit,
     onModeSelected: (ConversationEngineMode) -> Unit,
     onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
     onStartEmma: () -> Unit,
 ) {
     val resolvedAiName = AiCharacterName.resolve(aiName)
+    var advancedOpen by remember { mutableStateOf(false) }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
@@ -163,9 +172,9 @@ internal fun FirstRunOnboardingScreen(
                         Text(
                             when (option) {
                                 ConversationEngineMode.LITE ->
-                                    "Moonshine Tiny + LiteResponseEngine + Kitten TTS Nano / 約64MB / 完全ローカル"
+                                    "Moonshine ${if (startWithTiny) "Tiny" else "Small"} + LiteResponseEngine + Kitten TTS Nano / 完全ローカル"
                                 ConversationEngineMode.FULL ->
-                                    "Moonshine Small + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
+                                    "Moonshine ${if (startWithTiny) "Tiny" else "Small"} + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -198,6 +207,46 @@ internal fun FirstRunOnboardingScreen(
                 onAiNameChange = onAiNameChange,
             )
 
+            TextButton(
+                onClick = { advancedOpen = !advancedOpen },
+                enabled = !busy,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(if (advancedOpen) "詳細設定を閉じる" else "詳細設定")
+            }
+            if (advancedOpen) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text("Tinyで始める", style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                if (startWithTiny) {
+                                    "軽量なMoonshine Tinyを使います。聞き取り精度よりモデルサイズを優先したい場合の設定です。"
+                                } else {
+                                    "標準はMoonshine Smallです。会話の聞き取り精度を優先します。"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = startWithTiny,
+                            onCheckedChange = onStartWithTinyChange,
+                            enabled = !busy,
+                        )
+                    }
+                }
+            }
+
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -207,9 +256,9 @@ internal fun FirstRunOnboardingScreen(
                     Text(
                         when (selectedMode) {
                             ConversationEngineMode.LITE ->
-                                "Moonshine日本語Tinyで聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
+                                "Moonshine日本語${if (startWithTiny) "Tiny" else "Small"}で聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
                             ConversationEngineMode.FULL ->
-                                "Moonshine日本語Smallで聞き取り、KittenはLiteと共通です。Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
+                                "Moonshine日本語${if (startWithTiny) "Tiny" else "Small"}で聞き取り、KittenはLiteと共通です。Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                     )
