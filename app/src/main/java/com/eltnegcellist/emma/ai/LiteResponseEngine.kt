@@ -45,9 +45,17 @@ internal class LiteResponseEngine {
             null
         }
 
-        val explicitScene = selected?.first
+        val candidateScene = selected?.first
             ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
-        val explicitScore = selected?.second ?: rescued?.score ?: 0
+        val candidateScore = selected?.second ?: rescued?.score ?: 0
+        val explicitScene = when {
+            candidateScene == null -> null
+            activeSceneId == null -> candidateScene
+            candidateScene.id == activeSceneId -> candidateScene
+            candidateScore >= TOPIC_SWITCH_SCORE -> candidateScene
+            else -> null
+        }
+        val explicitScore = if (explicitScene != null) candidateScore else 0
         val contextualScene = if (explicitScene == null && activeSceneTurnsRemaining > 0) {
             activeSceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
         } else {
@@ -274,6 +282,7 @@ internal class LiteResponseEngine {
     companion object {
         private const val MIN_SCENE_SCORE = 3
         private const val CONTEXT_SCENE_SCORE = 2
+        private const val TOPIC_SWITCH_SCORE = 6
         private const val TOPIC_HOLD_TURNS = 3
         private const val RECENT_REPLY_WINDOW = 5
         private const val RECENT_OPENER_WINDOW = 3
