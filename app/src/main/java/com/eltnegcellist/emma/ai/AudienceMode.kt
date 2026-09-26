@@ -5,12 +5,12 @@ enum class AudienceMode(
     val description: String,
 ) {
     BABY(
-        label = "赤ちゃんへ",
-        description = "親の日本語を手がかりに、赤ちゃん本人へ短く楽しい英語で話します。",
+        label = "呼びかけ",
+        description = "親子の今の場面を手がかりに、AIが短くやさしい英語を差し込みます。親と赤ちゃんのやり取りが主役です。",
     ),
     PARENT(
-        label = "親へ",
-        description = "親の日本語に、AIが英語で自然に会話参加します。",
+        label = "会話",
+        description = "親の発話や直前の流れを踏まえ、AIも親・赤ちゃんとの3者のやり取りに継続して参加します。",
     );
 
     companion object {
