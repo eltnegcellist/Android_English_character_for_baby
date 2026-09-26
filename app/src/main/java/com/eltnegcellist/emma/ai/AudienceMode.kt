@@ -10,7 +10,7 @@ enum class AudienceMode(
     ),
     PARENT(
         label = "親へ",
-        description = "親の日本語に、Emmaが英語で自然に会話参加します。",
+        description = "親の日本語に、AIが英語で自然に会話参加します。",
     );
 
     companion object {
