@@ -21,6 +21,7 @@ class GemmaEmmaClient(context: Context) {
     private val appContext = context.applicationContext
     private val lock = Any()
     private val moonshine = MoonshineJapaneseAsr(appContext)
+    private val topicTracker = FullTopicTracker()
 
     @Volatile
     private var engine: Engine? = null
@@ -95,6 +96,7 @@ class GemmaEmmaClient(context: Context) {
             engine = null
             loadedModelPath = null
             conversationHistory.clear()
+            topicTracker.reset()
             lastTurnAtMillis = 0L
 
             DiagnosticStore.mark(appContext, "before_gemma_engine_create", memoryDetail())
