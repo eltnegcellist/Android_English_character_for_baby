@@ -198,7 +198,7 @@ internal class KittenOnnxEngine(
             "Fortran-orderのKiki音声データには対応していません。"
         }
 
-        val shapeText = Regex("""['"]shape['"]\\s*:\\s*\\(([^)]*)\\)""")
+        val shapeText = Regex("""['"]shape['"]\s*:\s*\(([^)]*)\)""")
             .find(header)
             ?.groupValues
             ?.get(1)
