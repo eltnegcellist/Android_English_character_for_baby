@@ -2,7 +2,11 @@ package com.eltnegcellist.emma.tts
 
 import android.content.Context
 import com.eltnegcellist.emma.model.InAppModelDownloader
+import java.io.BufferedInputStream
 import java.io.File
+import java.io.FileInputStream
+import java.security.DigestInputStream
+import java.security.MessageDigest
 
 object KittenModelStore {
     const val MODEL_NAME = "kitten-nano-en-v0_8-fp32"
@@ -10,10 +14,15 @@ object KittenModelStore {
     const val VOICES_FILE = "voices.npz"
     const val CMUDICT_FILE = "cmudict.dict"
 
+    private const val KITTEN_REVISION = "87b12ff7859cdebd9c055c987a586101fad5b650"
     const val MODEL_URL =
-        "https://huggingface.co/KittenML/kitten-tts-nano-0.8-fp32/resolve/main/$MODEL_FILE"
+        "https://huggingface.co/KittenML/kitten-tts-nano-0.8-fp32/resolve/$KITTEN_REVISION/$MODEL_FILE"
     const val VOICES_URL =
-        "https://huggingface.co/KittenML/kitten-tts-nano-0.8-fp32/resolve/main/$VOICES_FILE"
+        "https://huggingface.co/KittenML/kitten-tts-nano-0.8-fp32/resolve/$KITTEN_REVISION/$VOICES_FILE"
+    private const val MODEL_SHA256 =
+        "320564d2615f235de972ca27a7f39551c94185cfa24ca85b07a29084135f1e5e"
+    private const val VOICES_SHA256 =
+        "8aa7cee235abb0739cb51e6559685f65a4dacd95568833d05699b1633f519b3f"
     const val CMUDICT_URL =
         "https://cdn.jsdelivr.net/gh/cmusphinx/cmudict@74790861f652b15e4ac49015a90074ad62a27690/cmudict.dict"
 
@@ -35,22 +44,28 @@ object KittenModelStore {
 
         try {
             progress(0)
+            val modelFile = File(staging, MODEL_FILE)
             downloadPart(
                 url = MODEL_URL,
-                destination = File(staging, MODEL_FILE),
+                destination = modelFile,
                 minimumBytes = 50_000_000L,
                 startPercent = 0,
                 spanPercent = 84,
                 progress = progress,
             )
+            verifySha256(modelFile, MODEL_SHA256)
+
+            val voicesFile = File(staging, VOICES_FILE)
             downloadPart(
                 url = VOICES_URL,
-                destination = File(staging, VOICES_FILE),
+                destination = voicesFile,
                 minimumBytes = 3_000_000L,
                 startPercent = 84,
                 spanPercent = 7,
                 progress = progress,
             )
+            verifySha256(voicesFile, VOICES_SHA256)
+
             downloadPart(
                 url = CMUDICT_URL,
                 destination = File(staging, CMUDICT_FILE),
@@ -108,6 +123,20 @@ object KittenModelStore {
             }
             progress(mapped ?: startPercent)
         }.getOrThrow()
+    }
+
+    private fun verifySha256(file: File, expected: String) {
+        val digest = MessageDigest.getInstance("SHA-256")
+        FileInputStream(file).use { source ->
+            DigestInputStream(BufferedInputStream(source), digest).use { input ->
+                val buffer = ByteArray(1024 * 1024)
+                while (input.read(buffer) >= 0) Unit
+            }
+        }
+        val actual = digest.digest().joinToString("") { "%02x".format(it) }
+        require(actual == expected) {
+            "Kitten TTS公式ファイルのSHA-256が一致しません: ${file.name}"
+        }
     }
 
     private fun isInstalledAt(dir: File): Boolean {
