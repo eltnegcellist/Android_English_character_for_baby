@@ -27,7 +27,7 @@ class LiteEmmaClient(
 
         val audience = AudienceMode.fromSaved(preferences.getString("audience_mode", null))
         require(audience == AudienceMode.BABY) {
-            "みつことば Liteは「赤ちゃんへ」専用です。親との自由会話にはFullを使ってください。"
+            "みつことば Liteでは「呼びかけ」を使えます。AIも3者のやり取りへ継続参加する「会話」はFullを使ってください。"
         }
 
         val babyName = preferences.getString("baby_name", "").orEmpty()
