@@ -283,7 +283,7 @@ internal class LiteResponseEngine {
         private const val MIN_SCENE_SCORE = 3
         private const val CONTEXT_SCENE_SCORE = 2
         private const val TOPIC_SWITCH_SCORE = 6
-        private const val TOPIC_HOLD_TURNS = 3
+        private const val TOPIC_HOLD_TURNS = 5
         private const val RECENT_REPLY_WINDOW = 5
         private const val RECENT_OPENER_WINDOW = 3
 
