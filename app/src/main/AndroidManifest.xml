@@ -13,6 +13,8 @@
     <application
         android:name=".EmmaApplication"
         android:allowBackup="true"
+        android:icon="@drawable/mitsukotoba_icon"
+        android:roundIcon="@drawable/mitsukotoba_icon"
         android:label="みつことば"
         android:largeHeap="true"
         android:supportsRtl="true"
