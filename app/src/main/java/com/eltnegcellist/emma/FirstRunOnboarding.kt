@@ -45,12 +45,12 @@ internal fun FirstRunOnboardingScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-                "はじめまして、Emmaです",
+                "はじめまして。みつことばです",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                "親がいつもの日本語で話しかけると、Emmaがその場面を受け取り、赤ちゃんへやさしい英語で直接話しかけます。",
+                "親と赤ちゃんとAI、3人でつくる英語の時間。親がいつもの日本語で話すと、AIがその場面を受け取り、赤ちゃんへやさしい英語で直接話しかけます。",
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
@@ -63,11 +63,11 @@ internal fun FirstRunOnboardingScreen(
                 onClick = onOpenAbout,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("なぜこの設計？ Emmaとは？")
+                Text("なぜ3人で話すの？ みつことばとは？")
             }
 
             Text(
-                "Emmaを選ぶ",
+                "使い方を選ぶ",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -78,7 +78,7 @@ internal fun FirstRunOnboardingScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text("Emma ${option.label}", style = MaterialTheme.typography.titleMedium)
+                        Text("みつことば ${option.label}", style = MaterialTheme.typography.titleMedium)
                         Text(option.description, style = MaterialTheme.typography.bodyMedium)
                         Text(
                             when (option) {
@@ -119,7 +119,7 @@ internal fun FirstRunOnboardingScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text("選択中：Emma ${selectedMode.label}", style = MaterialTheme.typography.titleMedium)
+                    Text("選択中：みつことば ${selectedMode.label}", style = MaterialTheme.typography.titleMedium)
                     Text(
                         when (selectedMode) {
                             ConversationEngineMode.LITE ->
@@ -139,7 +139,7 @@ internal fun FirstRunOnboardingScreen(
                         Text("$it%", style = MaterialTheme.typography.titleMedium)
                     }
                     Text(
-                        phase.ifBlank { "Emma ${selectedMode.label}を準備しています…" },
+                        phase.ifBlank { "みつことば ${selectedMode.label}を準備しています…" },
                         style = MaterialTheme.typography.titleSmall,
                     )
                     Text(
@@ -157,7 +157,7 @@ internal fun FirstRunOnboardingScreen(
                         ) {
                             Text("準備できました", style = MaterialTheme.typography.titleMedium)
                             Text(
-                                "Emma ${selectedMode.label}を始められます。",
+                                "みつことば ${selectedMode.label}を始められます。",
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
@@ -166,7 +166,7 @@ internal fun FirstRunOnboardingScreen(
                         onClick = onStartEmma,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Emmaを始める")
+                        Text("3人で話しはじめる")
                     }
                 }
 
@@ -175,7 +175,7 @@ internal fun FirstRunOnboardingScreen(
                         onClick = onPrepare,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(if (errorMessage == null) "Emma ${selectedMode.label}を準備する" else "もう一度準備する")
+                        Text(if (errorMessage == null) "みつことば ${selectedMode.label}を準備する" else "もう一度準備する")
                     }
                     errorMessage?.let {
                         Text(
