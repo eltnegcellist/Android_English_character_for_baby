@@ -23,7 +23,7 @@ internal data class FullTopicContext(
         return """
             Lightweight topic tracker (secondary context):
             - Current explicit concrete topic: $current
-            - Concrete topics detected within the last 5 parent turns: $recent
+            - Concrete topics detected within the last 6 parent turns: $recent
             - Suggested carried topic: $carried
             - Generic / no-topic turns are intentionally omitted and must not be treated as a topic.
             - Use this as strong contextual evidence only when a concrete topic is shown.
@@ -65,6 +65,6 @@ internal class FullTopicTracker(
     }
 
     companion object {
-        private const val MAX_TURNS = 5
+        private const val MAX_TURNS = 6
     }
 }
