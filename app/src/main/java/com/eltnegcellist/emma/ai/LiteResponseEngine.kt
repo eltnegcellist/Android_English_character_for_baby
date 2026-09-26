@@ -9,6 +9,12 @@ internal data class LiteResponse(
     val score: Int,
 )
 
+internal data class LiteTopicDetection(
+    val scene: String,
+    val score: Int,
+    val strongEvidence: Boolean,
+)
+
 internal class LiteResponseEngine {
     private data class Scene(
         val id: String,
@@ -107,6 +113,46 @@ internal class LiteResponseEngine {
     fun resetConversationContext() {
         activeSceneId = null
         activeSceneTurnsRemaining = 0
+    }
+
+    /**
+     * Stateless topic sensing shared with Full mode.
+     *
+     * This never returns "generic": it only reports a concrete Lite scene candidate.
+     * Full mode can additionally require [LiteTopicDetection.strongEvidence] so weak
+     * generic-adjacent matches do not become persistent topic context.
+     */
+    fun detectConcreteTopic(transcript: String): LiteTopicDetection? {
+        val normalized = normalize(transcript)
+        val ranked = scenes.map { scene -> scene to score(scene, normalized) }
+            .sortedByDescending { it.second }
+        val best = ranked.firstOrNull()
+        val selected = if (best != null && best.second >= MIN_SCENE_SCORE) best else null
+        val rescued = if (selected == null) {
+            LitePhoneticSceneMatcher.match(
+                transcript = transcript,
+                scenePhrases = scenes.associate { scene ->
+                    scene.id to (
+                        scene.keywords +
+                            sceneChildcareAnchors[scene.id].orEmpty() +
+                            sceneSpeechHints[scene.id].orEmpty()
+                        )
+                },
+                sceneExclusions = sceneSpeechExclusions,
+            )
+        } else {
+            null
+        }
+
+        val candidate = selected?.first
+            ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
+            ?: return null
+        val candidateScore = selected?.second ?: rescued?.score ?: 0
+        return LiteTopicDetection(
+            scene = candidate.id,
+            score = candidateScore,
+            strongEvidence = rescued != null || hasStrongTopicEvidence(candidate, normalized),
+        )
     }
 
     private fun hasStrongTopicEvidence(scene: Scene, transcript: String): Boolean {
