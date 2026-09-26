@@ -10,7 +10,7 @@ internal enum class EmmaColorMode(
     SOFT(
         savedValue = "soft",
         label = "やさしい色",
-        description = "今までのEmmaの淡い配色です。",
+        description = "やさしい淡い配色です。",
     ),
     VIVID(
         savedValue = "vivid",
