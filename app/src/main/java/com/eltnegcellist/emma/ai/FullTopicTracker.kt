@@ -23,7 +23,7 @@ internal data class FullTopicContext(
         return """
             Lightweight topic tracker (secondary context):
             - Current explicit concrete topic: $current
-            - Concrete topics detected within the last 6 parent turns: $recent
+            - Concrete topics detected within the previous 6 parent turns: $recent
             - Suggested carried topic: $carried
             - Generic / no-topic turns are intentionally omitted and must not be treated as a topic.
             - Use this as strong contextual evidence only when a concrete topic is shown.
@@ -38,6 +38,8 @@ internal class FullTopicTracker(
 ) {
     private data class TurnTopic(val concreteTopic: String?)
 
+    // These are PREVIOUS turns only. The current turn is appended after its context
+    // has been calculated, matching Full's six-turn conversation-history semantics.
     private val recentTurns = ArrayDeque<TurnTopic>()
 
     fun observe(transcript: String): FullTopicContext {
@@ -45,19 +47,23 @@ internal class FullTopicTracker(
             ?.takeIf { it.strongEvidence }
         val explicit = detection?.scene
 
+        val previousConcrete = recentTurns.mapNotNull { it.concreteTopic }
+        val carried = explicit ?: previousConcrete.lastOrNull()
+
+        val context = FullTopicContext(
+            currentExplicitTopic = explicit,
+            recentConcreteTopics = previousConcrete,
+            carriedTopic = carried,
+        )
+
+        // Generic/no-topic turns still age the six-turn window, but are never
+        // exposed to Gemma as topics.
         recentTurns.addLast(TurnTopic(explicit))
-        while (recentTurns.size > MAX_TURNS) {
+        while (recentTurns.size > MAX_PREVIOUS_TURNS) {
             recentTurns.removeFirst()
         }
 
-        val concrete = recentTurns.mapNotNull { it.concreteTopic }
-        val carried = explicit ?: concrete.lastOrNull()
-
-        return FullTopicContext(
-            currentExplicitTopic = explicit,
-            recentConcreteTopics = concrete,
-            carriedTopic = carried,
-        )
+        return context
     }
 
     fun reset() {
@@ -65,6 +71,6 @@ internal class FullTopicTracker(
     }
 
     companion object {
-        private const val MAX_TURNS = 6
+        private const val MAX_PREVIOUS_TURNS = 6
     }
 }
