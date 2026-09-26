@@ -955,7 +955,7 @@ private fun ProductionEmmaApp() {
                     latestEmmaText = spokenEnglish
                     status = ProductionEmmaStatus.SPEAKING
                     statusMessage =
-                        if (infantVocalEvent) "$resolvedAiNameが赤ちゃんに話しかけています。" else "$resolvedAiNameが話しています。"
+                        if (infantVocalEvent) "${resolvedAiName}が赤ちゃんに話しかけています。" else "${resolvedAiName}が話しています。"
                     voiceError = null
                     if (!speakEmma(spokenEnglish)) {
                         recorder.resumeBuffering(clearExisting = true)
@@ -985,7 +985,7 @@ private fun ProductionEmmaApp() {
                         latestTranscript = "ことばではない声を聞きました"
                         latestEmmaText = spokenResponse
                         status = ProductionEmmaStatus.SPEAKING
-                        statusMessage = "$resolvedAiNameが赤ちゃんに話しかけています。"
+                        statusMessage = "${resolvedAiName}が赤ちゃんに話しかけています。"
                         voiceError = null
                         DiagnosticStore.mark(
                             context,
@@ -1149,6 +1149,12 @@ private fun ProductionEmmaApp() {
             phase = firstRunPhase,
             progressPercent = firstRunProgressPercent,
             errorMessage = firstRunError,
+            aiName = aiName,
+            onAiNameChange = { value ->
+                aiName = value
+                preferences.edit().putString("ai_character_name", value).apply()
+                aiIntroducedThisSession = false
+            },
             onModeSelected = { selected ->
                 if (!firstRunBusy) {
                     onboardingMode = selected
