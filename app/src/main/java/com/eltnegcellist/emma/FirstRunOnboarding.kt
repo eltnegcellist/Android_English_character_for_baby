@@ -50,7 +50,7 @@ internal fun FirstRunOnboardingScreen(
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                "親と赤ちゃんとAI、3人でつくる英語の時間。親がいつもの日本語で話すと、AIがその場面を受け取り、赤ちゃんへやさしい英語で直接話しかけます。",
+                "親と赤ちゃんとAI、3人でつくる英語の時間。親がいつもの日本語で話すと、AIキャラクターのEmmaがその場面を受け取り、赤ちゃんへやさしい英語で直接話しかけます。Emmaという名前は後から設定で変えられます。",
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
