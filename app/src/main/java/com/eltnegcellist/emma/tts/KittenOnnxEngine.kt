@@ -222,17 +222,13 @@ internal class KittenOnnxEngine(
         return VoiceStyle(shape[0], shape[1], values)
     }
 
-    private companion object {
-        const val THREADS = 2
-        const val REQUESTED_SPEED = 0.8f
-        const val KIKI_SPEED_PRIOR = 0.8f
-        const val KIKI_STYLE_KEY = "expr-voice-5-f"
-        const val SAMPLE_RATE = 24_000
-        const val AUDIO_TRIM_SAMPLES = 5_000
-        const val MAX_CHUNK_CHARS = 400
-    }
-
     companion object {
-        const val OUTPUT_SAMPLE_RATE = SAMPLE_RATE
+        const val OUTPUT_SAMPLE_RATE = 24_000
+        private const val THREADS = 2
+        private const val REQUESTED_SPEED = 0.8f
+        private const val KIKI_SPEED_PRIOR = 0.8f
+        private const val KIKI_STYLE_KEY = "expr-voice-5-f"
+        private const val AUDIO_TRIM_SAMPLES = 5_000
+        private const val MAX_CHUNK_CHARS = 400
     }
 }
