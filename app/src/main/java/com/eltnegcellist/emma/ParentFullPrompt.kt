@@ -20,18 +20,18 @@ internal fun ParentFullPrompt(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("親と話すにはFull版") },
+        title = { Text("「会話」はFull版で使えます") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    "みつことば Liteは、赤ちゃんへ短く分かりやすい英語で話しかけることを優先しています。",
+                    "みつことば Liteの「呼びかけ」は、親子の今の場面にAIが短い英語を差し込むことを優先しています。",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "「親へ」では、あなたの話や直前の会話に合わせてAIがその場で英語を考えるFull版を使います。",
+                    "「会話」では、あなたの発話や直前の流れを踏まえ、AIも親・赤ちゃんとの3者のやり取りに継続して参加します。",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
@@ -43,7 +43,7 @@ internal fun ParentFullPrompt(
         },
         confirmButton = {
             Button(onClick = onUseFull) {
-                Text("みつことば Fullを使う")
+                Text("Fullで「会話」を使う")
             }
         },
         dismissButton = {
