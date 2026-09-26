@@ -267,6 +267,30 @@ class LiteResponseEngineTest {
         assertFalse(response.scene == "bath")
     }
 
+
+    @Test
+    fun recentTopicPersistsAcrossThreeGenericFollowUps() {
+        val engine = LiteResponseEngine()
+
+        assertEquals("milk", engine.respond("ミルク飲もうね").scene)
+        assertEquals("milk", engine.respond("どうかな").scene)
+        assertEquals("milk", engine.respond("おいしいね").scene)
+        assertEquals("milk", engine.respond("いっぱい飲んだね").scene)
+
+        val afterWindow = engine.respond("かわいいね")
+        assertEquals("generic", afterWindow.scene)
+    }
+
+    @Test
+    fun explicitNewTopicOverridesStickyContextImmediately() {
+        val engine = LiteResponseEngine()
+
+        assertEquals("milk", engine.respond("ミルク飲もうね").scene)
+        assertEquals("milk", engine.respond("どうかな").scene)
+        assertEquals("bath", engine.respond("お風呂入ろうね").scene)
+        assertEquals("bath", engine.respond("気持ちいいね").scene)
+    }
+
     @Test
     fun genericFallbackHasBroadVarietyAcrossRepeatedUnknownSpeech() {
         val engine = LiteResponseEngine()
