@@ -1,10 +1,14 @@
 package com.eltnegcellist.emma
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -17,8 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 
 @Composable
@@ -36,6 +43,8 @@ internal fun FirstRunOnboardingScreen(
     onOpenAbout: () -> Unit,
     onStartEmma: () -> Unit,
 ) {
+    val resolvedAiName = AiCharacterName.resolve(aiName)
+
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
             modifier = Modifier
@@ -46,30 +55,100 @@ internal fun FirstRunOnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                "はじめまして。みつことばです",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                "親と赤ちゃんとAI、3人でつくる英語の時間。親がいつもの日本語で話すと、AIキャラクターのEmmaがその場面を受け取り、赤ちゃんへやさしい英語で直接話しかけます。Emmaという名前は後から設定で変えられます。",
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
-                "単なる日本語→英語の翻訳ではありません。軽いLiteと、その場で会話を考えるFullから選べます。",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Image(
+                painter = painterResource(R.drawable.mitsukotoba_icon),
+                contentDescription = "みつことば ロゴ",
+                modifier = Modifier.size(104.dp),
             )
 
-            OutlinedButton(
+            Text(
+                "みつことば",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                "いつもの日本語から、赤ちゃんへの英語が生まれる。",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                "親が話すと、AIがその場に合う短い英語を返します。翻訳ではなく、親・赤ちゃん・AIの3人で同じ時間を共有するためのアプリです。",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                InteractionStep(
+                    modifier = Modifier.weight(1f),
+                    imageRes = R.drawable.mitsukotoba_parent,
+                    title = "親",
+                    caption = "日本語で話す",
+                )
+                InteractionStep(
+                    modifier = Modifier.weight(1f),
+                    imageRes = R.drawable.mitsukotoba_ai,
+                    title = "AI",
+                    caption = "場面を理解",
+                )
+                InteractionStep(
+                    modifier = Modifier.weight(1f),
+                    imageRes = R.drawable.mitsukotoba_baby,
+                    title = "赤ちゃん",
+                    caption = "短い英語を聞く",
+                )
+            }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        "AIキャラクター",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        "名前は $resolvedAiName。会話を始めると最初に自己紹介します。",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        "初期名はEmma。設定から好きな名前へ変更できます。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+
+            Button(
                 onClick = onOpenAbout,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("なぜ3人で話すの？ みつことばとは？")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(vertical = 4.dp),
+                ) {
+                    Text(
+                        "研究から知る",
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    Text(
+                        "みつことばが英語学習に使える理由 →",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
 
             Text(
-                "使い方を選ぶ",
+                "Lite / Fullを選ぶ",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -110,7 +189,7 @@ internal fun FirstRunOnboardingScreen(
             }
 
             Text(
-                "赤ちゃんの設定（任意）",
+                "家族とAIの設定（任意）",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -149,7 +228,7 @@ internal fun FirstRunOnboardingScreen(
                         style = MaterialTheme.typography.titleSmall,
                     )
                     Text(
-                        "準備中です。完了するまでアプリを閉じず、そのままお待ちください。",
+                        "準備が終わると、そのまま会話を始められます。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -192,6 +271,42 @@ internal fun FirstRunOnboardingScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun InteractionStep(
+    modifier: Modifier,
+    imageRes: Int,
+    title: String,
+    caption: String,
+) {
+    Card(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Image(
+                painter = painterResource(imageRes),
+                contentDescription = title,
+                modifier = Modifier.size(58.dp),
+            )
+            Text(
+                title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                caption,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
