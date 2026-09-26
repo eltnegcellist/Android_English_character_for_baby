@@ -269,7 +269,7 @@ class LiteResponseEngineTest {
 
 
     @Test
-    fun recentTopicPersistsAcrossFiveGenericFollowUps() {
+    fun recentTopicPersistsAcrossSixGenericFollowUps() {
         val engine = LiteResponseEngine()
 
         assertEquals("milk", engine.respond("ミルク飲もうね").scene)
@@ -278,6 +278,7 @@ class LiteResponseEngineTest {
         assertEquals("milk", engine.respond("いい感じだね").scene)
         assertEquals("milk", engine.respond("そのままでいいよ").scene)
         assertEquals("milk", engine.respond("よかったね").scene)
+        assertEquals("milk", engine.respond("ゆっくりでいいよ").scene)
 
         val afterWindow = engine.respond("かわいいね")
         assertEquals("generic", afterWindow.scene)
