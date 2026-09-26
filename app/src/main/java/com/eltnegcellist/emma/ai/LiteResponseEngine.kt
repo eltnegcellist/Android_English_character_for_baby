@@ -20,6 +20,8 @@ internal class LiteResponseEngine {
     private val recentOpeners = ArrayDeque<String>()
     private var turnCounter = 0
     private var turnsSinceName = BabySpeechStyle.NAME_REPEAT_WINDOW
+    private var activeSceneId: String? = null
+    private var activeSceneTurnsRemaining = 0
 
     fun respond(transcript: String, spokenBabyName: String = ""): LiteResponse {
         val normalized = normalize(transcript)
@@ -43,9 +45,27 @@ internal class LiteResponseEngine {
             null
         }
 
-        val scene = selected?.first
+        val explicitScene = selected?.first
             ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
-        val score = selected?.second ?: rescued?.score ?: 0
+        val explicitScore = selected?.second ?: rescued?.score ?: 0
+        val contextualScene = if (explicitScene == null && activeSceneTurnsRemaining > 0) {
+            activeSceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
+        } else {
+            null
+        }
+        val scene = explicitScene ?: contextualScene
+        val score = if (explicitScene != null) explicitScore else if (contextualScene != null) CONTEXT_SCENE_SCORE else 0
+
+        if (explicitScene != null) {
+            activeSceneId = explicitScene.id
+            activeSceneTurnsRemaining = TOPIC_HOLD_TURNS
+        } else if (contextualScene != null) {
+            activeSceneTurnsRemaining--
+            if (activeSceneTurnsRemaining <= 0) {
+                activeSceneId = null
+            }
+        }
+
         val replies = scene?.replies ?: genericReplies
         val safeName = sanitizeName(spokenBabyName)
         val forceName = safeName.isNotBlank() &&
@@ -68,6 +88,11 @@ internal class LiteResponseEngine {
             scene = scene?.id ?: "generic",
             score = score,
         )
+    }
+
+    fun resetConversationContext() {
+        activeSceneId = null
+        activeSceneTurnsRemaining = 0
     }
 
     private fun score(scene: Scene, transcript: String): Int {
@@ -248,6 +273,8 @@ internal class LiteResponseEngine {
 
     companion object {
         private const val MIN_SCENE_SCORE = 3
+        private const val CONTEXT_SCENE_SCORE = 2
+        private const val TOPIC_HOLD_TURNS = 3
         private const val RECENT_REPLY_WINDOW = 5
         private const val RECENT_OPENER_WINDOW = 3
 
