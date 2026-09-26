@@ -13,7 +13,7 @@
     <application
         android:name=".EmmaApplication"
         android:allowBackup="true"
-        android:label="Emma Local"
+        android:label="みつことば"
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.Emma">
