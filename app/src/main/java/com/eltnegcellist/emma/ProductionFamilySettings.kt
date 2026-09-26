@@ -22,12 +22,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.BabyGender
 import com.eltnegcellist.emma.ai.BabyNamePronunciation
 
 @Composable
 internal fun ProductionFamilySettings(
     enabled: Boolean,
+    aiName: String,
+    onAiNameChange: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
@@ -42,6 +45,37 @@ internal fun ProductionFamilySettings(
         BabyNamePronunciation.toSpokenEnglish(babyName, spokenBabyName),
         useChanSuffix,
     )
+
+    Card(Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text("AIキャラクター", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "初期の名前はEmmaです。ぬいぐるみなど別のキャラクターとして使う場合は、ここで好きな名前に変えられます。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedTextField(
+                value = aiName,
+                onValueChange = { onAiNameChange(AiCharacterName.sanitizeForEditing(it)) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true,
+                label = { Text("AIの名前") },
+                placeholder = { Text("Emma") },
+                supportingText = {
+                    Text("英語音声で自然に読めるよう、英字の名前をおすすめします。空欄ならEmmaになります。")
+                },
+            )
+            Text(
+                "会話を始めた最初の返答で「Hi, I'm ${AiCharacterName.resolve(aiName)}.」と名乗ります。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 
     Card(Modifier.fillMaxWidth()) {
         Column(
