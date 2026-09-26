@@ -1,15 +1,19 @@
-# Emma — 赤ちゃんのいる家庭向けローカル英語コンパニオン
+# みつことば — 親と赤ちゃんとAI、3人でつくる英語の時間
 
 ## 日本語
 
-Emmaは、親が普段どおり日本語で赤ちゃんに話しかけると、その場面に合った短くやさしい英語で赤ちゃんに語りかける、ローカル処理中心の英語コンパニオンです。
+みつことばは、親が普段どおり日本語で赤ちゃんに話しかけると、その場面に合った短くやさしい英語で赤ちゃんに語りかける、ローカル処理中心の英語コンパニオンです。
 
-単純な日本語→英語翻訳ではありません。親の日本語を「いま何が起きているか」を理解するための文脈として扱い、Emmaが赤ちゃんへ直接英語で話しかけます。
+単純な日本語→英語翻訳ではありません。親の日本語を「いま何が起きているか」を理解するための文脈として扱い、AIが赤ちゃんへ直接英語で話しかけます。
+
+**「みつことば」**という名前には、**親・赤ちゃん・AIの3人でことばを交わす**という意味を込めています。親が話し、AIがその場に合う英語を返し、赤ちゃんの声や反応も次のやり取りのきっかけになる。家庭のいつもの時間に、英語の話し手をもう一人加えるためのアプリです。
 
 ### 安定版
 
 **現在のAndroid安定版：v1.5.0**  
 **versionCode：75**
+
+> v1.5.0は改名前の「Emma」表記で公開された安定基準版です。次回のアプリ版から「みつことば」表記に統一します。
 
 - リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/emma-v1.5.0
 - APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/emma-v1.5.0/EmmaLocal-v1.5.0-android-arm-debug.apk
@@ -19,17 +23,17 @@ v1.5.0を現在の安定基準版として固定し、今後の機能変更は�
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
-### Emmaの考え方
+### みつことばの考え方
 
-親は普段どおり日本語で赤ちゃんに話しかけます。Emmaは親の発話をそのまま翻訳するのではなく、その場面を理解するための手がかりとして使い、赤ちゃんへ直接英語で話しかけます。
+親は普段どおり日本語で赤ちゃんに話しかけます。AIは親の発話をそのまま翻訳するのではなく、その場面を理解するための手がかりとして使い、赤ちゃんへ直接英語で話しかけます。赤ちゃんの発声も、3人のやり取りの一部として扱います。
 
-### なぜEmmaを作ったのか
+### なぜみつことばを作ったのか
 
 #### 赤ちゃんの耳は、まだ一つの言語だけに決まっていない
 
 乳児期の早い段階では、赤ちゃんは母語にはない外国語の音の違いにも高い感度を持っています。研究では、生後6〜12か月ごろにかけて、普段聞く言語の音へ知覚が徐々に最適化され、非母語の音声対立を聞き分ける能力が低下していくことが示されています。
 
-これは単純に能力を失うというより、脳が身の回りの言語へ効率よく適応していく発達の一部と考えられています。Emmaは、この時期に家庭の中で英語の音・リズム・イントネーションへ自然に触れる機会を増やすことを目指しています。
+これは単純に能力を失うというより、脳が身の回りの言語へ効率よく適応していく発達の一部と考えられています。みつことばは、この時期に家庭の中で英語の音・リズム・イントネーションへ自然に触れる機会を増やすことを目指しています。
 
 #### ただ英語を流すだけとは違う
 
@@ -37,36 +41,36 @@ Kuhl、Tsao、Liuらの2003年の研究では、9か月の英語環境の乳児�
 
 一方、同じ外国語刺激を映像や音声を通して経験した条件では、同じような音韻学習は確認されませんでした。この研究は、外国語の音を聞く「量」だけでなく、社会的で相互作用のある経験が重要である可能性を示しています。
 
-#### Emmaが目指していること
+#### みつことばが目指していること
 
 理想を言えば、英語話者が毎日の親子の時間に入り、赤ちゃんや親の様子に合わせて、その瞬間に合う英語を話してくれる環境です。しかし、それを家庭でいつも実現するのは簡単ではありません。
 
-そこでEmmaは、親が普段どおり日本語で赤ちゃんに話しかけ、その内容を手がかりに、Emmaが赤ちゃんへ英語で反応する仕組みにしました。
+そこでみつことばは、親が普段どおり日本語で赤ちゃんに話しかけ、その内容を手がかりにAIが赤ちゃんへ英語で反応する仕組みにしました。親・赤ちゃん・AIの3人が同じ場面を共有することが、名前の由来です。
 
 たとえば、
 
 ```text
 親：「お風呂入ろうね」
 
-Emma:
+みつことば AI:
 “Bath time!”
 “Splash, splash!”
 “Here we go!”
 ```
 
-Emmaの目的は「お風呂入ろうね」を単純に “Let’s take a bath.” と翻訳することではありません。今が「お風呂の時間」だと受け取り、その場にいる英語話者のように赤ちゃんへ直接話しかけることを目指しています。
+みつことばの目的は「お風呂入ろうね」を単純に “Let’s take a bath.” と翻訳することではありません。今が「お風呂の時間」だと受け取り、その場にいる英語話者のように赤ちゃんへ直接話しかけることを目指しています。
 
-#### なぜEmmaには顔があるのか
+#### なぜみつことばには顔があるのか
 
 新生児が、スクランブルされた配置や空白の刺激よりも、顔らしく配置された刺激をより長く追視することを示した研究があります。
 
-Emmaは単なる音声プレーヤーではなく、「誰かがこちらに話しかけている」感覚へ少しでも近づけるため、顔・口の動き・まばたき・表情を持つキャラクターとして設計しています。長時間画面を見せること自体を目的としているわけではありません。
+みつことばは単なる音声プレーヤーではなく、「誰かがこちらに話しかけている」感覚へ少しでも近づけるため、顔・口の動き・まばたき・表情を持つキャラクターとして設計しています。長時間画面を見せること自体を目的としているわけではありません。
 
-#### 研究が証明していることと、Emmaが目指していること
+#### 研究が証明していることと、みつことばが目指していること
 
-重要な点として、Kuhlらの研究が調べたのは**生身の人間との社会的な外国語経験**です。AIキャラクターであるEmmaが同じ学習効果を生むことは、現時点で直接証明されていません。
+重要な点として、Kuhlらの研究が調べたのは**生身の人間との社会的な外国語経験**です。みつことばのAIキャラクターが同じ学習効果を生むことは、現時点で直接証明されていません。
 
-Emmaは、「ただ外国語音声を流すだけではなく、相互作用のある言語経験が重要かもしれない」という研究上の示唆を、家庭で日常的に使える形へ近づけようとする試みです。
+みつことばは、「ただ外国語音声を流すだけではなく、相互作用のある言語経験が重要かもしれない」という研究上の示唆を、家庭で日常的に使える形へ近づけようとする試みです。
 
 #### 参考研究
 
@@ -77,16 +81,16 @@ Emmaは、「ただ外国語音声を流すだけではなく、相互作用の�
 
 ### エディション
 
-Android版Emmaには **Lite** と **Full** の2つがあります。
+Android版みつことばには **Lite** と **Full** の2つがあります。
 
 | エディション | 応答方式 | 主な特徴 |
 | --- | --- | --- |
 | **Lite** | LiteResponseEngine | 軽量・予測可能・ローカル中心 |
 | **Full** | Gemma + 会話履歴 | より柔軟で文脈に応じた応答 |
 
-LiteとFullは、音声認識と音声合成の基本構成を共有しています。主な違いは「Emmaが何を話すか」の決め方です。
+LiteとFullは、音声認識と音声合成の基本構成を共有しています。主な違いは「みつことばが何を話すか」の決め方です。
 
-### Emma Lite
+### みつことば Lite
 
 ```text
 マイク
@@ -97,7 +101,7 @@ LiteResponseEngine
   ↓
 Kitten TTS Nano 0.8 / Kiki
   ↓
-Emmaアバター
+みつことばアバター
 ```
 
 - 日本語ASR：Moonshine Japanese Tiny / Small Streaming
@@ -108,7 +112,7 @@ Emmaアバター
 
 Liteは、毎回生成AIに文章を作らせるのではなく、軽量な応答エンジンから場面に合う英語を選びます。
 
-### Emma Full
+### みつことば Full
 
 FullはLiteと同じ音声入出力の仕組みに、応答生成用のGemmaを追加します。
 
@@ -127,7 +131,7 @@ FullはLiteと同じ音声入出力の仕組みに、応答生成用のGemmaを�
              ↓
         Kitten TTS Nano / Kiki
              ↓
-        Emmaアバター
+        みつことばアバター
 ```
 
 言語内容の主な情報源はMoonshineの文字起こしです。元音声は、抑揚、笑い声、喃語、声の調子、泣き声など、文字だけでは失われる情報を補助的に渡すために使います。
@@ -164,7 +168,7 @@ LiteとFullでは、次の機能を共通で利用します。
 
 ### Web版
 
-APKをインストールせずブラウザで使える **Emma Web Lite** もあります。
+APKをインストールせずブラウザで使える **みつことば Web Lite** もあります。
 
 - Web版を開く: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 - Web版リポジトリ: https://github.com/eltnegcellist/Web_EmmaLocal_English_for_babies
@@ -173,7 +177,7 @@ Web版はLiteのみです。FullはAndroid版で提供します。
 
 ### プライバシーとローカル処理
 
-Emmaは、できるだけ端末内で処理する設計です。
+みつことばは、できるだけ端末内で処理する設計です。
 
 - 音声認識はモデル取得後、端末内で実行
 - 応答選択・生成は端末内で実行
@@ -233,28 +237,30 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 **v1.5.0を現在の安定基準版とします。**
 
-Emmaは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
+みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
 今後の機能変更は新しいバージョンとして公開し、v1.5.0を再現可能な安定基準版として保持します。
 
 ### ライセンス
 
-Emma本体のソースコードについては、現時点で独自の利用ライセンスを設定していません。第三者コンポーネントには、それぞれのライセンスが適用されます。
+みつことば本体のソースコードについては、現時点で独自の利用ライセンスを設定していません。第三者コンポーネントには、それぞれのライセンスが適用されます。
 
 ---
 
-# Emma — Local English Companion for Families with Babies
+# Mitsukotoba — English Time Made Together by Parent, Baby, and AI
 
 ## English
 
-Emma is a local-first English companion for families with babies. Parents can speak naturally in Japanese, and Emma responds to the baby in short, simple English that fits the current situation.
+Mitsukotoba is a local-first English companion built around a three-way exchange between parent, baby, and AI. Parents speak naturally in Japanese, and the AI responds to the baby in short, simple English that fits the current situation.
 
-Emma is not intended to be a literal Japanese-to-English translator. The parent's Japanese speech is treated as context for understanding what is happening now, and Emma speaks directly to the baby in English.
+Mitsukotoba is not intended to be a literal Japanese-to-English translator. The parent's Japanese speech is treated as context for understanding what is happening now, and the AI speaks directly to the baby in English. The name “Mitsukotoba” reflects the idea of three participants sharing language: parent, baby, and AI.
 
 ### Stable Release
 
 **Current stable Android release: v1.5.0**  
 **versionCode: 75**
+
+> v1.5.0 was published under the previous name “Emma” and remains the stable baseline. The next app release will use the Mitsukotoba branding.
 
 - Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/emma-v1.5.0
 - Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/emma-v1.5.0/EmmaLocal-v1.5.0-android-arm-debug.apk
@@ -266,15 +272,15 @@ v1.5.0 is treated as the current stable baseline. Future functional changes shou
 
 ### Concept
 
-Parents speak naturally in Japanese. Emma uses the parent's speech as context for understanding the situation, then speaks directly to the baby in English rather than simply translating the parent's sentence.
+Parents speak naturally in Japanese. The AI uses the parent's speech as context for understanding the situation, then speaks directly to the baby in English rather than simply translating the parent's sentence. Baby vocalizations can also become part of the three-way exchange.
 
-### Why Emma Was Created
+### Why Mitsukotoba Was Created
 
 #### A baby's ear is not yet tuned to only one language
 
 Early in infancy, babies are highly sensitive to speech-sound contrasts that may not exist in the language they hear every day. Research suggests that between roughly 6 and 12 months of age, speech perception gradually becomes optimized for the languages in the baby's environment, while sensitivity to some non-native phonetic contrasts declines.
 
-This is not simply a loss of ability. It is generally understood as part of the brain's adaptation to the language environment around the child. Emma aims to increase natural opportunities at home for babies to hear English sounds, rhythm, and intonation during this period.
+This is not simply a loss of ability. It is generally understood as part of the brain's adaptation to the language environment around the child. Mitsukotoba aims to increase natural opportunities at home for babies to hear English sounds, rhythm, and intonation during this period.
 
 #### More than simply playing English audio
 
@@ -282,36 +288,36 @@ In a 2003 study by Kuhl, Tsao, and Liu, 9-month-old infants from English-speakin
 
 Comparable phonetic learning was not observed when the same foreign-language material was presented through audiovisual or audio-only exposure. The study suggests that the amount of foreign-language sound alone may not be the whole story, and that social, interactive experience may matter.
 
-#### What Emma is trying to provide
+#### What Mitsukotoba is trying to provide
 
 In an ideal setting, an English speaker could join everyday parent-and-baby moments and say something appropriate in English based on what the baby and parent are doing at that exact moment. That is difficult to provide continuously in most homes.
 
-Emma is an attempt to approximate part of that experience. The parent continues speaking naturally in Japanese, Emma uses the parent's speech as context, and then responds directly to the baby in English.
+Mitsukotoba is an attempt to approximate part of that experience. The parent continues speaking naturally in Japanese, Mitsukotoba uses the parent's speech as context, and then responds directly to the baby in English.
 
 For example:
 
 ```text
 Parent: 「お風呂入ろうね」
 
-Emma:
+Mitsukotoba AI:
 “Bath time!”
 “Splash, splash!”
 “Here we go!”
 ```
 
-The goal is not to translate 「お風呂入ろうね」 into “Let’s take a bath.” Emma instead recognizes that this is a bath-time moment and speaks to the baby as an English-speaking person present in that situation might.
+The goal is not to translate 「お風呂入ろうね」 into “Let’s take a bath.” Mitsukotoba instead recognizes that this is a bath-time moment and speaks to the baby as an English-speaking person present in that situation might.
 
-#### Why does Emma have a face?
+#### Why does Mitsukotoba have a face?
 
 Research has found that newborns may preferentially track face-like configurations compared with scrambled or blank stimuli.
 
-Emma is therefore designed not merely as an audio player, but as a character with a face, mouth movement, blinking, and expression, in an effort to make the experience feel more like someone is speaking to the baby. The goal is not to encourage prolonged screen viewing.
+Mitsukotoba is therefore designed not merely as an audio player, but as a character with a face, mouth movement, blinking, and expression, in an effort to make the experience feel more like someone is speaking to the baby. The goal is not to encourage prolonged screen viewing.
 
-#### What the research shows — and what Emma does not yet prove
+#### What the research shows — and what Mitsukotoba does not yet prove
 
-An important limitation is that the Kuhl studies examined **social foreign-language experience with real human speakers**. There is currently no direct evidence that an AI character such as Emma produces the same language-learning effect.
+An important limitation is that the Kuhl studies examined **social foreign-language experience with real human speakers**. There is currently no direct evidence that an AI character such as Mitsukotoba produces the same language-learning effect.
 
-Emma is an attempt to bring one implication of this research into an everyday home setting: foreign-language experience may be more meaningful when it is connected to interaction and context, rather than being only passive audio exposure.
+Mitsukotoba is an attempt to bring one implication of this research into an everyday home setting: foreign-language experience may be more meaningful when it is connected to interaction and context, rather than being only passive audio exposure.
 
 #### References
 
@@ -322,16 +328,16 @@ Emma is an attempt to bring one implication of this research into an everyday ho
 
 ### Editions
 
-Android Emma has two editions: **Lite** and **Full**.
+Android Mitsukotoba has two editions: **Lite** and **Full**.
 
 | Edition | Response engine | Main purpose |
 | --- | --- | --- |
 | **Lite** | LiteResponseEngine | Lightweight, predictable, local-first |
 | **Full** | Gemma + recent conversation context | More flexible, context-aware responses |
 
-Lite and Full share the same basic speech input/output stack. The main difference is how Emma decides what to say.
+Lite and Full share the same basic speech input/output stack. The main difference is how Mitsukotoba decides what to say.
 
-### Emma Lite
+### Mitsukotoba Lite
 
 ```text
 Microphone
@@ -342,7 +348,7 @@ LiteResponseEngine
   ↓
 Kitten TTS Nano 0.8 / Kiki
   ↓
-Emma avatar
+Mitsukotoba avatar
 ```
 
 - Japanese ASR: Moonshine Japanese Tiny / Small Streaming
@@ -353,7 +359,7 @@ Emma avatar
 
 Lite stays compact and predictable by using a curated lightweight response engine instead of generating every utterance with a large model.
 
-### Emma Full
+### Mitsukotoba Full
 
 Full uses the same speech stack as Lite and adds Gemma for response generation.
 
@@ -372,7 +378,7 @@ Microphone
              ↓
         Kitten TTS Nano / Kiki
              ↓
-        Emma avatar
+        Mitsukotoba avatar
 ```
 
 The Moonshine transcript is the primary source for linguistic meaning. Original audio is secondary context for information that text may lose, such as intonation, laughter, cooing, babbling, squealing, or crying.
@@ -409,16 +415,16 @@ The edition boundary is intentionally simple:
 
 ### Web Edition
 
-Emma also has a browser-based **Web Lite** edition that does not require APK installation.
+Mitsukotoba also has a browser-based **Web Lite** edition that does not require APK installation.
 
-- Open Emma Web: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
+- Open Mitsukotoba Web: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 - Web repository: https://github.com/eltnegcellist/Web_EmmaLocal_English_for_babies
 
 The Web edition is Lite-only. Full is provided by the Android application.
 
 ### Privacy and Local Processing
 
-Emma is designed around local processing.
+Mitsukotoba is designed around local processing.
 
 - Speech recognition runs locally after required model files are downloaded
 - Response selection/generation runs locally
@@ -478,10 +484,10 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 **v1.5.0 is the current stable baseline.**
 
-Emma is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
+Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
 Future functional changes should be released under a new version so that v1.5.0 remains reproducible as the stable reference point.
 
 ### License
 
-No license for the Emma application source code has been granted yet. Third-party components remain subject to their respective licenses.
+No license for the Mitsukotoba application source code has been granted yet. Third-party components remain subject to their respective licenses.
