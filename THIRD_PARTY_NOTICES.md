@@ -19,14 +19,13 @@ Emma downloads the selected Japanese Tiny/Small Streaming model files during set
 - Voice: Kiki / `expr-voice-5-f`
 - Used for local English speech synthesis in Emma Lite and Emma Full.
 
-Emma downloads the official FP32 ONNX model and `voices.npz` directly from the
-KittenML model repository. The experimental non-GPL TTS branch does not use the
+Emma downloads the official FP32 ONNX model and `voices.npz` from pinned KittenML revision `87b12ff7859cdebd9c055c987a586101fad5b650` and verifies both SHA-256 hashes. The experimental non-GPL TTS branch does not use the
 sherpa-onnx Kitten frontend or eSpeak NG data.
 
 ## ONNX Runtime Android
 
 - Upstream: https://github.com/microsoft/onnxruntime
-- Android package: com.microsoft.onnxruntime:onnxruntime-android:1.20.0
+- Android package: com.microsoft.onnxruntime:onnxruntime-android:1.23.2
 - License: MIT
 - Used to execute the Kitten TTS ONNX model directly on Android.
 
