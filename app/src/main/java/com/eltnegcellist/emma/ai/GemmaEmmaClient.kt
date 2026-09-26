@@ -300,9 +300,9 @@ class GemmaEmmaClient(context: Context) {
                 Conversation rules shared by both modes:
                 - Never merely translate or paraphrase the Japanese. Add a genuine, context-appropriate response.
                 - Avoid repeating the same opener, praise, question pattern, or "Oh/Wow" across nearby turns.
-                - Use the previous 2-3 parent turns especially strongly to resolve context such as "それ", "さっき", configured names, and follow-up remarks.
+                - Use the previous 5 parent turns especially strongly to resolve context such as "それ", "さっき", configured names, and follow-up remarks.
                 - Treat the most recently established concrete topic (for example milk, bath, sleep, diaper, book, or play) as still active across short generic follow-ups unless the current parent speech clearly introduces another topic.
-                - Do not jump to a new topic merely because the current turn omits the topic word. Keep continuity for roughly 2-3 turns when recent context supports it.
+                - Do not jump to a new topic merely because the current turn omits the topic word. Keep the most recently established concrete topic active for up to about 5 follow-up turns when recent context supports it.
                 - Switch topics immediately when the current transcript clearly introduces a different concrete topic. The current transcript has priority over older turns.
                 - Do not invent concrete actions, objects, events, feelings, colors, sizes, or facts unsupported by the transcript or recent context.
                 - Follow the baby-name and baby-gender rules above exactly. A configured spoken name is a permitted English proper name.
