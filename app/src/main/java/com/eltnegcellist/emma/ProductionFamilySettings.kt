@@ -90,7 +90,7 @@ internal fun ProductionFamilySettings(
             }
             Text(
                 if (babyGender == BabyGender.UNSPECIFIED) {
-                    "未指定の場合、Emmaは名前などから性別を推測しません。"
+                    "未指定の場合、みつことばは名前などから性別を推測しません。"
                 } else {
                     "親へ話すときも、この設定に合わせて呼び方を選びます。"
                 },
@@ -139,7 +139,7 @@ internal fun ProductionFamilySettings(
                 Text(
                     when {
                         babyName.isBlank() -> "名前は未設定です。"
-                        resolvedSpokenName.isNotBlank() -> "Emmaが呼ぶ名前：$resolvedSpokenName"
+                        resolvedSpokenName.isNotBlank() -> "みつことばが呼ぶ名前：$resolvedSpokenName"
                         else -> "必要な場合だけ、英字で読み方を指定してください。"
                     },
                     style = MaterialTheme.typography.bodySmall,
