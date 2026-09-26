@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.ai.GemmaEmmaClient
@@ -113,6 +114,10 @@ private fun ProductionEmmaApp() {
     var latestTranscript by remember { mutableStateOf("") }
     var autoRespond by remember { mutableStateOf(preferences.getBoolean("auto_respond", true)) }
     var keepScreenOn by remember { mutableStateOf(preferences.getBoolean("keep_screen_on", true)) }
+    var aiName by remember {
+        mutableStateOf(preferences.getString("ai_character_name", AiCharacterName.DEFAULT).orEmpty())
+    }
+    val resolvedAiName = AiCharacterName.resolve(aiName)
     var settingsOpen by remember { mutableStateOf(false) }
     var aboutOpen by remember { mutableStateOf(false) }
     var parentFullPromptOpen by remember { mutableStateOf(false) }
@@ -179,6 +184,10 @@ private fun ProductionEmmaApp() {
     var endpointStartedNanos by remember { mutableStateOf<Long?>(null) }
     var ttsRequestedAfterEndpointMillis by remember { mutableStateOf<Long?>(null) }
     var lastNonverbalResponseAtMillis by remember { mutableStateOf(0L) }
+    var aiIntroducedThisSession by remember { mutableStateOf(false) }
+
+    fun withAiIntroduction(text: String): String =
+        if (aiIntroducedThisSession) text else "${AiCharacterName.introduction(resolvedAiName)} $text"
 
     DisposableEffect(recording, keepScreenOn) {
         val window = (context as? ComponentActivity)?.window
@@ -240,7 +249,7 @@ private fun ProductionEmmaApp() {
                     if (recording) recorder.resumeBuffering(clearExisting = true)
                     status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE
                     statusMessage = if (recording) {
-                        if (autoRespond) "普通に話しかけてください。" else "話し終えたら「今返事して」を押してください。"
+                        if (autoRespond) "普通に話しかけてください。" else "話したところで「ここで返事して」を押してください。"
                     } else {
                         "試聴を終了しました。"
                     }
@@ -782,8 +791,13 @@ private fun ProductionEmmaApp() {
         runCatching { recorder.start() }
             .onSuccess {
                 recording = true
+                aiIntroducedThisSession = false
                 status = ProductionEmmaStatus.LISTENING
-                statusMessage = if (autoRespond) "普通に話しかけてください。" else "話し終えたら「今返事して」を押してください。"
+                statusMessage = if (autoRespond) {
+                    "普通に話しかけてください。必要なら「ここで返事して」で区切れます。"
+                } else {
+                    "話したところで「ここで返事して」を押してください。"
+                }
             }
             .onFailure {
                 session.stop()
@@ -834,6 +848,7 @@ private fun ProductionEmmaApp() {
         recorder.stop()
         recording = false
         generating = false
+        aiIntroducedThisSession = false
         mouthLevel = 0f
         endpointStartedNanos = null
         ttsRequestedAfterEndpointMillis = null
@@ -936,17 +951,20 @@ private fun ProductionEmmaApp() {
                     }
                     if (infantVocalEvent) lastNonverbalResponseAtMillis = nowMillis
 
-                    latestEmmaText = english
+                    val spokenEnglish = withAiIntroduction(english)
+                    latestEmmaText = spokenEnglish
                     status = ProductionEmmaStatus.SPEAKING
                     statusMessage =
-                        if (infantVocalEvent) "AIが赤ちゃんに話しかけています。" else "AIが話しています。"
+                        if (infantVocalEvent) "$resolvedAiNameが赤ちゃんに話しかけています。" else "$resolvedAiNameが話しています。"
                     voiceError = null
-                    if (!speakEmma(english)) {
+                    if (!speakEmma(spokenEnglish)) {
                         recorder.resumeBuffering(clearExisting = true)
                         endpointStartedNanos = null
                         ttsRequestedAfterEndpointMillis = null
                         status = ProductionEmmaStatus.ERROR
                         statusMessage = voiceError ?: "音声を再生できませんでした。"
+                    } else {
+                        aiIntroducedThisSession = true
                     }
                 }.onFailure { error ->
                     endpointStartedNanos = null
@@ -962,21 +980,24 @@ private fun ProductionEmmaApp() {
 
                     if (canReactToNonverbal) {
                         val response = NonverbalBabyResponse.next(nowMillis)
+                        val spokenResponse = withAiIntroduction(response)
                         lastNonverbalResponseAtMillis = nowMillis
                         latestTranscript = "ことばではない声を聞きました"
-                        latestEmmaText = response
+                        latestEmmaText = spokenResponse
                         status = ProductionEmmaStatus.SPEAKING
-                        statusMessage = "AIが赤ちゃんに話しかけています。"
+                        statusMessage = "$resolvedAiNameが赤ちゃんに話しかけています。"
                         voiceError = null
                         DiagnosticStore.mark(
                             context,
                             "nonverbal_baby_response",
                             "cooldownMs=$NONVERBAL_RESPONSE_COOLDOWN_MS",
                         )
-                        if (!speakEmma(response)) {
+                        if (!speakEmma(spokenResponse)) {
                             recorder.resumeBuffering(clearExisting = true)
                             status = ProductionEmmaStatus.ERROR
                             statusMessage = voiceError ?: "音声を再生できませんでした。"
+                        } else {
+                            aiIntroducedThisSession = true
                         }
                     } else {
                         recorder.resumeBuffering(clearExisting = true)
@@ -1060,7 +1081,7 @@ private fun ProductionEmmaApp() {
                             }, 140L)
                         } else if (!generating && status != ProductionEmmaStatus.SPEAKING) {
                             status = ProductionEmmaStatus.LISTENING
-                            statusMessage = "聞き取りました。「今返事して」でAIが返します。"
+                            statusMessage = "聞き取りました。「ここで返事して」で返します。"
                         }
                     }
                 }
@@ -1207,6 +1228,12 @@ private fun ProductionEmmaApp() {
             engineMode = engineMode,
             asrModel = asrModel,
             keepScreenOn = keepScreenOn,
+            aiName = aiName,
+            onAiNameChange = { value ->
+                aiName = value
+                preferences.edit().putString("ai_character_name", value).apply()
+                aiIntroducedThisSession = false
+            },
             onBack = { settingsOpen = false },
             onOpenAbout = { aboutOpen = true },
             onEngineMode = { selected ->
@@ -1248,7 +1275,7 @@ private fun ProductionEmmaApp() {
                 status = ProductionEmmaStatus.SPEAKING
                 voiceError = null
                 statusMessage = "声を試聴しています。"
-                latestEmmaText = "Hello, little one. Look at you!"
+                latestEmmaText = "Hi, I'm $resolvedAiName. Hello, little one!"
                 if (!speakEmma(latestEmmaText)) status = ProductionEmmaStatus.ERROR
             },
             onStopPreview = ::stopSession,
@@ -1280,6 +1307,7 @@ private fun ProductionEmmaApp() {
             autoRespond = autoRespond,
             latestTranscript = latestTranscript,
             latestEmmaText = latestEmmaText,
+            aiName = resolvedAiName,
             engineMode = engineMode,
             onRequestParentFull = { parentFullPromptOpen = true },
             onOpenAbout = { aboutOpen = true },
@@ -1296,7 +1324,7 @@ private fun ProductionEmmaApp() {
                 preferences.edit().putBoolean("auto_respond", it).apply()
                 if (recording && !busy) {
                     status = ProductionEmmaStatus.LISTENING
-                    statusMessage = if (it) "普通に話しかけてください。" else "手動モードです。「今返事して」で返します。"
+                    statusMessage = if (it) "普通に話しかけてください。" else "手動モードです。「ここで返事して」で返します。"
                 }
             },
             onManualRespond = { askEmma(automatic = false) },
