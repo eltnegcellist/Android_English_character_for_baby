@@ -48,11 +48,17 @@ internal class LiteResponseEngine {
         val candidateScene = selected?.first
             ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
         val candidateScore = selected?.second ?: rescued?.score ?: 0
+        val candidateHasStrongTopicEvidence =
+            candidateScene != null &&
+                (
+                    rescued != null ||
+                        hasStrongTopicEvidence(candidateScene, normalized)
+                    )
         val explicitScene = when {
             candidateScene == null -> null
             activeSceneId == null -> candidateScene
             candidateScene.id == activeSceneId -> candidateScene
-            candidateScore >= TOPIC_SWITCH_SCORE -> candidateScene
+            candidateHasStrongTopicEvidence -> candidateScene
             else -> null
         }
         val explicitScore = if (explicitScene != null) candidateScore else 0
@@ -101,6 +107,17 @@ internal class LiteResponseEngine {
     fun resetConversationContext() {
         activeSceneId = null
         activeSceneTurnsRemaining = 0
+    }
+
+    private fun hasStrongTopicEvidence(scene: Scene, transcript: String): Boolean {
+        val strongPhrases =
+            sceneChildcareAnchors[scene.id].orEmpty() +
+                sceneSpeechHints[scene.id].orEmpty()
+        return strongPhrases
+            .asSequence()
+            .map(::normalize)
+            .filter { it.isNotBlank() }
+            .any { transcript.contains(it) }
     }
 
     private fun score(scene: Scene, transcript: String): Int {
@@ -282,7 +299,6 @@ internal class LiteResponseEngine {
     companion object {
         private const val MIN_SCENE_SCORE = 3
         private const val CONTEXT_SCENE_SCORE = 2
-        private const val TOPIC_SWITCH_SCORE = 6
         private const val TOPIC_HOLD_TURNS = 5
         private const val RECENT_REPLY_WINDOW = 5
         private const val RECENT_OPENER_WINDOW = 3
