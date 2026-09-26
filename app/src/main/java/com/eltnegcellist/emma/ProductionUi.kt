@@ -60,6 +60,7 @@ internal fun EmmaHomeScreen(
     autoRespond: Boolean,
     latestTranscript: String,
     latestEmmaText: String,
+    aiName: String,
     engineMode: ConversationEngineMode,
     onRequestParentFull: () -> Unit,
     onOpenAbout: () -> Unit,
@@ -77,12 +78,12 @@ internal fun EmmaHomeScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (recording && !autoRespond) {
+                    if (recording) {
                         OutlinedButton(
                             onClick = onManualRespond,
                             enabled = modelReady && !busy,
                             modifier = Modifier.fillMaxWidth(),
-                        ) { Text("今返事して") }
+                        ) { Text("ここで返事して") }
                     }
                     if (!recording) {
                         Button(
@@ -181,6 +182,7 @@ internal fun EmmaHomeScreen(
                 ConversationExchange(
                     transcript = latestTranscript,
                     emmaText = latestEmmaText,
+                    aiName = aiName,
                 )
             }
 
@@ -275,7 +277,7 @@ private fun AudienceSelector(
 }
 
 @Composable
-private fun ConversationExchange(transcript: String, emmaText: String) {
+private fun ConversationExchange(transcript: String, emmaText: String, aiName: String) {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (transcript.isNotBlank()) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
@@ -300,7 +302,7 @@ private fun ConversationExchange(transcript: String, emmaText: String) {
                     modifier = Modifier.fillMaxWidth(0.88f),
                 ) {
                     Column(Modifier.padding(14.dp)) {
-                        Text("みつことば", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(aiName, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Spacer(Modifier.height(4.dp))
                         Text(emmaText, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
@@ -324,6 +326,8 @@ internal fun EmmaSettingsScreen(
     engineMode: ConversationEngineMode,
     asrModel: MoonshineAsrModel,
     keepScreenOn: Boolean,
+    aiName: String,
+    onAiNameChange: (String) -> Unit,
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
@@ -363,7 +367,11 @@ internal fun EmmaSettingsScreen(
                 TextButton(onClick = onOpenAbout) { Text("みつことばとは？") }
             }
 
-            ProductionFamilySettings(enabled = enabled)
+            ProductionFamilySettings(
+                enabled = enabled,
+                aiName = aiName,
+                onAiNameChange = onAiNameChange,
+            )
             AppearanceSettings(enabled = enabled)
 
             Card(modifier = Modifier.fillMaxWidth()) {
