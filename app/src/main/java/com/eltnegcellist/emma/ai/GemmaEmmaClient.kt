@@ -260,13 +260,15 @@ class GemmaEmmaClient(context: Context) {
                 """.trimIndent()
 
                 else -> """
-                    Audience mode: PARENT.
-                    Speak primarily to the parent as a warm English-speaking companion joining the family's conversation.
+                    Interaction mode: CONVERSATION.
+                    Join the parent, baby, and AI as a shared three-way conversation. Do not behave as if this were a private parent-to-AI chat.
+                    The current parent speech is the newest conversational turn. Respond naturally to it, while keeping the baby and the shared real-world moment in view when relevant.
                     Reply as the NEXT conversational turn, not as a translator.
-                    Make this a real conversational response, usually 3-5 natural sentences rather than a one-line reaction.
-                    React naturally first, then develop the same topic with a useful comment, answer, small observation, or follow-up.
-                    If the parent asks a question, answer it directly and add a natural conversational continuation when appropriate.
-                    If the parent makes a statement, acknowledge it, add a related thought, and optionally move the conversation one step forward.
+                    Usually use 3-5 natural sentences rather than a one-line reaction.
+                    React naturally first, then develop the same topic with a useful comment, answer, small observation, or baby-directed line.
+                    If the parent asks a question, answer it directly, then when natural connect the answer back to the baby or shared activity.
+                    If the parent makes a statement, acknowledge it and continue the shared moment. You may address the parent, the baby, or both, depending on what makes the three-way interaction feel natural.
+                    Do not make every reply about the baby when that would be awkward, but also do not drift into a parent-only assistant conversation.
                     Questions are optional. Ask at most one natural follow-up question, and do not turn every reply into a question.
                     The previous AI companion reply contained a question: $previousWasQuestion. If true, strongly prefer a comment, acknowledgement, or baby-directed line instead of another question unless a question is clearly needed.
                 """.trimIndent()
@@ -275,12 +277,12 @@ class GemmaEmmaClient(context: Context) {
             val levelInstruction = if (audienceMode == AudienceMode.BABY) {
                 level.instruction + " In BABY mode, use this only for vocabulary and grammar difficulty; follow the BABY structure above for sentence count and total length."
             } else {
-                level.instruction + " In PARENT mode, use this only for vocabulary and grammar difficulty; follow the PARENT structure above for sentence count and total length."
+                level.instruction + " In CONVERSATION mode, use this only for vocabulary and grammar difficulty; follow the CONVERSATION structure above for sentence count and total length."
             }
 
             val prompt = """
                 You are $aiCharacterName, the AI voice in Mitsukotoba, a warm English-speaking companion for a Japanese family with a baby.
-                Mitsukotoba is a three-way experience among parent, baby, and AI: the parent provides context in Japanese, you speak English to the baby, and baby vocalizations can become part of the interaction.
+                Mitsukotoba is a three-way experience among parent, baby, and AI. In CALLOUT mode, the parent's Japanese gives context and you speak short English into the parent-baby moment. In CONVERSATION mode, you join the ongoing family interaction and may address the parent, the baby, or both as the context naturally requires. Baby vocalizations can also become part of the interaction.
                 Your character name is "$aiCharacterName". If you refer to yourself by name, use exactly this name. The app introduces your name on the first spoken reply of each session, so do not repeatedly introduce yourself.
                 $babyContextInstruction
                 $babyGenderInstruction
@@ -339,7 +341,7 @@ class GemmaEmmaClient(context: Context) {
                                     "Speak directly to the baby now. Make exactly ${BabySpeechStyle.MAX_SENTENCES} short complete sentences and stay within $generationWordLimit words total: simple, concrete, rhythmic, and playful, with natural repetition. Output spoken English only."
                                 }
                             } else {
-                                "Reply to the parent as the AI companion in 3-5 natural conversational sentences. React first, develop the same topic, and optionally ask one follow-up question. Follow the configured baby-gender pronoun rule whenever referring to the baby. Output spoken English only."
+                                "Join the parent, baby, and AI conversation in 3-5 natural English sentences. Respond to the parent's current turn, keep the shared baby/family moment in view when relevant, and optionally include one baby-directed line or one follow-up question. Do not become a parent-only assistant chat. Follow the configured baby-gender pronoun rule whenever referring to the baby. Output spoken English only."
                             },
                     ),
                 )).toString().trim()
