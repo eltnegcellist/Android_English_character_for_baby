@@ -32,12 +32,12 @@ internal object KittenTextFrontend {
             Regex("\\bshan't\\b", RegexOption.IGNORE_CASE) to "shall not",
             Regex("\\bain't\\b", RegexOption.IGNORE_CASE) to "is not",
             Regex("\\blet's\\b", RegexOption.IGNORE_CASE) to "let us",
-            Regex("\\b(\\w+)n't\\b", RegexOption.IGNORE_CASE) to "$1 not",
-            Regex("\\b(\\w+)'re\\b", RegexOption.IGNORE_CASE) to "$1 are",
-            Regex("\\b(\\w+)'ve\\b", RegexOption.IGNORE_CASE) to "$1 have",
-            Regex("\\b(\\w+)'ll\\b", RegexOption.IGNORE_CASE) to "$1 will",
-            Regex("\\b(\\w+)'d\\b", RegexOption.IGNORE_CASE) to "$1 would",
-            Regex("\\b(\\w+)'m\\b", RegexOption.IGNORE_CASE) to "$1 am",
+            Regex("\\b(\\w+)n't\\b", RegexOption.IGNORE_CASE) to "\$1 not",
+            Regex("\\b(\\w+)'re\\b", RegexOption.IGNORE_CASE) to "\$1 are",
+            Regex("\\b(\\w+)'ve\\b", RegexOption.IGNORE_CASE) to "\$1 have",
+            Regex("\\b(\\w+)'ll\\b", RegexOption.IGNORE_CASE) to "\$1 will",
+            Regex("\\b(\\w+)'d\\b", RegexOption.IGNORE_CASE) to "\$1 would",
+            Regex("\\b(\\w+)'m\\b", RegexOption.IGNORE_CASE) to "\$1 am",
             Regex("\\bit's\\b", RegexOption.IGNORE_CASE) to "it is",
         )
         for ((pattern, replacement) in contractions) text = text.replace(pattern, replacement)
