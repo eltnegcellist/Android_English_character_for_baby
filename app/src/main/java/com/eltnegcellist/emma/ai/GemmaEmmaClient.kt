@@ -310,9 +310,9 @@ class GemmaEmmaClient(context: Context) {
                 - When a concrete carried topic is supplied and the current parent speech is vague, strongly prefer continuing that concrete topic instead of drifting to a generic response.
                 - If the current transcript clearly introduces a different concrete topic, switch immediately. The current transcript always overrides older tracker history.
                 - Avoid repeating the same opener, praise, question pattern, or "Oh/Wow" across nearby turns.
-                - Use the previous 5 parent turns especially strongly to resolve context such as "それ", "さっき", configured names, and follow-up remarks.
+                - Use the previous 6 parent turns especially strongly to resolve context such as "それ", "さっき", configured names, and follow-up remarks.
                 - Treat the most recently established concrete topic (for example milk, bath, sleep, diaper, book, or play) as still active across short generic follow-ups unless the current parent speech clearly introduces another topic.
-                - Do not jump to a new topic merely because the current turn omits the topic word. Keep the most recently established concrete topic active for up to about 5 follow-up turns when recent context supports it.
+                - Do not jump to a new topic merely because the current turn omits the topic word. Keep the most recently established concrete topic active for up to about 6 follow-up turns when recent context supports it.
                 - Switch topics immediately when the current transcript clearly introduces a different concrete topic. The current transcript has priority over older turns.
                 - Do not invent concrete actions, objects, events, feelings, colors, sizes, or facts unsupported by the transcript or recent context.
                 - Follow the baby-name and baby-gender rules above exactly. A configured spoken name is a permitted English proper name.
@@ -341,6 +341,7 @@ class GemmaEmmaClient(context: Context) {
                     Content.AudioBytes(wavAudio),
                     Content.Text(
                         "Recent conversation (context only, newest information is more important):\n$historyText\n\n" +
+                            (if (topicContextBlock.isBlank()) "" else "$topicContextBlock\n\n") +
                             "Moonshine transcript for the current turn (PRIMARY linguistic source):\n$transcriptForPrompt\n\n" +
                             "The attached original audio is SECONDARY evidence: use it for nonverbal cues and, only when strongly supported, to confirm a small Moonshine ASR near-miss. Do not replace the transcript wholesale.\n\n" +
                             if (audioOnlyTurn) {
@@ -468,6 +469,7 @@ class GemmaEmmaClient(context: Context) {
             engine = null
             loadedModelPath = null
             conversationHistory.clear()
+            topicTracker.reset()
             lastTurnAtMillis = 0L
             if (currentRef?.get() === this) currentRef = null
             DiagnosticStore.mark(appContext, "after_gemma_close", memoryDetail())
