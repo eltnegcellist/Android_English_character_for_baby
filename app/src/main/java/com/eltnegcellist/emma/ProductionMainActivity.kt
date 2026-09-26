@@ -98,16 +98,17 @@ private fun ProductionEmmaApp() {
     }
     var engineMode by remember { mutableStateOf(initialEngineMode) }
     var onboardingMode by remember { mutableStateOf(initialEngineMode) }
+    var startWithTiny by remember {
+        mutableStateOf(preferences.getBoolean("first_run_start_tiny", false))
+    }
     var asrModelManuallySelected by remember {
         mutableStateOf(preferences.getBoolean("asr_model_manual", false))
     }
     val initialAsrModel = remember {
         if (preferences.getBoolean("asr_model_manual", false)) {
             MoonshineAsrModel.fromSaved(preferences.getString("asr_model", null))
-        } else if (initialEngineMode == ConversationEngineMode.FULL) {
-            MoonshineAsrModel.SMALL
         } else {
-            MoonshineAsrModel.TINY
+            MoonshineAsrModel.SMALL
         }
     }
     var asrModel by remember { mutableStateOf(initialAsrModel) }
@@ -341,11 +342,7 @@ private fun ProductionEmmaApp() {
     fun activateEngineMode(selected: ConversationEngineMode) {
         engineMode = selected
         if (!asrModelManuallySelected) {
-            asrModel = if (selected == ConversationEngineMode.FULL) {
-                MoonshineAsrModel.SMALL
-            } else {
-                MoonshineAsrModel.TINY
-            }
+            asrModel = MoonshineAsrModel.SMALL
         }
         preferences.edit()
             .putString("conversation_engine_mode", selected.savedValue)
@@ -560,14 +557,14 @@ private fun ProductionEmmaApp() {
     fun startFirstRunSetup(selectedMode: ConversationEngineMode) {
         if (disposed || firstRunBusy) return
 
-        val requestedAsr = if (asrModelManuallySelected) {
-            asrModel
-        } else if (selectedMode == ConversationEngineMode.FULL) {
-            MoonshineAsrModel.SMALL
-        } else {
-            MoonshineAsrModel.TINY
-        }
+        val requestedAsr = if (startWithTiny) MoonshineAsrModel.TINY else MoonshineAsrModel.SMALL
         asrModel = requestedAsr
+        asrModelManuallySelected = startWithTiny
+        preferences.edit()
+            .putString("asr_model", requestedAsr.savedValue)
+            .putBoolean("asr_model_manual", startWithTiny)
+            .putBoolean("first_run_start_tiny", startWithTiny)
+            .apply()
         firstRunBusy = true
         firstRunReady = false
         firstRunError = null
@@ -792,6 +789,7 @@ private fun ProductionEmmaApp() {
             .onSuccess {
                 recording = true
                 aiIntroducedThisSession = false
+                lite.resetConversationContext()
                 status = ProductionEmmaStatus.LISTENING
                 statusMessage = if (autoRespond) {
                     "普通に話しかけてください。必要なら「ここで返事して」で区切れます。"
@@ -969,50 +967,23 @@ private fun ProductionEmmaApp() {
                 }.onFailure { error ->
                     endpointStartedNanos = null
                     ttsRequestedAfterEndpointMillis = null
-                    val noSpeech = error.message?.contains("聞き取れませんでした") == true
-                    val babyMode = preferences.getString("audience_mode", "BABY") != "PARENT"
-                    val nowMillis = System.currentTimeMillis()
-                    val canReactToNonverbal =
-                        automatic &&
-                        noSpeech &&
-                        babyMode &&
-                        nowMillis - lastNonverbalResponseAtMillis >= NONVERBAL_RESPONSE_COOLDOWN_MS
+                    val noMeaningfulSpeech =
+                        error.message?.contains("聞き取れませんでした") == true
 
-                    if (canReactToNonverbal) {
-                        val response = NonverbalBabyResponse.next(nowMillis)
-                        val spokenResponse = withAiIntroduction(response)
-                        lastNonverbalResponseAtMillis = nowMillis
-                        latestTranscript = "ことばではない声を聞きました"
-                        latestEmmaText = spokenResponse
-                        status = ProductionEmmaStatus.SPEAKING
-                        statusMessage = "${resolvedAiName}が赤ちゃんに話しかけています。"
-                        voiceError = null
+                    recorder.resumeBuffering(clearExisting = true)
+                    if (automatic && noMeaningfulSpeech) {
+                        latestEmmaText = ""
+                        status = ProductionEmmaStatus.LISTENING
+                        statusMessage = "意味のあることばを待っています。"
                         DiagnosticStore.mark(
                             context,
-                            "nonverbal_baby_response",
-                            "cooldownMs=$NONVERBAL_RESPONSE_COOLDOWN_MS",
+                            "meaningless_turn_suppressed",
+                            "message=${error.message ?: ""}",
                         )
-                        if (!speakEmma(spokenResponse)) {
-                            recorder.resumeBuffering(clearExisting = true)
-                            status = ProductionEmmaStatus.ERROR
-                            statusMessage = voiceError ?: "音声を再生できませんでした。"
-                        } else {
-                            aiIntroducedThisSession = true
-                        }
                     } else {
-                        recorder.resumeBuffering(clearExisting = true)
-                        if (automatic && noSpeech) {
-                            status = ProductionEmmaStatus.LISTENING
-                            statusMessage = if (babyMode) {
-                                "声を聞いています。"
-                            } else {
-                                "普通に話しかけてください。"
-                            }
-                        } else {
-                            status = ProductionEmmaStatus.ERROR
-                            statusMessage =
-                                "みつことばの生成に失敗しました: ${error.message ?: error.javaClass.simpleName}"
-                        }
+                        status = ProductionEmmaStatus.ERROR
+                        statusMessage =
+                            "みつことばの生成に失敗しました: ${error.message ?: error.javaClass.simpleName}"
                     }
                 }
             }
@@ -1155,6 +1126,12 @@ private fun ProductionEmmaApp() {
                 preferences.edit().putString("ai_character_name", value).apply()
                 aiIntroducedThisSession = false
             },
+            startWithTiny = startWithTiny,
+            onStartWithTinyChange = { enabled ->
+                startWithTiny = enabled
+                preferences.edit().putBoolean("first_run_start_tiny", enabled).apply()
+                firstRunReady = false
+            },
             onModeSelected = { selected ->
                 if (!firstRunBusy) {
                     onboardingMode = selected
@@ -1246,10 +1223,8 @@ private fun ProductionEmmaApp() {
                 if (!recording && !busy && selected != engineMode) {
                     val targetAsr = if (asrModelManuallySelected) {
                         asrModel
-                    } else if (selected == ConversationEngineMode.FULL) {
-                        MoonshineAsrModel.SMALL
                     } else {
-                        MoonshineAsrModel.TINY
+                        MoonshineAsrModel.SMALL
                     }
                     if (!asrModelManuallySelected) asrModel = targetAsr
                     if (
