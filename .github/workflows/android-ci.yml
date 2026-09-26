@@ -69,7 +69,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.0-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.1-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -78,7 +78,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.0
+          name: Mitsukotoba-v1.9.1
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -94,7 +94,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.0"
+          TAG="mitsukotoba-v1.9.1"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -112,5 +112,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.0" \
-            --notes "Mitsukotoba v1.9.0 makes Moonshine Small the default ASR while keeping Tiny as an optional first-run advanced setting, suppresses filler/cooing-only ASR turns so the AI does not over-speak, and keeps the most recently established childcare topic active for up to five follow-up turns unless a new explicit topic appears. Full Conversation uses the same five-turn continuity principle. Physical Android devices only (arm64-v8a + armeabi-v7a; x86/x86_64 omitted). The distributed APK is still CI debug-signed."
+            --title "みつことば v1.9.1" \
+            --notes "Mitsukotoba v1.9.1 unifies Lite and Full context continuity around six previous turns. Lite keeps a concrete childcare scene for six follow-up turns unless a new explicit topic appears. Full now also runs the shared lightweight scene detector as a concrete-only topic sensor: generic/no-topic turns are never stored as topics, while detected concrete topics from the previous six turns are supplied to Gemma as strong secondary context. Physical Android devices only (arm64-v8a + armeabi-v7a; x86/x86_64 omitted). The distributed APK is still CI debug-signed."
