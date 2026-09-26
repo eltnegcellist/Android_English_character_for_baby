@@ -376,7 +376,7 @@ internal fun EmmaSettingsScreen(
                         Text("家族とみつことばの設定", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                TextButton(onClick = onOpenAbout) { Text("みつことばとは？") }
+                TextButton(onClick = onOpenAbout) { Text("英語学習に使える理由") }
             }
 
             ProductionFamilySettings(
