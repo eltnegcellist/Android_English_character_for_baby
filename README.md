@@ -10,14 +10,14 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.8.0**  
-**versionCode：80**
+**現在のAndroid安定版：v1.9.0**  
+**versionCode：81**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.8.0
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.8.0/Mitsukotoba-v1.8.0-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.0
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.0/Mitsukotoba-v1.9.0-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.8.0は、初回画面を親・赤ちゃん・AIの3者インタラクション中心に再設計し、AI→Emmaの順に紹介する導線、引用番号つき研究説明、「呼びかけ / 会話」モードを導入した安定版です。Fullの「会話」は親だけでなく、親・赤ちゃん・AIの共有場面に継続参加する設計です。
+v1.9.0は、Moonshine Smallを標準ASRに変更し、初回の詳細設定からTinyを選べるようにした版です。また「あー」「うー」など意味内容のない発話だけではAIが返答しない発話ゲートを追加し、Liteでは一度検出した育児トピックを最大5ターン保持します。同じ話題が再確認されれば保持期間を更新し、新しい明確な話題が出た場合は即時に切り替えます。Fullも直近5ターンの話題継続を重視します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -285,11 +285,11 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### プロジェクト状況
 
-**v1.8.0を現在の安定基準版とします。**
+**v1.9.0を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.8.0を再現可能な「みつことば」安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.0を再現可能な「みつことば」安定基準版として保持します。
 
 ### ライセンス
 
@@ -309,14 +309,14 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.8.0**  
-**versionCode: 80**
+**Current stable Android release: v1.9.0**  
+**versionCode: 81**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.8.0
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.8.0/Mitsukotoba-v1.8.0-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.0
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.0/Mitsukotoba-v1.9.0-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.8.0 redesigns onboarding around the parent-baby-AI interaction, introduces the AI role before the configurable Emma character identity, adds numbered research citations, and renames the interaction modes to Callout and Conversation.
+v1.9.0 makes Moonshine Small the default ASR, keeps Tiny as an advanced first-run option, suppresses filler/cooing-only turns, and adds five-turn topic continuity. Explicit new childcare topics still override the retained context immediately.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -569,11 +569,11 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 ### Project Status
 
-**v1.8.0 is the current stable baseline.**
+**v1.9.0 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.8.0 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.0 remains reproducible as the stable Mitsukotoba reference point.
 
 ### License
 
