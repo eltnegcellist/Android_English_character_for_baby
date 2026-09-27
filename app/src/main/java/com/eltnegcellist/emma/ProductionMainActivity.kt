@@ -185,10 +185,8 @@ private fun ProductionEmmaApp() {
     var endpointStartedNanos by remember { mutableStateOf<Long?>(null) }
     var ttsRequestedAfterEndpointMillis by remember { mutableStateOf<Long?>(null) }
     var lastNonverbalResponseAtMillis by remember { mutableStateOf(0L) }
-    var aiIntroducedThisSession by remember { mutableStateOf(false) }
-
-    fun withAiIntroduction(text: String): String =
-        if (aiIntroducedThisSession) text else "${AiCharacterName.introduction(resolvedAiName)} $text"
+    var screenIntroductionPlayed by remember { mutableStateOf(false) }
+    var screenIntroductionPlaying by remember { mutableStateOf(false) }
 
     DisposableEffect(recording, keepScreenOn) {
         val window = (context as? ComponentActivity)?.window
@@ -247,12 +245,19 @@ private fun ProductionEmmaApp() {
                     }
                     endpointStartedNanos = null
                     ttsRequestedAfterEndpointMillis = null
-                    if (recording) recorder.resumeBuffering(clearExisting = true)
-                    status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE
-                    statusMessage = if (recording) {
-                        if (autoRespond) "普通に話しかけてください。" else "話したところで「ここで返事して」を押してください。"
+                    if (screenIntroductionPlaying) {
+                        screenIntroductionPlaying = false
+                        screenIntroductionPlayed = true
+                        status = ProductionEmmaStatus.IDLE
+                        statusMessage = "自己紹介が終わりました。"
                     } else {
-                        "試聴を終了しました。"
+                        if (recording) recorder.resumeBuffering(clearExisting = true)
+                        status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE
+                        statusMessage = if (recording) {
+                            if (autoRespond) "普通に話しかけてください。" else "話したところで「ここで返事して」を押してください。"
+                        } else {
+                            "試聴を終了しました。"
+                        }
                     }
                 }
             },
@@ -260,6 +265,10 @@ private fun ProductionEmmaApp() {
                 if (!disposed) {
                     mouthLevel = 0f
                     voiceError = message
+                    if (screenIntroductionPlaying) {
+                        screenIntroductionPlaying = false
+                        screenIntroductionPlayed = true
+                    }
                     if (recording) recorder.resumeBuffering(clearExisting = true)
                     status = ProductionEmmaStatus.ERROR
                     statusMessage = "Kitten TTS Nanoの生成または再生に失敗しました: $message"
@@ -788,7 +797,6 @@ private fun ProductionEmmaApp() {
         runCatching { recorder.start() }
             .onSuccess {
                 recording = true
-                aiIntroducedThisSession = false
                 lite.resetConversationContext()
                 status = ProductionEmmaStatus.LISTENING
                 statusMessage = if (autoRespond) {
@@ -846,7 +854,6 @@ private fun ProductionEmmaApp() {
         recorder.stop()
         recording = false
         generating = false
-        aiIntroducedThisSession = false
         mouthLevel = 0f
         endpointStartedNanos = null
         ttsRequestedAfterEndpointMillis = null
@@ -949,7 +956,7 @@ private fun ProductionEmmaApp() {
                     }
                     if (infantVocalEvent) lastNonverbalResponseAtMillis = nowMillis
 
-                    val spokenEnglish = withAiIntroduction(english)
+                    val spokenEnglish = AiCharacterName.stripLeadingSpeakerLabel(english, resolvedAiName)
                     latestEmmaText = spokenEnglish
                     status = ProductionEmmaStatus.SPEAKING
                     statusMessage =
@@ -961,8 +968,6 @@ private fun ProductionEmmaApp() {
                         ttsRequestedAfterEndpointMillis = null
                         status = ProductionEmmaStatus.ERROR
                         statusMessage = voiceError ?: "音声を再生できませんでした。"
-                    } else {
-                        aiIntroducedThisSession = true
                     }
                 }.onFailure { error ->
                     endpointStartedNanos = null
@@ -1010,8 +1015,33 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    LaunchedEffect(modelReady, onboardingOpen) {
-        if (modelReady && !onboardingOpen && autoStartPending && !recording ) {
+    LaunchedEffect(modelReady, onboardingOpen, screenIntroductionPlayed, screenIntroductionPlaying) {
+        if (
+            modelReady &&
+            !onboardingOpen &&
+            !screenIntroductionPlayed &&
+            !screenIntroductionPlaying
+        ) {
+            screenIntroductionPlaying = true
+            status = ProductionEmmaStatus.SPEAKING
+            statusMessage = "${resolvedAiName}が自己紹介しています。"
+            voiceError = null
+            if (!speakEmma(AiCharacterName.introduction(resolvedAiName))) {
+                screenIntroductionPlaying = false
+                screenIntroductionPlayed = true
+            }
+        }
+    }
+
+    LaunchedEffect(modelReady, onboardingOpen, screenIntroductionPlayed, screenIntroductionPlaying) {
+        if (
+            modelReady &&
+            !onboardingOpen &&
+            autoStartPending &&
+            !recording &&
+            screenIntroductionPlayed &&
+            !screenIntroductionPlaying
+        ) {
             autoStartPending = false
             startSession()
         }
