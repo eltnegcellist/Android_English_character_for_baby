@@ -10,14 +10,14 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.2**  
-**versionCode：83**
+**現在のAndroid安定版：v1.9.3**  
+**versionCode：84**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.2
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.2/Mitsukotoba-v1.9.2-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.3
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.3/Mitsukotoba-v1.9.3-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.2はAndroid起動クラッシュのホットフィックスです。過去のブランド画像更新で追加されたPNGのうち2枚が壊れており、Gradleのビルドは成功しても実機で画像を読む際にクラッシュし得る状態でした。壊れた画像への起動時依存を外し、問題ファイルを削除し、CIにPNGの署名・チャンク長・CRC・IEND検証を追加しました。Small標準ASR、意味のない発話の抑制、Lite / Fullの6ターン話題保持などv1.9.2の会話機能は維持しています。
+v1.9.3は、v1.9.2の起動クラッシュ修正を維持したまま、Androidのホーム画面に表示するアプリアイコンだけを赤ちゃんの顔へ変更した版です。アプリ内のブランド表示は従来どおり親・赤ちゃん・AIの3人ロゴ、AIキャラクターも従来どおりです。Small標準ASR、意味のない発話の抑制、Lite / Fullの6ターン話題保持などの会話機能も維持しています。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -285,11 +285,11 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### プロジェクト状況
 
-**v1.9.2を現在の安定基準版とします。**
+**v1.9.3を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.2を再現可能な「みつことば」安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.3を再現可能な「みつことば」安定基準版として保持します。
 
 ### ライセンス
 
@@ -309,14 +309,14 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.2**  
-**versionCode: 83**
+**Current stable Android release: v1.9.3**  
+**versionCode: 84**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.2
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.2/Mitsukotoba-v1.9.2-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.3
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.3/Mitsukotoba-v1.9.3-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.2 is an Android startup-crash hotfix. Two malformed PNG resources from earlier branding updates could survive Gradle packaging and fail when decoded on device. Startup no longer depends on those files, the bad assets are removed, and CI now validates PNG structure and CRCs before building. The Small-default ASR, meaningless-turn suppression, and six-turn Lite/Full topic continuity from v1.9.2 are retained.
+v1.9.3 retains the v1.9.2 startup-crash hotfix and changes only the Android launcher icon to the baby character. In-app branding remains the parent-baby-AI three-person Mitsukotoba mark, and the in-app AI character remains unchanged. Small-default ASR, meaningless-turn suppression, and six-turn Lite/Full topic continuity are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -569,11 +569,11 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 ### Project Status
 
-**v1.9.2 is the current stable baseline.**
+**v1.9.3 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.2 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.3 remains reproducible as the stable Mitsukotoba reference point.
 
 ### License
 
