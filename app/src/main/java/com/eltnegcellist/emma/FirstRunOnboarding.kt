@@ -18,12 +18,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -51,8 +46,6 @@ internal fun FirstRunOnboardingScreen(
     onStartEmma: () -> Unit,
 ) {
     val resolvedAiName = AiCharacterName.resolve(aiName)
-    var advancedOpen by remember { mutableStateOf(false) }
-
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
             modifier = Modifier
@@ -82,13 +75,13 @@ internal fun FirstRunOnboardingScreen(
             ) {
                 InteractionStep(
                     modifier = Modifier.weight(1f),
-                    imageRes = R.drawable.mitsukotoba_parent,
+                    imageRes = R.drawable.mitsukotoba_ai,
                     title = "親",
                     caption = "日本語で話す",
                 )
                 InteractionStep(
                     modifier = Modifier.weight(1f),
-                    imageRes = R.drawable.mitsukotoba_ai,
+                    imageRes = R.drawable.mitsukotoba_parent,
                     title = "AI",
                     caption = "場面を理解",
                 )
@@ -197,15 +190,41 @@ internal fun FirstRunOnboardingScreen(
                 onAiNameChange = onAiNameChange,
             )
 
-            TextButton(
-                onClick = { advancedOpen = !advancedOpen },
-                enabled = !busy,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(if (advancedOpen) "詳細設定を閉じる" else "詳細設定")
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text("音声認識", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            if (startWithTiny) {
+                                "Moonshine Tiny（軽量）で始めます。Smallより聞き取り精度は下がりますが、モデルサイズを抑えられます。"
+                            } else {
+                                "Moonshine Small（推奨）で始めます。初期設定ではこちらをおすすめします。"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Tiny", style = MaterialTheme.typography.labelMedium)
+                        Switch(
+                            checked = startWithTiny,
+                            onCheckedChange = onStartWithTinyChange,
+                            enabled = !busy,
+                        )
+                    }
+                }
             }
-            if (advancedOpen) {
-                Card(modifier = Modifier.fillMaxWidth()) {
+
+            Card(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
