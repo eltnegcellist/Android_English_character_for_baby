@@ -1155,7 +1155,7 @@ private fun ProductionEmmaApp() {
             onAiNameChange = { value ->
                 aiName = value
                 preferences.edit().putString("ai_character_name", value).apply()
-                aiIntroducedThisSession = false
+                screenIntroductionPlayed = false
             },
             startWithTiny = startWithTiny,
             onStartWithTinyChange = { enabled ->
@@ -1246,7 +1246,7 @@ private fun ProductionEmmaApp() {
             onAiNameChange = { value ->
                 aiName = value
                 preferences.edit().putString("ai_character_name", value).apply()
-                aiIntroducedThisSession = false
+                screenIntroductionPlayed = false
             },
             onBack = { settingsOpen = false },
             onOpenAbout = { aboutOpen = true },
