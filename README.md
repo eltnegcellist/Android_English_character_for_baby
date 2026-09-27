@@ -10,14 +10,14 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.1**  
-**versionCode：82**
+**現在のAndroid安定版：v1.9.2**  
+**versionCode：83**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.1
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.1/Mitsukotoba-v1.9.1-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.2
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.2/Mitsukotoba-v1.9.2-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.1は、Moonshine Smallを標準ASRとし、Tinyは初回の詳細設定から選べる構成です。「あー」「うー」など意味内容のない発話ではAIが返答しない発話ゲートも備えます。話題保持はLite / Fullとも過去6ターンに統一しました。Liteでは具体的な育児トピックを6ターン引き継ぎ、明確な別話題が出れば即時に切り替えます。FullではLiteと同じ軽量Scene判定を補助センサーとして使いますが、genericは話題として保存せず、過去6ターン内の具体的トピックだけをGemmaへ強い参考情報として渡します。
+v1.9.2はAndroid起動クラッシュのホットフィックスです。過去のブランド画像更新で追加されたPNGのうち2枚が壊れており、Gradleのビルドは成功しても実機で画像を読む際にクラッシュし得る状態でした。壊れた画像への起動時依存を外し、問題ファイルを削除し、CIにPNGの署名・チャンク長・CRC・IEND検証を追加しました。Small標準ASR、意味のない発話の抑制、Lite / Fullの6ターン話題保持などv1.9.1の会話機能は維持しています。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -285,11 +285,11 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### プロジェクト状況
 
-**v1.9.1を現在の安定基準版とします。**
+**v1.9.2を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.1を再現可能な「みつことば」安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.2を再現可能な「みつことば」安定基準版として保持します。
 
 ### ライセンス
 
@@ -309,14 +309,14 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.1**  
-**versionCode: 82**
+**Current stable Android release: v1.9.2**  
+**versionCode: 83**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.1
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.1/Mitsukotoba-v1.9.1-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.2
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.2/Mitsukotoba-v1.9.2-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.1 keeps Moonshine Small as the default ASR, retains Tiny as an advanced first-run option, suppresses filler/cooing-only turns, and unifies Lite/Full topic continuity around six previous turns. Full uses the shared lightweight scene detector only for concrete topics; generic/no-topic turns are never stored as topics or passed to Gemma as topic context.
+v1.9.2 is an Android startup-crash hotfix. Two malformed PNG resources from earlier branding updates could survive Gradle packaging and fail when decoded on device. Startup no longer depends on those files, the bad assets are removed, and CI now validates PNG structure and CRCs before building. The Small-default ASR, meaningless-turn suppression, and six-turn Lite/Full topic continuity from v1.9.1 are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -569,11 +569,11 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 ### Project Status
 
-**v1.9.1 is the current stable baseline.**
+**v1.9.2 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.1 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.2 remains reproducible as the stable Mitsukotoba reference point.
 
 ### License
 
