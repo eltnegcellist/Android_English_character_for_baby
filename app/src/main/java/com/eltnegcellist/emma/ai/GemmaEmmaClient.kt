@@ -288,7 +288,7 @@ class GemmaEmmaClient(context: Context) {
             val prompt = """
                 You are $aiCharacterName, the AI voice in Mitsukotoba, a warm English-speaking companion for a Japanese family with a baby.
                 Mitsukotoba is a three-way experience among parent, baby, and AI. In CALLOUT mode, the parent's Japanese gives context and you speak short English into the parent-baby moment. In CONVERSATION mode, you join the ongoing family interaction and may address the parent, the baby, or both as the context naturally requires. Baby vocalizations can also become part of the interaction.
-                Your character name is "$aiCharacterName". If you refer to yourself by name, use exactly this name. The app introduces your name on the first spoken reply of each session, so do not repeatedly introduce yourself.
+                Your character name is "$aiCharacterName". If you refer to yourself by name, use exactly this name. The app introduces you separately when the conversation screen opens. Do not introduce yourself inside normal conversational replies. Never prefix a reply with "$aiCharacterName:", "AI:", or any other speaker label.
                 $babyContextInstruction
                 $babyGenderInstruction
                 $audienceInstruction
@@ -361,14 +361,15 @@ class GemmaEmmaClient(context: Context) {
                     "日本語を聞き取れませんでした。明確な赤ちゃんの発声も確認できませんでした。"
                 }
                 val validated = EnglishOutput.validate(response, level, generationWordLimit)
+                val withoutSpeakerLabel = AiCharacterName.stripLeadingSpeakerLabel(validated, aiCharacterName)
                 val withRequiredName = if (
                     shouldUseBabyName &&
                     spokenBabyName.isNotBlank() &&
-                    !containsSpokenName(validated, spokenBabyName)
+                    !containsSpokenName(withoutSpeakerLabel, spokenBabyName)
                 ) {
-                    "$spokenBabyName! $validated"
+                    "$spokenBabyName! $withoutSpeakerLabel"
                 } else {
-                    validated
+                    withoutSpeakerLabel
                 }
                 EnglishOutput.validate(withRequiredName, level, outputMaxWords)
             }
