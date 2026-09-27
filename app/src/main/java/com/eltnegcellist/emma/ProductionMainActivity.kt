@@ -1,5 +1,6 @@
 package com.eltnegcellist.emma
 
+import android.app.ActivityManager
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -1303,6 +1304,18 @@ private fun ProductionEmmaApp() {
             },
             onExportDiagnostics = { diagnosticsExporter.launch("emma-beta13-diagnostics.txt") },
             onExportCrashDetails = { crashDetailsExporter.launch("emma-beta13-crash-details.zip") },
+            onResetAllData = {
+                stopSession()
+                runCatching {
+                    gemma.close()
+                    lite.close()
+                    kitten.shutdown()
+                    context.getSystemService(ActivityManager::class.java).clearApplicationUserData()
+                }.onFailure {
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "アプリデータを削除できませんでした。"
+                }
+            },
         )
     } else {
         EmmaHomeScreen(
