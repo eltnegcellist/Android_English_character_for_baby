@@ -36,7 +36,7 @@ internal fun MitsukotobaBrandMark(
             modifier = Modifier.size(62.dp),
         )
         Image(
-            painter = painterResource(R.drawable.mitsukotoba_ai),
+            painter = painterResource(R.drawable.mitsukotoba_ai_safe),
             contentDescription = null,
             modifier = Modifier.size(58.dp),
         )
