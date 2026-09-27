@@ -1310,7 +1310,7 @@ private fun ProductionEmmaApp() {
                     gemma.close()
                     lite.close()
                     kitten.shutdown()
-                    context.getSystemService(ActivityManager::class.java).clearApplicationUserData()
+                    check(context.getSystemService(ActivityManager::class.java).clearApplicationUserData()) { "clearApplicationUserData failed" }
                 }.onFailure {
                     status = ProductionEmmaStatus.ERROR
                     statusMessage = "アプリデータを削除できませんでした。"
