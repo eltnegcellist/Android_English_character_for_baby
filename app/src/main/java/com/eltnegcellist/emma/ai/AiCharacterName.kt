@@ -16,4 +16,13 @@ object AiCharacterName {
         sanitizeForEditing(raw.orEmpty()).trim().ifBlank { DEFAULT }
 
     fun introduction(name: String): String = "Hi, I'm ${resolve(name)}."
+
+    fun stripLeadingSpeakerLabel(text: String, name: String): String {
+        val resolved = resolve(name)
+        val label = Regex(
+            "^\\s*(?:${Regex.escape(resolved)}|AI)\\s*[:：\\-–—]\\s*",
+            RegexOption.IGNORE_CASE,
+        )
+        return text.replaceFirst(label, "").trimStart()
+    }
 }
