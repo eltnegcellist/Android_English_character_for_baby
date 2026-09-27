@@ -225,38 +225,6 @@ internal fun FirstRunOnboardingScreen(
             }
 
             Card(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Text("Tinyで始める", style = MaterialTheme.typography.titleSmall)
-                            Text(
-                                if (startWithTiny) {
-                                    "軽量なMoonshine Tinyを使います。聞き取り精度よりモデルサイズを優先したい場合の設定です。"
-                                } else {
-                                    "標準はMoonshine Smallです。会話の聞き取り精度を優先します。"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        Switch(
-                            checked = startWithTiny,
-                            onCheckedChange = onStartWithTinyChange,
-                            enabled = !busy,
-                        )
-                    }
-                }
-            }
-
-            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
