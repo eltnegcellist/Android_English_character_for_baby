@@ -46,10 +46,8 @@ internal fun AboutEmmaScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                Image(
-                    painter = painterResource(R.drawable.mitsukotoba_icon),
-                    contentDescription = "みつことば ロゴ",
-                    modifier = Modifier.size(132.dp).padding(vertical = 4.dp),
+                MitsukotobaBrandMark(
+                    modifier = Modifier.padding(vertical = 4.dp),
                 )
             }
 
