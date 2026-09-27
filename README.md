@@ -17,7 +17,7 @@
 - APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.2/Mitsukotoba-v1.9.2-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.2はAndroid起動クラッシュのホットフィックスです。過去のブランド画像更新で追加されたPNGのうち2枚が壊れており、Gradleのビルドは成功しても実機で画像を読む際にクラッシュし得る状態でした。壊れた画像への起動時依存を外し、問題ファイルを削除し、CIにPNGの署名・チャンク長・CRC・IEND検証を追加しました。Small標準ASR、意味のない発話の抑制、Lite / Fullの6ターン話題保持などv1.9.1の会話機能は維持しています。
+v1.9.2はAndroid起動クラッシュのホットフィックスです。過去のブランド画像更新で追加されたPNGのうち2枚が壊れており、Gradleのビルドは成功しても実機で画像を読む際にクラッシュし得る状態でした。壊れた画像への起動時依存を外し、問題ファイルを削除し、CIにPNGの署名・チャンク長・CRC・IEND検証を追加しました。Small標準ASR、意味のない発話の抑制、Lite / Fullの6ターン話題保持などv1.9.2の会話機能は維持しています。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -316,7 +316,7 @@ Research on infant foreign-language learning suggests that passive audio or vide
 - Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.2/Mitsukotoba-v1.9.2-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.2 is an Android startup-crash hotfix. Two malformed PNG resources from earlier branding updates could survive Gradle packaging and fail when decoded on device. Startup no longer depends on those files, the bad assets are removed, and CI now validates PNG structure and CRCs before building. The Small-default ASR, meaningless-turn suppression, and six-turn Lite/Full topic continuity from v1.9.1 are retained.
+v1.9.2 is an Android startup-crash hotfix. Two malformed PNG resources from earlier branding updates could survive Gradle packaging and fail when decoded on device. Startup no longer depends on those files, the bad assets are removed, and CI now validates PNG structure and CRCs before building. The Small-default ASR, meaningless-turn suppression, and six-turn Lite/Full topic continuity from v1.9.2 are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
