@@ -37,7 +37,7 @@ internal fun MitsukotobaBrandMark(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
-                painter = painterResource(R.drawable.mitsukotoba_parent),
+                painter = painterResource(R.drawable.mitsukotoba_ai),
                 contentDescription = "親",
                 modifier = Modifier.size(104.dp),
             )
@@ -47,7 +47,7 @@ internal fun MitsukotobaBrandMark(
                 modifier = Modifier.size(100.dp),
             )
             Image(
-                painter = painterResource(R.drawable.mitsukotoba_ai),
+                painter = painterResource(R.drawable.mitsukotoba_parent),
                 contentDescription = "AI",
                 modifier = Modifier.size(104.dp),
             )
