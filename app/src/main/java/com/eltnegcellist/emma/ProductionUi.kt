@@ -1,6 +1,7 @@
 package com.eltnegcellist.emma
 
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,6 +73,25 @@ internal fun EmmaHomeScreen(
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            Surface(tonalElevation = 2.dp, shadowElevation = 2.dp) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        "みつことば",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        TextButton(onClick = onOpenAbout) { Text("英語学習") }
+                        TextButton(onClick = onOpenSettings) { Text("設定") }
+                    }
+                }
+            }
+        },
         bottomBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 6.dp) {
                 Column(
@@ -110,21 +130,6 @@ internal fun EmmaHomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column {
-                    Text("みつことば", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
-                    Text("親と赤ちゃんとAI、3人でつくる英語の時間", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(onClick = onOpenAbout) { Text("英語学習に使える理由") }
-                    TextButton(onClick = onOpenSettings) { Text("設定") }
-                }
-            }
-
             Surface(
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
                 shape = MaterialTheme.shapes.extraLarge,
@@ -354,7 +359,35 @@ internal fun EmmaSettingsScreen(
     onKeepScreenOn: (Boolean) -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
+    onResetAllData: () -> Unit,
 ) {
+    var developerTapCount by remember { mutableStateOf(0) }
+    var developerToolsVisible by remember { mutableStateOf(false) }
+    var resetConfirmOpen by remember { mutableStateOf(false) }
+
+    if (resetConfirmOpen) {
+        AlertDialog(
+            onDismissRequest = { resetConfirmOpen = false },
+            title = { Text("アプリデータをすべて削除") },
+            text = {
+                Text(
+                    "赤ちゃん・AIの設定、初回設定情報、Moonshine / Kitten / Gemmaのモデルを含む、みつことばの端末内データをすべて削除します。次回起動時は初期設定とモデル取得が必要です。"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        resetConfirmOpen = false
+                        onResetAllData()
+                    },
+                ) { Text("すべて削除") }
+            },
+            dismissButton = {
+                TextButton(onClick = { resetConfirmOpen = false }) { Text("キャンセル") }
+            },
+        )
+    }
+
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
             modifier = Modifier
@@ -584,6 +617,47 @@ internal fun EmmaSettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                "みつことば Android",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .clickable {
+                        developerTapCount += 1
+                        if (developerTapCount >= 5) {
+                            developerTapCount = 0
+                            developerToolsVisible = true
+                        }
+                    }
+                    .padding(12.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+            )
+
+            if (developerToolsVisible) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text("開発者設定", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Web版の隠し設定と同じ完全リセットです。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OutlinedButton(
+                            onClick = { resetConfirmOpen = true },
+                            enabled = enabled,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("アプリデータをすべて削除")
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
         }
     }
