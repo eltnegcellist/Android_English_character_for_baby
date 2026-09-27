@@ -13,8 +13,8 @@
     <application
         android:name=".EmmaApplication"
         android:allowBackup="true"
-        android:icon="@drawable/mitsukotoba_ai_safe"
-        android:roundIcon="@drawable/mitsukotoba_ai_safe"
+        android:icon="@drawable/mitsukotoba_baby_safe"
+        android:roundIcon="@drawable/mitsukotoba_baby_safe"
         android:label="みつことば"
         android:largeHeap="true"
         android:supportsRtl="true"
