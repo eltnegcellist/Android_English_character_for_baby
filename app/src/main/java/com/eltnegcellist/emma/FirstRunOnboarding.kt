@@ -64,12 +64,6 @@ internal fun FirstRunOnboardingScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             MitsukotobaBrandMark()
-
-            Text(
-                "みつことば",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-            )
             Text(
                 "いつもの日本語から、赤ちゃんへの英語が生まれる。",
                 style = MaterialTheme.typography.headlineSmall,
@@ -94,7 +88,7 @@ internal fun FirstRunOnboardingScreen(
                 )
                 InteractionStep(
                     modifier = Modifier.weight(1f),
-                    imageRes = R.drawable.mitsukotoba_ai_safe,
+                    imageRes = R.drawable.mitsukotoba_ai,
                     title = "AI",
                     caption = "場面を理解",
                 )
@@ -337,7 +331,7 @@ private fun InteractionStep(
             Image(
                 painter = painterResource(imageRes),
                 contentDescription = title,
-                modifier = Modifier.size(58.dp),
+                modifier = Modifier.size(72.dp),
             )
             Text(
                 title,
