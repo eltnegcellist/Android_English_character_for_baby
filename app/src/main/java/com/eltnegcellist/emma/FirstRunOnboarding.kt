@@ -63,11 +63,7 @@ internal fun FirstRunOnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Image(
-                painter = painterResource(R.drawable.mitsukotoba_icon),
-                contentDescription = "みつことば ロゴ",
-                modifier = Modifier.size(104.dp),
-            )
+            MitsukotobaBrandMark()
 
             Text(
                 "みつことば",
