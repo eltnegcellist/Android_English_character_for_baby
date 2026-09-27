@@ -1,5 +1,6 @@
 package com.eltnegcellist.emma
 
+import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.ai.EnglishOutput
 import org.junit.Assert.assertEquals
@@ -26,6 +27,17 @@ class EnglishOutputTest {
 
     @Test(expected = IllegalArgumentException::class) fun BlankResponseIsNotSpoken() {
         EnglishOutput.validate("...", EnglishLevel.EASY)
+    }
+
+    @Test fun speakerLabelIsRemovedBeforeDisplayAndTts() {
+        assertEquals(
+            "Bath time! Let's get ready.",
+            AiCharacterName.stripLeadingSpeakerLabel("Emma: Bath time! Let's get ready.", "Emma"),
+        )
+        assertEquals(
+            "Hello, little one!",
+            AiCharacterName.stripLeadingSpeakerLabel("AI： Hello, little one!", "Emma"),
+        )
     }
 }
 
