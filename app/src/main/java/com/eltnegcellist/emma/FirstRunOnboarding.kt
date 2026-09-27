@@ -94,7 +94,7 @@ internal fun FirstRunOnboardingScreen(
                 )
                 InteractionStep(
                     modifier = Modifier.weight(1f),
-                    imageRes = R.drawable.mitsukotoba_ai,
+                    imageRes = R.drawable.mitsukotoba_ai_safe,
                     title = "AI",
                     caption = "場面を理解",
                 )
