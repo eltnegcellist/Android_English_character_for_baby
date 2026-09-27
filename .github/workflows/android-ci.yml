@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.5-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.6-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -121,7 +121,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.5
+          name: Mitsukotoba-v1.9.6
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.5"
+          TAG="mitsukotoba-v1.9.6"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -155,5 +155,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.5" \
-            --notes "Mitsukotoba v1.9.5 unifies the start-screen branding. The top brand mark now combines the parent, baby and new friendly AI character with the colorful Mitsukotoba name, so the duplicate standalone app-name heading is removed. The three role cards use the same refreshed parent, baby and AI artwork. Conversation, ASR and TTS behavior are unchanged. The English-learning launcher icon from v1.9.4 and startup PNG validation remain in place. Physical Android devices only (arm64-v8a + armeabi-v7a; x86/x86_64 omitted)."
+            --title "みつことば v1.9.6" \
+            --notes "Mitsukotoba v1.9.6 aligns the live conversation avatar with the white-and-blue robot mascot, fixes parent/AI role artwork, moves the AI self-introduction to conversation-screen startup instead of the first generated reply, strips accidental speaker labels such as Emma: before display/TTS, keeps Settings fixed at the top of the conversation screen, exposes the Tiny/Small ASR choice on first run, and adds a hidden five-tap developer reset that clears all local app data and model files."
