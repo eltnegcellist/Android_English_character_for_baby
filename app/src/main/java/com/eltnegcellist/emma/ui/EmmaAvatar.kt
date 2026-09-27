@@ -432,29 +432,18 @@ private fun DrawScope.drawOpenEye(
     dark: Color,
     pupilShift: Offset,
 ) {
-    val height = (eyeHeight * scale).coerceAtLeast(3f)
+    // Match the friendly robot mascot: calm dark oval eyes without
+    // a large white sclera, pupil outline, or glossy catchlight.
+    val width = eyeWidth * 0.40f
+    val height = (eyeHeight * 0.58f * scale).coerceAtLeast(3f)
     drawOval(
-        color = Color.White.copy(alpha = 0.96f),
-        topLeft = Offset(centerX - eyeWidth / 2f, centerY - height / 2f),
-        size = Size(eyeWidth, height),
+        color = dark.copy(alpha = 0.92f),
+        topLeft = Offset(
+            centerX - width / 2f + pupilShift.x * 0.30f,
+            centerY - height / 2f + pupilShift.y * 0.30f,
+        ),
+        size = Size(width, height),
     )
-    drawOval(
-        color = dark.copy(alpha = 0.94f),
-        topLeft = Offset(centerX - eyeWidth / 2f, centerY - height / 2f),
-        size = Size(eyeWidth, height),
-        style = Stroke(width = eyeWidth * 0.055f),
-    )
-    if (scale > 0.18f) {
-        val pupilRadius = eyeWidth * 0.22f
-        val pupilY = centerY + pupilShift.y
-        val pupilX = centerX + pupilShift.x
-        drawCircle(dark, pupilRadius, Offset(pupilX, pupilY))
-        drawCircle(
-            Color.White.copy(alpha = 0.94f),
-            pupilRadius * 0.33f,
-            Offset(pupilX - pupilRadius * 0.32f, pupilY - pupilRadius * 0.34f),
-        )
-    }
 }
 
 private fun DrawScope.drawHappyEye(

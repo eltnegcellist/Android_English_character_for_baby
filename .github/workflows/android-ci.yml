@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.3-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.4-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -121,7 +121,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.3
+          name: Mitsukotoba-v1.9.4
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.3"
+          TAG="mitsukotoba-v1.9.4"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -155,5 +155,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.3" \
-            --notes "Mitsukotoba v1.9.3 keeps the v1.9.2 startup-crash hotfix and changes only the Android launcher icon to the baby character. In-app branding remains the parent-baby-AI three-person Mitsukotoba mark, and the in-app AI character remains unchanged. CI continues to validate PNG resources before building. Physical Android devices only (arm64-v8a + armeabi-v7a; x86/x86_64 omitted). The distributed APK is still CI debug-signed."
+            --title "みつことば v1.9.4" \
+            --notes "Mitsukotoba v1.9.4 refreshes the visual design without changing conversation behavior. The Android launcher icon now clearly communicates baby English learning with a baby, book, and ABC motif. Emma's in-app character uses a simpler white-and-blue friendly robot design, and the live avatar replaces large white-and-pupil eyes with calm dark oval eyes to reduce an uncanny impression while retaining blinking, expressions, listening states, and lip-sync. The v1.9.2 startup-crash safeguards and PNG validation remain in place. Physical Android devices only (arm64-v8a + armeabi-v7a; x86/x86_64 omitted). The distributed APK is still CI debug-signed."

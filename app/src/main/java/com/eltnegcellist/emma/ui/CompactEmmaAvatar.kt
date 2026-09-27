@@ -153,23 +153,14 @@ internal fun CompactEmmaAvatar(
                 happyEye(cx + eyeX)
             } else {
                 fun eye(x: Float) {
-                    val h = max(3f, eyeH * eyeScale)
+                    // Match the friendly robot mascot: simple dark oval eyes.
+                    val w = eyeW * 0.40f
+                    val h = max(3f, eyeH * 0.58f * eyeScale)
                     drawOval(
-                        Color.White.copy(alpha = 0.96f),
-                        Offset(x - eyeW / 2f, eyeY - h / 2f),
-                        Size(eyeW, h),
+                        palette.dark.copy(alpha = 0.92f),
+                        Offset(x - w / 2f, eyeY - h / 2f),
+                        Size(w, h),
                     )
-                    drawOval(
-                        palette.dark.copy(alpha = 0.94f),
-                        Offset(x - eyeW / 2f, eyeY - h / 2f),
-                        Size(eyeW, h),
-                        style = Stroke(width = eyeW * 0.055f),
-                    )
-                    if (eyeScale > 0.18f) {
-                        val pupil = eyeW * 0.22f
-                        drawCircle(palette.dark, pupil, Offset(x, eyeY))
-                        drawCircle(Color.White, pupil * 0.32f, Offset(x - pupil * 0.30f, eyeY - pupil * 0.33f))
-                    }
                 }
                 eye(cx - eyeX)
                 eye(cx + eyeX)
