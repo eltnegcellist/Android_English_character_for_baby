@@ -59,6 +59,49 @@ jobs:
             -o app/libs/sherpa-onnx-static-1.13.8.aar
           echo "b22c3fc1b6a45666d28892bb2f7694beeb77a8362d7ebd77c1a5431ec9435471  app/libs/sherpa-onnx-static-1.13.8.aar" | sha256sum --check
 
+      - name: Validate Android PNG resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import pathlib, struct, zlib
+          signature = b"\x89PNG\r\n\x1a\n"
+
+          def validate_png(path):
+              data = path.read_bytes()
+              if not data.startswith(signature):
+                  raise RuntimeError(f"{path}: invalid PNG signature")
+              pos = len(signature)
+              saw_iend = False
+              while pos < len(data):
+                  if pos + 12 > len(data):
+                      raise RuntimeError(f"{path}: truncated PNG chunk header")
+                  length = struct.unpack(">I", data[pos:pos+4])[0]
+                  ctype = data[pos+4:pos+8]
+                  end = pos + 12 + length
+                  if end > len(data):
+                      raise RuntimeError(f"{path}: truncated {ctype!r} chunk")
+                  payload = data[pos+8:pos+8+length]
+                  expected = struct.unpack(">I", data[pos+8+length:pos+12+length])[0]
+                  actual = zlib.crc32(ctype + payload) & 0xffffffff
+                  if actual != expected:
+                      raise RuntimeError(f"{path}: CRC mismatch in {ctype!r}")
+                  pos = end
+                  if ctype == b"IEND":
+                      saw_iend = True
+                      break
+              if not saw_iend:
+                  raise RuntimeError(f"{path}: missing IEND")
+              if pos != len(data):
+                  raise RuntimeError(f"{path}: unexpected trailing bytes")
+
+          files = list(pathlib.Path("app/src/main/res").rglob("*.png"))
+          for path in files:
+              validate_png(path)
+              print("valid PNG:", path)
+          print(f"Validated {len(files)} PNG resource(s)")
+          PY
+
       - name: Test and build
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug --stacktrace
 
@@ -69,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.1-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.2-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -78,7 +121,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.1
+          name: Mitsukotoba-v1.9.2
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -94,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.1"
+          TAG="mitsukotoba-v1.9.2"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -112,5 +155,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.1" \
-            --notes "Mitsukotoba v1.9.1 unifies Lite and Full context continuity around six previous turns. Lite keeps a concrete childcare scene for six follow-up turns unless a new explicit topic appears. Full now also runs the shared lightweight scene detector as a concrete-only topic sensor: generic/no-topic turns are never stored as topics, while detected concrete topics from the previous six turns are supplied to Gemma as strong secondary context. Physical Android devices only (arm64-v8a + armeabi-v7a; x86/x86_64 omitted). The distributed APK is still CI debug-signed."
+            --title "みつことば v1.9.2" \
+            --notes "Mitsukotoba v1.9.2 is an Android startup-crash hotfix. Two PNG resources introduced in earlier Android branding updates were malformed even though Gradle packaging succeeded. Startup no longer depends on those malformed files, the bad files are removed, and CI now validates PNG signatures, chunk boundaries, CRCs, and IEND before building. Conversation behavior from v1.9.1 is retained. Physical Android devices only (arm64-v8a + armeabi-v7a; x86/x86_64 omitted). The distributed APK is still CI debug-signed."
