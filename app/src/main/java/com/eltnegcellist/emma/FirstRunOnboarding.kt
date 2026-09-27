@@ -32,6 +32,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.ConversationEngineMode
+import com.eltnegcellist.emma.ui.CompactEmmaAvatar
+import com.eltnegcellist.emma.ui.EmmaVisualState
 
 @Composable
 internal fun FirstRunOnboardingScreen(
@@ -63,12 +65,6 @@ internal fun FirstRunOnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Image(
-                painter = painterResource(R.drawable.mitsukotoba_icon),
-                contentDescription = "みつことば ロゴ",
-                modifier = Modifier.size(104.dp),
-            )
-
             Text(
                 "みつことば",
                 style = MaterialTheme.typography.headlineLarge,
@@ -98,7 +94,7 @@ internal fun FirstRunOnboardingScreen(
                 )
                 InteractionStep(
                     modifier = Modifier.weight(1f),
-                    imageRes = R.drawable.mitsukotoba_ai,
+                    imageRes = null,
                     title = "AI",
                     caption = "場面を理解",
                 )
@@ -326,7 +322,7 @@ internal fun FirstRunOnboardingScreen(
 @Composable
 private fun InteractionStep(
     modifier: Modifier,
-    imageRes: Int,
+    imageRes: Int?,
     title: String,
     caption: String,
 ) {
@@ -338,11 +334,19 @@ private fun InteractionStep(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Image(
-                painter = painterResource(imageRes),
-                contentDescription = title,
-                modifier = Modifier.size(58.dp),
-            )
+            if (imageRes != null) {
+                Image(
+                    painter = painterResource(imageRes),
+                    contentDescription = title,
+                    modifier = Modifier.size(58.dp),
+                )
+            } else {
+                CompactEmmaAvatar(
+                    state = EmmaVisualState.IDLE,
+                    mouthLevel = 0f,
+                    modifier = Modifier.size(58.dp),
+                )
+            }
             Text(
                 title,
                 style = MaterialTheme.typography.titleSmall,
