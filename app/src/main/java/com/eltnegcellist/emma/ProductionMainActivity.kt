@@ -193,6 +193,7 @@ private fun ProductionEmmaApp() {
     var lastNonverbalResponseAtMillis by remember { mutableStateOf(0L) }
     var screenIntroductionPlayed by remember { mutableStateOf(false) }
     var screenIntroductionPlaying by remember { mutableStateOf(false) }
+    var tutorialUserSpoke by remember { mutableStateOf(false) }
 
     DisposableEffect(recording, keepScreenOn) {
         val window = (context as? ComponentActivity)?.window
@@ -263,6 +264,18 @@ private fun ProductionEmmaApp() {
                             if (autoRespond) "普通に話しかけてください。" else "話したところで「ここで返事して」を押してください。"
                         } else {
                             "試聴を終了しました。"
+                        }
+
+                        if (tutorialStep == 2 && tutorialUserSpoke) {
+                            preferences.edit().putBoolean("tutorial_completed_v1", true).apply()
+                            tutorialStep = null
+                            tutorialUserSpoke = false
+                            autoStartPending = false
+                            statusMessage = if (recording) {
+                                "チュートリアル完了。続けて話しかけてください。"
+                            } else {
+                                "チュートリアルが完了しました。"
+                            }
                         }
                     }
                 }
@@ -1083,6 +1096,7 @@ private fun ProductionEmmaApp() {
                 if (disposed || !recording || !session.accepts(ticket)) return@post
                 when (event) {
                     VoiceActivityEvent.SpeechStarted -> {
+                        if (tutorialStep == 2) tutorialUserSpoke = true
                         if (!generating && status != ProductionEmmaStatus.SPEAKING) {
                             status = ProductionEmmaStatus.ENDPOINT_WAIT
                             statusMessage = "聞いています…"
@@ -1094,7 +1108,7 @@ private fun ProductionEmmaApp() {
                             "auto_endpoint",
                             "speechMs=${event.speechMillis} silenceMs=${event.silenceMillis} autoRespond=$autoRespond",
                         )
-                        if (autoRespond && !generating && status != ProductionEmmaStatus.SPEAKING) {
+                        if ((autoRespond || tutorialStep == 2) && !generating && status != ProductionEmmaStatus.SPEAKING) {
                             endpointStartedNanos = System.nanoTime()
                             status = ProductionEmmaStatus.UNDERSTOOD
                             statusMessage = "聞きました。"
@@ -1317,6 +1331,7 @@ private fun ProductionEmmaApp() {
                 screenIntroductionPlayed = false
                 screenIntroductionPlaying = false
                 tutorialStep = 0
+                tutorialUserSpoke = false
                 autoStartPending = false
                 status = ProductionEmmaStatus.IDLE
                 statusMessage = "使い方を3ステップで確認しましょう。"
@@ -1375,12 +1390,14 @@ private fun ProductionEmmaApp() {
                 if (tutorialStep == 0) tutorialStep = 1
             },
             onTutorialStartSession = {
+                tutorialUserSpoke = false
                 tutorialStep = 2
                 startSession()
             },
             onTutorialFinish = {
                 preferences.edit().putBoolean("tutorial_completed_v1", true).apply()
                 tutorialStep = null
+                tutorialUserSpoke = false
                 autoStartPending = false
             },
         )
