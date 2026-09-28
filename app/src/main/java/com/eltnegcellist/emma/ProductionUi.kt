@@ -91,6 +91,7 @@ internal fun EmmaHomeScreen(
 ) {
     var tutorialAvatarBounds by remember { mutableStateOf<Rect?>(null) }
     var tutorialActionBounds by remember { mutableStateOf<Rect?>(null) }
+    var tutorialStatusBounds by remember { mutableStateOf<Rect?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -203,7 +204,10 @@ internal fun EmmaHomeScreen(
                 )
             }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.onGloballyPositioned { tutorialStatusBounds = it.boundsInRoot() },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Surface(
                         color = statusColor(visualState),
@@ -261,7 +265,11 @@ internal fun EmmaHomeScreen(
                 step = tutorialStep,
                 aiName = aiName,
                 introReady = tutorialIntroReady,
-                targetBounds = if (tutorialStep == 0) tutorialAvatarBounds else tutorialActionBounds,
+                targetBounds = when (tutorialStep) {
+                    0 -> tutorialAvatarBounds
+                    1 -> tutorialActionBounds
+                    else -> tutorialStatusBounds
+                },
                 onNext = onTutorialNext,
                 onFinish = onTutorialFinish,
             )
@@ -342,13 +350,12 @@ private fun EmmaCoachMarkOverlay(
 
         Card(
             modifier = Modifier
-                .align(if (step == 0) Alignment.BottomCenter else Alignment.TopCenter)
+                .align(Alignment.TopCenter)
                 .statusBarsPadding()
                 .padding(
                     start = 22.dp,
                     end = 22.dp,
-                    top = if (step == 0) 0.dp else 86.dp,
-                    bottom = if (step == 0) 150.dp else 0.dp,
+                    top = if (step == 0) 36.dp else 86.dp,
                 ),
         ) {
             Column(
@@ -372,7 +379,7 @@ private fun EmmaCoachMarkOverlay(
                             "${aiName}が自己紹介しています。声が終わるまでそのまま聞いてください。"
                         }
                         1 -> "画面下で光っている「3人で話す」を実際に押してください。押すとマイクが始まり、会話を開始します。"
-                        else -> "「聞いています」と表示されたら、普段どおり日本語で赤ちゃんへ話しかけます。光っている「ここで返事して」は、手動でAIに返してほしい時のボタンです。自動返事ONなら普段は押さなくても大丈夫です。"
+                        else -> "明るく表示されている「聞いています」を確認して、実際に赤ちゃんへ普段どおり日本語で話しかけてみてください。声を検知して$aiNameが返事を最後まで話し終えると、チュートリアルは自動で完了します。"
                     },
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -386,7 +393,11 @@ private fun EmmaCoachMarkOverlay(
                     if (step == 0) {
                         Button(onClick = onNext, enabled = introReady) { Text("次へ") }
                     } else if (step == 2) {
-                        Button(onClick = onFinish) { Text("わかった") }
+                        Text(
+                            "話しかけてみてください…",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
                     } else {
                         Text(
                             "↓ 光っているボタンを押す",
@@ -764,30 +775,6 @@ internal fun EmmaSettingsScreen(
                         }
                     }
 
-                    Text("AIの声：Kitten TTS Nano / Kiki", style = MaterialTheme.typography.titleSmall)
-                    if (kittenInstalled) {
-                        OutlinedButton(
-                            onClick = if (previewing) onStopPreview else onPreview,
-                            enabled = enabled || previewing,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(if (previewing) "試聴を停止" else "Kikiの声を試聴")
-                        }
-                    } else {
-                        OutlinedButton(
-                            onClick = onPrepareLite,
-                            enabled = enabled,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text("Moonshine + Kittenを準備") }
-                    }
-
-                    lastSpeechMillis?.let {
-                        Text(
-                            "直近の音声開始：${it}ms",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
                 }
             }
 
@@ -818,6 +805,12 @@ internal fun EmmaSettingsScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
+                "隠し設定を開くには、下の「みつことば Android」を5回タップしてください。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Text(
                 "みつことば Android",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -841,10 +834,35 @@ internal fun EmmaSettingsScreen(
                     ) {
                         Text("開発者設定", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            "Web版の隠し設定と同じ完全リセットです。",
+                            "診断・音声試聴・完全リセットなど、通常利用では不要な項目です。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+
+                        Text("AI音声の試聴", style = MaterialTheme.typography.titleSmall)
+                        if (kittenInstalled) {
+                            OutlinedButton(
+                                onClick = if (previewing) onStopPreview else onPreview,
+                                enabled = enabled || previewing,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(if (previewing) "試聴を停止" else "Kikiの声を試聴")
+                            }
+                        } else {
+                            Text(
+                                "Kitten TTSが未準備のため試聴できません。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        lastSpeechMillis?.let {
+                            Text(
+                                "直近の音声開始：${it}ms",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+
                         OutlinedButton(
                             onClick = { resetConfirmOpen = true },
                             enabled = enabled,
