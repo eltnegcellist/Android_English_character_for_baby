@@ -256,7 +256,7 @@ private fun EmmaTutorialDialog(
     onFinish: () -> Unit,
 ) {
     val title = when (step) {
-        0 -> "1 / 3　$aiNameと会おう"
+        0 -> "1 / 3　${aiName}と会おう"
         1 -> "2 / 3　セッションを始めよう"
         else -> "3 / 3　話しかけてみよう"
     }
@@ -275,9 +275,9 @@ private fun EmmaTutorialDialog(
                 if (step == 0) {
                     Text(
                         if (introReady) {
-                            "$aiNameの自己紹介が終わりました。「次へ」で使い方を見ていきます。"
+                            "${aiName}の自己紹介が終わりました。「次へ」で使い方を見ていきます。"
                         } else {
-                            "$aiNameが自己紹介を準備しています…"
+                            "${aiName}が自己紹介を準備しています…"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
