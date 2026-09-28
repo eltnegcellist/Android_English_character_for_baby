@@ -190,38 +190,32 @@ internal fun FirstRunOnboardingScreen(
                 onAiNameChange = onAiNameChange,
             )
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(1.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Text("音声認識", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            if (startWithTiny) {
-                                "Moonshine Tiny（軽量）で始めます。Smallより聞き取り精度は下がりますが、モデルサイズを抑えられます。"
-                            } else {
-                                "Moonshine Small（推奨）で始めます。初期設定ではこちらをおすすめします。"
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Tiny", style = MaterialTheme.typography.labelMedium)
-                        Switch(
-                            checked = startWithTiny,
-                            onCheckedChange = onStartWithTinyChange,
-                            enabled = !busy,
-                        )
-                    }
+                    Text(
+                        "軽量設定：Moonshine Tiny",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    Text(
+                        "必要ならTinyで開始（通常はSmall推奨）",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
+                Switch(
+                    checked = startWithTiny,
+                    onCheckedChange = onStartWithTinyChange,
+                    enabled = !busy,
+                )
             }
 
             Card(modifier = Modifier.fillMaxWidth()) {
