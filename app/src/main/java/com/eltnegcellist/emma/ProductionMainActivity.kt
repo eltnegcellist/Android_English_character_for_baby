@@ -1194,7 +1194,7 @@ private fun ProductionEmmaApp() {
             },
             onPrepare = { startFirstRunSetup(onboardingMode) },
             onOpenAbout = { aboutOpen = true },
-        )       )
+        )
     } else if (liteSetupBusy) {
         LiteModelInstallDialog(
             phase = liteSetupPhase,
