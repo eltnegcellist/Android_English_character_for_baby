@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.10-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.11-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -121,7 +121,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.10
+          name: Mitsukotoba-v1.9.11
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.10"
+          TAG="mitsukotoba-v1.9.11"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -155,5 +155,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.10" \
-            --notes "Mitsukotoba v1.9.10 replaces the popup tutorial with a coach-mark tutorial on the real conversation screen. The rest of the screen is dimmed while Emma, the actual 3-person start button, and the manual reply button are highlighted with a pulsing spotlight in sequence. The real start button advances the tutorial and begins recording. The tutorial remains first-run-only by default and can still be replayed from Settings. v1.9.9 fixed face animation frames, lip sync, blinking, setup flow, Tiny placement, collapsed name settings, safe status-bar insets, speaker-label stripping and hidden full reset remain intact."
+            --title "みつことば v1.9.11" \
+            --notes "Mitsukotoba v1.9.11 refines the coach-mark tutorial and avatar animation. Tutorial step 1 moves its explanation above Emma so the face stays visible. Step 3 now requires the user to actually speak; after speech is detected, Emma responds once and the tutorial completes automatically when TTS finishes. Kiki voice preview moves into the five-tap hidden developer settings, and Settings now explains how to reveal them. Emma now blinks during both idle and speaking states using dedicated half-eye and closed-eye frames for each Small/Medium/Large lip-sync mouth size, preserving PCM mouth animation through the blink. v1.9.10 spotlight tutorial behavior and v1.9.9 face-frame architecture remain intact."

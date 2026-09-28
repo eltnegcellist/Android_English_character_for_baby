@@ -31,7 +31,8 @@ import kotlin.random.Random
 private enum class BlinkFrame { OPEN, HALF, CLOSED }
 
 /**
- * Emma's live face uses six pre-drawn, pixel-aligned expression frames.
+ * Emma's live face uses pre-drawn, pixel-aligned expression frames, including
+ * dedicated half-blink and closed-eye frames for each speaking mouth size.
  * No eye or mouth is painted over a source image, so facial geometry cannot drift.
  */
 @Composable
@@ -56,9 +57,8 @@ internal fun CompactEmmaAvatar(
 
     var blinkFrame by remember { mutableStateOf(BlinkFrame.OPEN) }
 
-    LaunchedEffect(state) {
+    LaunchedEffect(Unit) {
         blinkFrame = BlinkFrame.OPEN
-        if (state == EmmaVisualState.SPEAKING) return@LaunchedEffect
         while (true) {
             delay(Random.nextLong(2800L, 5000L))
             blinkFrame = BlinkFrame.HALF
@@ -72,9 +72,27 @@ internal fun CompactEmmaAvatar(
     }
 
     val faceRes = when {
-        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.58f -> R.drawable.emma_face_talk_large
-        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.25f -> R.drawable.emma_face_talk_medium
-        state == EmmaVisualState.SPEAKING -> R.drawable.emma_face_talk_small
+        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.58f && blinkFrame == BlinkFrame.CLOSED ->
+            R.drawable.emma_face_talk_large_closed
+        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.58f && blinkFrame == BlinkFrame.HALF ->
+            R.drawable.emma_face_talk_large_half
+        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.58f ->
+            R.drawable.emma_face_talk_large
+
+        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.25f && blinkFrame == BlinkFrame.CLOSED ->
+            R.drawable.emma_face_talk_medium_closed
+        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.25f && blinkFrame == BlinkFrame.HALF ->
+            R.drawable.emma_face_talk_medium_half
+        state == EmmaVisualState.SPEAKING && mouthLevel >= 0.25f ->
+            R.drawable.emma_face_talk_medium
+
+        state == EmmaVisualState.SPEAKING && blinkFrame == BlinkFrame.CLOSED ->
+            R.drawable.emma_face_talk_small_closed
+        state == EmmaVisualState.SPEAKING && blinkFrame == BlinkFrame.HALF ->
+            R.drawable.emma_face_talk_small_half
+        state == EmmaVisualState.SPEAKING ->
+            R.drawable.emma_face_talk_small
+
         state == EmmaVisualState.UNDERSTOOD -> R.drawable.emma_face_idle_closed
         blinkFrame == BlinkFrame.CLOSED -> R.drawable.emma_face_idle_closed
         blinkFrame == BlinkFrame.HALF -> R.drawable.emma_face_idle_half
