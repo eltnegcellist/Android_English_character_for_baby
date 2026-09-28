@@ -19,7 +19,7 @@ import kotlin.math.max
 
 class KittenSpeaker(
     private val context: Context,
-    private val onDone: (Long, Long) -> Unit,
+    private val onDone: (Long, Long, Long) -> Unit,
     private val onError: (String) -> Unit,
     private val onAmplitude: (Float) -> Unit = {},
 ) {
@@ -75,13 +75,13 @@ class KittenSpeaker(
                     "voice=Kiki sid=$KIKI_SPEAKER_ID speed=$KITTEN_SPEED chars=${text.length} " +
                         "samples=${pcm.size} generationMs=$generationMs firstAudioMs=$firstAudioMs totalMs=$totalMs",
                 )
-                firstAudioMs to totalMs
+                Triple(firstAudioMs, generationMs, totalMs)
             }.onSuccess { value ->
                 main.post {
                     if (!closed && requestId == id) {
                         requestId = null
                         onAmplitude(0f)
-                        onDone(value.first, value.second)
+                        onDone(value.first, value.second, value.third)
                     }
                 }
             }.onFailure { error ->
@@ -223,7 +223,7 @@ class KittenSpeaker(
         }
     }
 
-    private companion object {
+    companion object {
         const val KIKI_SPEAKER_ID = 7
         const val KITTEN_SPEED = 0.8f
         const val THREADS = 2
@@ -232,7 +232,7 @@ class KittenSpeaker(
         const val TTS_TARGET_PEAK = 0.92f
         const val TTS_MAX_VOLUME_BOOST = 1.8f
 
-        fun toPcm16(samples: FloatArray): ShortArray {
+        private fun toPcm16(samples: FloatArray): ShortArray {
             var peak = 0f
             for (sample in samples) {
                 peak = max(peak, abs(sample))
@@ -247,7 +247,7 @@ class KittenSpeaker(
             }
         }
 
-        fun chunkAmplitude(samples: ShortArray, offset: Int, count: Int): Float {
+        private fun chunkAmplitude(samples: ShortArray, offset: Int, count: Int): Float {
             if (count <= 0) return 0f
             var peak = 0
             val end = minOf(samples.size, offset + count)
