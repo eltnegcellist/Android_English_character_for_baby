@@ -1317,6 +1317,16 @@ private fun ProductionEmmaApp() {
             },
             onExportDiagnostics = { diagnosticsExporter.launch("emma-beta13-diagnostics.txt") },
             onExportCrashDetails = { crashDetailsExporter.launch("emma-beta13-crash-details.zip") },
+            onOpenTutorial = {
+                stopSession()
+                settingsOpen = false
+                screenIntroductionPlayed = false
+                screenIntroductionPlaying = false
+                tutorialStep = 0
+                autoStartPending = false
+                status = ProductionEmmaStatus.IDLE
+                statusMessage = "使い方を3ステップで確認しましょう。"
+            },
             onResetAllData = {
                 stopSession()
                 runCatching {
