@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -70,13 +71,29 @@ internal fun EmmaHomeScreen(
     onStopSession: () -> Unit,
     onToggleAutoRespond: (Boolean) -> Unit,
     onManualRespond: () -> Unit,
+    tutorialStep: Int?,
+    onTutorialNext: () -> Unit,
+    onTutorialStartSession: () -> Unit,
+    onTutorialFinish: () -> Unit,
 ) {
+    if (tutorialStep != null) {
+        EmmaTutorialDialog(
+            step = tutorialStep,
+            onNext = onTutorialNext,
+            onStartSession = onTutorialStartSession,
+            onFinish = onTutorialFinish,
+        )
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 2.dp) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
@@ -224,6 +241,54 @@ internal fun EmmaHomeScreen(
             Spacer(Modifier.height(8.dp))
         }
     }
+}
+
+@Composable
+private fun EmmaTutorialDialog(
+    step: Int,
+    onNext: () -> Unit,
+    onStartSession: () -> Unit,
+    onFinish: () -> Unit,
+) {
+    val title = when (step) {
+        0 -> "1 / 3　Emmaと会おう"
+        1 -> "2 / 3　セッションを始めよう"
+        else -> "3 / 3　話しかけてみよう"
+    }
+    val message = when (step) {
+        0 -> "最初にEmmaが声で自己紹介します。これ以降、通常の返答では毎回名乗りません。"
+        1 -> "画面下の「3人で話す」が会話の開始ボタンです。ここから開始すると、マイクで聞き取りを始めます。"
+        else -> "「聞いています」と表示されたら、赤ちゃんへ普段どおり日本語で話しかけてください。自動返事をOFFにしたときは「ここで返事して」でAIに返答させられます。"
+    }
+
+    AlertDialog(
+        onDismissRequest = {},
+        title = { Text(title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(message)
+                if (step == 0) {
+                    Text(
+                        "Emmaの自己紹介が聞こえたら「次へ」を押してください。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            when (step) {
+                0 -> Button(onClick = onNext) { Text("次へ") }
+                1 -> Button(onClick = onStartSession) { Text("3人で話す（開始）") }
+                else -> Button(onClick = onFinish) { Text("使ってみる") }
+            }
+        },
+        dismissButton = {
+            if (step < 2) {
+                TextButton(onClick = onFinish) { Text("スキップ") }
+            }
+        },
+    )
 }
 
 @Composable
@@ -392,6 +457,7 @@ internal fun EmmaSettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp, vertical = 14.dp),
