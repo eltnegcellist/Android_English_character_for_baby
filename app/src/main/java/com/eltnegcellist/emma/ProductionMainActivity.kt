@@ -126,6 +126,11 @@ private fun ProductionEmmaApp() {
     var onboardingOpen by remember {
         mutableStateOf(!preferences.getBoolean("onboarding_completed_v4", false))
     }
+    var tutorialStep by remember {
+        mutableStateOf<Int?>(
+            if (!onboardingOpen && !preferences.getBoolean("tutorial_completed_v1", false)) 0 else null,
+        )
+    }
     var firstRunBusy by remember { mutableStateOf(false) }
     var firstRunReady by remember { mutableStateOf(false) }
     var firstRunPhase by remember { mutableStateOf("") }
@@ -149,7 +154,7 @@ private fun ProductionEmmaApp() {
     }
     var latestEmmaText by remember { mutableStateOf("") }
     var recording by remember { mutableStateOf(false) }
-    var autoStartPending by remember { mutableStateOf(!onboardingOpen) }
+    var autoStartPending by remember { mutableStateOf(!onboardingOpen && tutorialStep == null) }
     var pendingStartAfterPermission by remember { mutableStateOf(false) }
     var modelPresent by remember {
         mutableStateOf(
@@ -1016,10 +1021,17 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    LaunchedEffect(modelReady, onboardingOpen, screenIntroductionPlayed, screenIntroductionPlaying) {
+    LaunchedEffect(
+        modelReady,
+        onboardingOpen,
+        tutorialStep,
+        screenIntroductionPlayed,
+        screenIntroductionPlaying,
+    ) {
         if (
             modelReady &&
             !onboardingOpen &&
+            tutorialStep == 0 &&
             !screenIntroductionPlayed &&
             !screenIntroductionPlaying
         ) {
@@ -1034,14 +1046,13 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    LaunchedEffect(modelReady, onboardingOpen, screenIntroductionPlayed, screenIntroductionPlaying) {
+    LaunchedEffect(modelReady, onboardingOpen, tutorialStep) {
         if (
             modelReady &&
             !onboardingOpen &&
+            tutorialStep == null &&
             autoStartPending &&
-            !recording &&
-            screenIntroductionPlayed &&
-            !screenIntroductionPlaying
+            !recording
         ) {
             autoStartPending = false
             startSession()
@@ -1182,9 +1193,11 @@ private fun ProductionEmmaApp() {
                         .remove("voice_backend")
                         .apply()
                     onboardingOpen = false
-                    autoStartPending = true
+                    tutorialStep = 0
+                    screenIntroductionPlayed = false
+                    autoStartPending = false
                     status = ProductionEmmaStatus.IDLE
-                    statusMessage = "みつことば ${engineMode.label}を始めます。"
+                    statusMessage = "使い方を3ステップで確認しましょう。"
                 }
             },
         )
@@ -1352,6 +1365,19 @@ private fun ProductionEmmaApp() {
                 }
             },
             onManualRespond = { askEmma(automatic = false) },
+            tutorialStep = tutorialStep,
+            onTutorialNext = {
+                if (tutorialStep == 0) tutorialStep = 1
+            },
+            onTutorialStartSession = {
+                tutorialStep = 2
+                startSession()
+            },
+            onTutorialFinish = {
+                preferences.edit().putBoolean("tutorial_completed_v1", true).apply()
+                tutorialStep = null
+                autoStartPending = false
+            },
         )
 
         if (parentFullPromptOpen) {
