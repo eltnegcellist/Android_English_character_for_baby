@@ -105,7 +105,7 @@ internal fun FirstRunOnboardingScreen(
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        "名前は $resolvedAiName。会話画面を開くと最初に自己紹介します。",
+                        "名前は $resolvedAiName。初回チュートリアルの中で声で自己紹介します。",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
