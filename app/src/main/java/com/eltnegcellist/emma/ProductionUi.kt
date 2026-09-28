@@ -54,6 +54,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.eltnegcellist.emma.ai.AudienceMode
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
+import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.ui.CompactEmmaAvatar
 import com.eltnegcellist.emma.ui.EmmaColorMode
@@ -525,6 +526,10 @@ internal fun EmmaSettingsScreen(
     kittenInstalled: Boolean,
     gemmaInstalled: Boolean,
     lastSpeechMillis: Long?,
+    lastTtsGenerationMillis: Long?,
+    lastTtsTotalMillis: Long?,
+    lastEndpointToTtsRequestMillis: Long?,
+    lastEndpointToFirstAudioMillis: Long?,
     engineMode: ConversationEngineMode,
     asrModel: MoonshineAsrModel,
     keepScreenOn: Boolean,
@@ -701,25 +706,12 @@ internal fun EmmaSettingsScreen(
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("みつことば ${engineMode.label}", style = MaterialTheme.typography.titleMedium)
-
-                    val editionReady = modelReady && kittenInstalled
-
-                    if (editionReady) {
-                        Text("準備完了", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-                        Text(
-                            when (engineMode) {
-                                ConversationEngineMode.LITE ->
-                                    "Moonshine 日本語${asrModel.shortLabel}で聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
-                                ConversationEngineMode.FULL ->
-                                    "Moonshine 日本語${asrModel.shortLabel}の文字起こしと元音声をGemmaが会話履歴と一緒に受け取り、Kitten TTS Nano / Kikiで話します。"
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    } else {
-                        Text("初回だけ、このエディションに必要なデータを準備します。", style = MaterialTheme.typography.bodyMedium)
+            val editionReady = modelReady && kittenInstalled
+            if (!editionReady) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("みつことば ${engineMode.label}の再準備", style = MaterialTheme.typography.titleMedium)
+                        Text("必要なモデルが不足しているため、ここから再準備できます。", style = MaterialTheme.typography.bodyMedium)
 
                         when (engineMode) {
                             ConversationEngineMode.LITE -> {
@@ -774,7 +766,6 @@ internal fun EmmaSettingsScreen(
                             }
                         }
                     }
-
                 }
             }
 
@@ -839,7 +830,7 @@ internal fun EmmaSettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
 
-                        Text("AI音声の試聴", style = MaterialTheme.typography.titleSmall)
+                        Text("AI音声の試聴・診断", style = MaterialTheme.typography.titleSmall)
                         if (kittenInstalled) {
                             OutlinedButton(
                                 onClick = if (previewing) onStopPreview else onPreview,
@@ -855,13 +846,49 @@ internal fun EmmaSettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        lastSpeechMillis?.let {
-                            Text(
-                                "直近の音声開始：${it}ms",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+
+                        Text(
+                            "固定パラメータ",
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Text(
+                            "Model: Kitten TTS Nano FP32\n" +
+                                "Voice: Kiki (sid ${KittenSpeaker.KIKI_SPEAKER_ID})\n" +
+                                "Speed: ${KittenSpeaker.KITTEN_SPEED}\n" +
+                                "Threads: ${KittenSpeaker.THREADS}\n" +
+                                "Target peak: ${KittenSpeaker.TTS_TARGET_PEAK}\n" +
+                                "Max volume boost: ${KittenSpeaker.TTS_MAX_VOLUME_BOOST}x\n" +
+                                "Playback chunk: ${KittenSpeaker.PLAYBACK_CHUNK_SAMPLES} samples",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Text(
+                            "直近の実測",
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Text(
+                            buildString {
+                                append("Kitten生成: ")
+                                append(lastTtsGenerationMillis?.let { "${it}ms" } ?: "未計測")
+                                append("\nKitten→初音: ")
+                                append(lastSpeechMillis?.let { "${it}ms" } ?: "未計測")
+                                append("\nTTS全体: ")
+                                append(lastTtsTotalMillis?.let { "${it}ms" } ?: "未計測")
+                                append("\n発話終了→TTS要求: ")
+                                append(lastEndpointToTtsRequestMillis?.let { "${it}ms" } ?: "試聴では未計測")
+                                append("\n発話終了→初音: ")
+                                append(lastEndpointToFirstAudioMillis?.let { "${it}ms" } ?: "試聴では未計測")
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Text(
+                            "試聴ではKitten生成・初音・TTS全体を確認できます。発話終了からの2項目は、通常会話を1回行うと更新されます。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
 
                         OutlinedButton(
                             onClick = { resetConfirmOpen = true },
