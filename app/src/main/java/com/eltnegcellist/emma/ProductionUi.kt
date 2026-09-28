@@ -439,6 +439,7 @@ internal fun EmmaSettingsScreen(
     var developerTapCount by remember { mutableStateOf(0) }
     var developerToolsVisible by remember { mutableStateOf(false) }
     var resetConfirmOpen by remember { mutableStateOf(false) }
+    var familySettingsOpen by remember { mutableStateOf(false) }
 
     if (resetConfirmOpen) {
         AlertDialog(
@@ -488,11 +489,20 @@ internal fun EmmaSettingsScreen(
                 TextButton(onClick = onOpenAbout) { Text("英語学習に使える理由") }
             }
 
-            ProductionFamilySettings(
+            OutlinedButton(
+                onClick = { familySettingsOpen = !familySettingsOpen },
                 enabled = enabled,
-                aiName = aiName,
-                onAiNameChange = onAiNameChange,
-            )
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(if (familySettingsOpen) "赤ちゃん・AIの名前設定を閉じる ▲" else "赤ちゃん・AIの名前を設定 ▼")
+            }
+            if (familySettingsOpen) {
+                ProductionFamilySettings(
+                    enabled = enabled,
+                    aiName = aiName,
+                    onAiNameChange = onAiNameChange,
+                )
+            }
             AppearanceSettings(enabled = enabled)
 
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -544,44 +554,42 @@ internal fun EmmaSettingsScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        if (option == ConversationEngineMode.LITE) {
+                            Text("音声認識", style = MaterialTheme.typography.titleSmall)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                MoonshineAsrModel.entries.forEach { asrOption ->
+                                    if (asrModel == asrOption) {
+                                        Button(
+                                            onClick = {},
+                                            enabled = enabled,
+                                            modifier = Modifier.weight(1f),
+                                        ) { Text(asrOption.label) }
+                                    } else {
+                                        OutlinedButton(
+                                            onClick = { onAsrModel(asrOption) },
+                                            enabled = enabled,
+                                            modifier = Modifier.weight(1f),
+                                        ) { Text(asrOption.label) }
+                                    }
+                                }
+                            }
+                            Text(
+                                if (asrModel == MoonshineAsrModel.SMALL) {
+                                    "Small推奨。Tinyは軽さを優先したい場合に選べます。"
+                                } else {
+                                    "Tiny（軽量）を使用中。Fullでも同じ音声認識設定を使います。"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("音声認識", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "Moonshine Tiny / Small を選べます。現在の標準はSmallです。Tinyは軽さを優先したい場合に選べます。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    MoonshineAsrModel.entries.forEach { option ->
-                        if (asrModel == option) {
-                            Button(
-                                onClick = {},
-                                enabled = enabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("${option.label}（選択中）") }
-                        } else {
-                            OutlinedButton(
-                                onClick = { onAsrModel(option) },
-                                enabled = enabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("${option.label}に切り替える") }
-                        }
-                    }
-                    Text(
-                        if (asrModel == MoonshineAsrModel.SMALL) {
-                            "Smallは追加データが必要です。Tinyより高精度な場合がありますが、常に正確とは限りません。"
-                        } else {
-                            "Tinyは軽量です。Smallより聞き取りを誤りやすい場合があるため、モデルサイズを優先したい場合に使います。"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("みつことば ${engineMode.label}", style = MaterialTheme.typography.titleMedium)

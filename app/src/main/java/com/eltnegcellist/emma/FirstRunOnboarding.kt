@@ -19,6 +19,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -43,9 +47,9 @@ internal fun FirstRunOnboardingScreen(
     onModeSelected: (ConversationEngineMode) -> Unit,
     onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
-    onStartEmma: () -> Unit,
 ) {
     val resolvedAiName = AiCharacterName.resolve(aiName)
+    var familySettingsOpen by remember { mutableStateOf(false) }
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
             modifier = Modifier
@@ -175,46 +179,43 @@ internal fun FirstRunOnboardingScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             ) { Text("このモードを選ぶ") }
                         }
+                        if (option == ConversationEngineMode.LITE) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text("Moonshine Tiny（軽量）", style = MaterialTheme.typography.labelLarge)
+                                    Text(
+                                        "通常はSmall推奨。必要な場合だけTinyで開始します。",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Switch(
+                                    checked = startWithTiny,
+                                    onCheckedChange = onStartWithTinyChange,
+                                    enabled = !busy,
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-            Text(
-                "家族とAIの設定（任意）",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            ProductionFamilySettings(
+            OutlinedButton(
+                onClick = { familySettingsOpen = !familySettingsOpen },
                 enabled = !busy,
-                aiName = aiName,
-                onAiNameChange = onAiNameChange,
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(1.dp),
-                ) {
-                    Text(
-                        "軽量設定：Moonshine Tiny",
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                    Text(
-                        "必要ならTinyで開始（通常はSmall推奨）",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = startWithTiny,
-                    onCheckedChange = onStartWithTinyChange,
+                Text(if (familySettingsOpen) "赤ちゃん・AIの名前設定を閉じる ▲" else "赤ちゃん・AIの名前を設定（任意） ▼")
+            }
+            if (familySettingsOpen) {
+                ProductionFamilySettings(
                     enabled = !busy,
+                    aiName = aiName,
+                    onAiNameChange = onAiNameChange,
                 )
             }
 
@@ -254,24 +255,10 @@ internal fun FirstRunOnboardingScreen(
                 }
 
                 ready -> {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text("準備できました", style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                "みつことば ${selectedMode.label}を始められます。",
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
-                    }
-                    Button(
-                        onClick = onStartEmma,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text("3人で話しはじめる")
-                    }
+                    Text(
+                        "準備が完了しました。チュートリアルへ移動します…",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
 
                 else -> {

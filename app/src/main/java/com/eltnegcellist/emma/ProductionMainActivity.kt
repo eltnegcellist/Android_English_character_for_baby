@@ -692,8 +692,17 @@ private fun ProductionEmmaApp() {
                     firstRunReady = true
                     firstRunProgressPercent = 100
                     firstRunPhase = "準備できました"
+                    preferences.edit()
+                        .putBoolean("onboarding_completed_v4", true)
+                        .putString("conversation_engine_mode", selectedMode.savedValue)
+                        .remove("voice_backend")
+                        .apply()
+                    onboardingOpen = false
+                    tutorialStep = 0
+                    screenIntroductionPlayed = false
+                    autoStartPending = false
                     status = ProductionEmmaStatus.IDLE
-                    statusMessage = "みつことば ${selectedMode.label}の初期設定が完了しました。"
+                    statusMessage = "使い方を3ステップで確認しましょう。"
                 }
             }.onFailure { error ->
                 mainHandler.post {
@@ -1185,22 +1194,7 @@ private fun ProductionEmmaApp() {
             },
             onPrepare = { startFirstRunSetup(onboardingMode) },
             onOpenAbout = { aboutOpen = true },
-            onStartEmma = {
-                if (!firstRunBusy && firstRunReady) {
-                    preferences.edit()
-                        .putBoolean("onboarding_completed_v4", true)
-                        .putString("conversation_engine_mode", engineMode.savedValue)
-                        .remove("voice_backend")
-                        .apply()
-                    onboardingOpen = false
-                    tutorialStep = 0
-                    screenIntroductionPlayed = false
-                    autoStartPending = false
-                    status = ProductionEmmaStatus.IDLE
-                    statusMessage = "使い方を3ステップで確認しましょう。"
-                }
-            },
-        )
+        )       )
     } else if (liteSetupBusy) {
         LiteModelInstallDialog(
             phase = liteSetupPhase,

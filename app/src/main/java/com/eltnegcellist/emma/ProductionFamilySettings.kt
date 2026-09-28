@@ -70,7 +70,7 @@ internal fun ProductionFamilySettings(
                 },
             )
             Text(
-                "会話を始めた最初の返答で「Hi, I'm ${AiCharacterName.resolve(aiName)}.」と名乗ります。",
+                "初回チュートリアルで「Hi, I'm ${AiCharacterName.resolve(aiName)}.」と自己紹介します。通常会話では毎回名乗りません。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
