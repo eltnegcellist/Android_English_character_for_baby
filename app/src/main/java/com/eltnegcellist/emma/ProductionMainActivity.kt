@@ -1366,6 +1366,7 @@ private fun ProductionEmmaApp() {
             },
             onManualRespond = { askEmma(automatic = false) },
             tutorialStep = tutorialStep,
+            tutorialIntroReady = screenIntroductionPlayed,
             onTutorialNext = {
                 if (tutorialStep == 0) tutorialStep = 1
             },
