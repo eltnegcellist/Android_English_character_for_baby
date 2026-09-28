@@ -1,6 +1,12 @@
 package com.eltnegcellist.emma
 
 import android.content.Context
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +40,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -77,18 +89,11 @@ internal fun EmmaHomeScreen(
     onTutorialStartSession: () -> Unit,
     onTutorialFinish: () -> Unit,
 ) {
-    if (tutorialStep != null) {
-        EmmaTutorialDialog(
-            step = tutorialStep,
-            aiName = aiName,
-            introReady = tutorialIntroReady,
-            onNext = onTutorialNext,
-            onStartSession = onTutorialStartSession,
-            onFinish = onTutorialFinish,
-        )
-    }
+    var tutorialAvatarBounds by remember { mutableStateOf<Rect?>(null) }
+    var tutorialActionBounds by remember { mutableStateOf<Rect?>(null) }
 
-    Scaffold(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 2.dp) {
@@ -120,16 +125,20 @@ internal fun EmmaHomeScreen(
                 ) {
                     if (recording) {
                         OutlinedButton(
-                            onClick = onManualRespond,
+                            onClick = if (tutorialStep == 2) onTutorialFinish else onManualRespond,
                             enabled = modelReady && !busy,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                         ) { Text("ここで返事して") }
                     }
                     if (!recording) {
                         Button(
-                            onClick = onStartSession,
+                            onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
                             enabled = modelReady && !busy,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                         ) { Text("3人で話す") }
                     } else {
                         OutlinedButton(
@@ -177,7 +186,9 @@ internal fun EmmaHomeScreen(
             CompactEmmaAvatar(
                 state = visualState,
                 mouthLevel = mouthLevel,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { tutorialAvatarBounds = it.boundsInRoot() },
             )
             Surface(
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
@@ -243,61 +254,150 @@ internal fun EmmaHomeScreen(
 
             Spacer(Modifier.height(8.dp))
         }
+        }
+
+        if (tutorialStep != null) {
+            EmmaCoachMarkOverlay(
+                step = tutorialStep,
+                aiName = aiName,
+                introReady = tutorialIntroReady,
+                targetBounds = if (tutorialStep == 0) tutorialAvatarBounds else tutorialActionBounds,
+                onNext = onTutorialNext,
+                onFinish = onTutorialFinish,
+            )
+        }
     }
 }
 
 @Composable
-private fun EmmaTutorialDialog(
+private fun EmmaCoachMarkOverlay(
     step: Int,
     aiName: String,
     introReady: Boolean,
+    targetBounds: Rect?,
     onNext: () -> Unit,
-    onStartSession: () -> Unit,
     onFinish: () -> Unit,
 ) {
-    val title = when (step) {
-        0 -> "1 / 3　${aiName}と会おう"
-        1 -> "2 / 3　セッションを始めよう"
-        else -> "3 / 3　話しかけてみよう"
-    }
-    val message = when (step) {
-        0 -> "最初にEmmaが声で自己紹介します。これ以降、通常の返答では毎回名乗りません。"
-        1 -> "画面下の「3人で話す」が会話の開始ボタンです。ここから開始すると、マイクで聞き取りを始めます。"
-        else -> "「聞いています」と表示されたら、赤ちゃんへ普段どおり日本語で話しかけてください。自動返事をOFFにしたときは「ここで返事して」でAIに返答させられます。"
-    }
+    val transition = rememberInfiniteTransition(label = "tutorial-spotlight")
+    val pulse by transition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(700),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "tutorial-spotlight-pulse",
+    )
 
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(message)
-                if (step == 0) {
-                    Text(
-                        if (introReady) {
-                            "${aiName}の自己紹介が終わりました。「次へ」で使い方を見ていきます。"
-                        } else {
-                            "${aiName}が自己紹介を準備しています…"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    Box(modifier = Modifier.fillMaxSize()) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val dim = Color.Black.copy(alpha = 0.68f)
+            val pad = 10.dp.toPx()
+            val target = targetBounds?.let {
+                Rect(
+                    left = (it.left - pad).coerceAtLeast(0f),
+                    top = (it.top - pad).coerceAtLeast(0f),
+                    right = (it.right + pad).coerceAtMost(size.width),
+                    bottom = (it.bottom + pad).coerceAtMost(size.height),
+                )
+            }
+
+            if (target == null) {
+                drawRect(dim)
+            } else {
+                if (target.top > 0f) {
+                    drawRect(dim, topLeft = Offset.Zero, size = Size(size.width, target.top))
+                }
+                if (target.bottom < size.height) {
+                    drawRect(
+                        dim,
+                        topLeft = Offset(0f, target.bottom),
+                        size = Size(size.width, size.height - target.bottom),
                     )
                 }
+                if (target.left > 0f) {
+                    drawRect(
+                        dim,
+                        topLeft = Offset(0f, target.top),
+                        size = Size(target.left, target.height),
+                    )
+                }
+                if (target.right < size.width) {
+                    drawRect(
+                        dim,
+                        topLeft = Offset(target.right, target.top),
+                        size = Size(size.width - target.right, target.height),
+                    )
+                }
+
+                drawRoundRect(
+                    color = Color(0xFFB67CFF).copy(alpha = 0.55f + pulse * 0.45f),
+                    topLeft = Offset(target.left, target.top),
+                    size = Size(target.width, target.height),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(22.dp.toPx(), 22.dp.toPx()),
+                    style = Stroke(width = (3.dp + 3.dp * pulse).toPx()),
+                )
             }
-        },
-        confirmButton = {
-            when (step) {
-                0 -> Button(onClick = onNext, enabled = introReady) { Text("次へ") }
-                1 -> Button(onClick = onStartSession) { Text("3人で話す（開始）") }
-                else -> Button(onClick = onFinish) { Text("使ってみる") }
+        }
+
+        Card(
+            modifier = Modifier
+                .align(if (step == 0) Alignment.BottomCenter else Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(
+                    start = 22.dp,
+                    end = 22.dp,
+                    top = if (step == 0) 0.dp else 86.dp,
+                    bottom = if (step == 0) 150.dp else 0.dp,
+                ),
+        ) {
+            Column(
+                modifier = Modifier.padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    when (step) {
+                        0 -> "1 / 3　$aiNameと会おう"
+                        1 -> "2 / 3　ここから会話を始めます"
+                        else -> "3 / 3　話しかけてみよう"
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    when (step) {
+                        0 -> if (introReady) {
+                            "$aiNameの自己紹介が終わりました。明るく表示されている顔が、赤ちゃんへ英語で話しかけます。"
+                        } else {
+                            "$aiNameが自己紹介しています。声が終わるまでそのまま聞いてください。"
+                        }
+                        1 -> "画面下で光っている「3人で話す」を実際に押してください。押すとマイクが始まり、会話を開始します。"
+                        else -> "「聞いています」と表示されたら、普段どおり日本語で赤ちゃんへ話しかけます。光っている「ここで返事して」は、手動でAIに返してほしい時のボタンです。自動返事ONなら普段は押さなくても大丈夫です。"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(onClick = onFinish) { Text("スキップ") }
+                    if (step == 0) {
+                        Button(onClick = onNext, enabled = introReady) { Text("次へ") }
+                    } else if (step == 2) {
+                        Button(onClick = onFinish) { Text("わかった") }
+                    } else {
+                        Text(
+                            "↓ 光っているボタンを押す",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
             }
-        },
-        dismissButton = {
-            if (step < 2) {
-                TextButton(onClick = onFinish) { Text("スキップ") }
-            }
-        },
-    )
+        }
+    }
 }
 
 @Composable
