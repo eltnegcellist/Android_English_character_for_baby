@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.clipToBounds
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -95,7 +96,8 @@ internal fun CompactEmmaAvatar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1.14f),
+            .aspectRatio(1.14f)
+            .clipToBounds(),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize()) {
