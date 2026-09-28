@@ -433,6 +433,7 @@ internal fun EmmaSettingsScreen(
     onKeepScreenOn: (Boolean) -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
+    onOpenTutorial: () -> Unit,
     onResetAllData: () -> Unit,
 ) {
     var developerTapCount by remember { mutableStateOf(0) }
@@ -692,6 +693,20 @@ internal fun EmmaSettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            OutlinedButton(
+                onClick = onOpenTutorial,
+                enabled = enabled,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("チュートリアルを見る")
+            }
+
+            Text(
+                "最初の使い方ガイドをもう一度表示します。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
             Spacer(Modifier.height(8.dp))
 
             Text(
