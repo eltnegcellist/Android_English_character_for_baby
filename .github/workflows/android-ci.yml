@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.7-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.8-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -121,7 +121,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.7
+          name: Mitsukotoba-v1.9.8
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.7"
+          TAG="mitsukotoba-v1.9.8"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -155,5 +155,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.7" \
-            --notes "Mitsukotoba v1.9.7 makes Emma face-first for baby engagement: the white-and-blue robot is cropped tightly around the head, with gentle gaze movement, natural blinking, listening pulse and PCM-linked mouth animation. A new three-step first-use tutorial now contains Emma's self-introduction and teaches how to start a session, speak naturally, and use manual reply. The tutorial runs automatically only once, but can be replayed any time from the bottom of Settings. The Tiny ASR option remains available but is visually de-emphasized. Home and Settings headers now respect Android status-bar insets so controls no longer overlap notification icons. v1.9.6 speaker-label stripping, hidden five-tap full reset, and local-only processing remain in place."
+            --title "みつことば v1.9.8" \
+            --notes "Mitsukotoba v1.9.8 keeps the face-first Emma tutorial experience from v1.9.7 and adds a Settings > tutorial replay action. The tutorial still appears automatically only once, but users can reopen it at any time; replay restarts Emma's spoken self-introduction and the same three-step guidance for starting a session, speaking naturally, and using manual reply. The large cropped robot face, gentle gaze/blink, compact Tiny option, safe status-bar insets, speaker-label stripping, and hidden five-tap full reset remain in place."
