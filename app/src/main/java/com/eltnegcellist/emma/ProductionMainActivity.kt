@@ -188,6 +188,10 @@ private fun ProductionEmmaApp() {
     var liteSetupPhase by remember { mutableStateOf("") }
     var liteSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
     var lastSpeechMillis by remember { mutableStateOf<Long?>(null) }
+    var lastTtsGenerationMillis by remember { mutableStateOf<Long?>(null) }
+    var lastTtsTotalMillis by remember { mutableStateOf<Long?>(null) }
+    var lastEndpointToTtsRequestMillis by remember { mutableStateOf<Long?>(null) }
+    var lastEndpointToFirstAudioMillis by remember { mutableStateOf<Long?>(null) }
     var endpointStartedNanos by remember { mutableStateOf<Long?>(null) }
     var ttsRequestedAfterEndpointMillis by remember { mutableStateOf<Long?>(null) }
     var lastNonverbalResponseAtMillis by remember { mutableStateOf(0L) }
@@ -238,11 +242,15 @@ private fun ProductionEmmaApp() {
     val kitten = remember {
         KittenSpeaker(
             context = context,
-            onDone = { firstAudioMillis, totalMillis ->
+            onDone = { firstAudioMillis, generationMillis, totalMillis ->
                 if (!disposed) {
                     mouthLevel = 0f
                     lastSpeechMillis = firstAudioMillis
+                    lastTtsGenerationMillis = generationMillis
+                    lastTtsTotalMillis = totalMillis
                     val queued = ttsRequestedAfterEndpointMillis
+                    lastEndpointToTtsRequestMillis = queued
+                    lastEndpointToFirstAudioMillis = queued?.plus(firstAudioMillis)
                     if (queued != null) {
                         DiagnosticStore.mark(
                             context,
@@ -299,6 +307,8 @@ private fun ProductionEmmaApp() {
 
     fun speakEmma(text: String): Boolean {
         lastSpeechMillis = null
+        lastTtsGenerationMillis = null
+        lastTtsTotalMillis = null
         ttsRequestedAfterEndpointMillis = endpointStartedNanos?.let { started ->
             (System.nanoTime() - started) / 1_000_000L
         }
@@ -1260,6 +1270,10 @@ private fun ProductionEmmaApp() {
             kittenInstalled = kittenInstalled,
             gemmaInstalled = GemmaModelStore.hasUsableModel(context),
             lastSpeechMillis = lastSpeechMillis,
+            lastTtsGenerationMillis = lastTtsGenerationMillis,
+            lastTtsTotalMillis = lastTtsTotalMillis,
+            lastEndpointToTtsRequestMillis = lastEndpointToTtsRequestMillis,
+            lastEndpointToFirstAudioMillis = lastEndpointToFirstAudioMillis,
             engineMode = engineMode,
             asrModel = asrModel,
             keepScreenOn = keepScreenOn,
