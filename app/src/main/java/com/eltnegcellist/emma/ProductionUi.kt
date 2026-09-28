@@ -72,6 +72,7 @@ internal fun EmmaHomeScreen(
     onToggleAutoRespond: (Boolean) -> Unit,
     onManualRespond: () -> Unit,
     tutorialStep: Int?,
+    tutorialIntroReady: Boolean,
     onTutorialNext: () -> Unit,
     onTutorialStartSession: () -> Unit,
     onTutorialFinish: () -> Unit,
@@ -79,6 +80,8 @@ internal fun EmmaHomeScreen(
     if (tutorialStep != null) {
         EmmaTutorialDialog(
             step = tutorialStep,
+            aiName = aiName,
+            introReady = tutorialIntroReady,
             onNext = onTutorialNext,
             onStartSession = onTutorialStartSession,
             onFinish = onTutorialFinish,
@@ -246,12 +249,14 @@ internal fun EmmaHomeScreen(
 @Composable
 private fun EmmaTutorialDialog(
     step: Int,
+    aiName: String,
+    introReady: Boolean,
     onNext: () -> Unit,
     onStartSession: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val title = when (step) {
-        0 -> "1 / 3　Emmaと会おう"
+        0 -> "1 / 3　$aiNameと会おう"
         1 -> "2 / 3　セッションを始めよう"
         else -> "3 / 3　話しかけてみよう"
     }
@@ -269,7 +274,11 @@ private fun EmmaTutorialDialog(
                 Text(message)
                 if (step == 0) {
                     Text(
-                        "Emmaの自己紹介が聞こえたら「次へ」を押してください。",
+                        if (introReady) {
+                            "$aiNameの自己紹介が終わりました。「次へ」で使い方を見ていきます。"
+                        } else {
+                            "$aiNameが自己紹介を準備しています…"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -278,7 +287,7 @@ private fun EmmaTutorialDialog(
         },
         confirmButton = {
             when (step) {
-                0 -> Button(onClick = onNext) { Text("次へ") }
+                0 -> Button(onClick = onNext, enabled = introReady) { Text("次へ") }
                 1 -> Button(onClick = onStartSession) { Text("3人で話す（開始）") }
                 else -> Button(onClick = onFinish) { Text("使ってみる") }
             }
