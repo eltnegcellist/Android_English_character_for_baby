@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.9-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.10-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -121,7 +121,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.9
+          name: Mitsukotoba-v1.9.10
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.9"
+          TAG="mitsukotoba-v1.9.10"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -155,5 +155,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.9" \
-            --notes "Mitsukotoba v1.9.9 replaces the misaligned Canvas eye/mouth overlay with six pixel-aligned pre-drawn vector face frames: neutral, half blink, closed blink, and three PCM-linked speaking mouth sizes. The face remains large for baby engagement while staying sharp at any screen density. First-run setup now moves directly into the tutorial without a second start button. Tiny is de-emphasized and placed directly under Mitsukotoba Lite, and baby/AI name settings are collapsed behind a single button to reduce scrolling. Tutorial replay, speaker-label stripping, safe status-bar insets and the hidden full reset remain in place."
+            --title "みつことば v1.9.10" \
+            --notes "Mitsukotoba v1.9.10 replaces the popup tutorial with a coach-mark tutorial on the real conversation screen. The rest of the screen is dimmed while Emma, the actual 3-person start button, and the manual reply button are highlighted with a pulsing spotlight in sequence. The real start button advances the tutorial and begins recording. The tutorial remains first-run-only by default and can still be replayed from Settings. v1.9.9 fixed face animation frames, lip sync, blinking, setup flow, Tiny placement, collapsed name settings, safe status-bar insets, speaker-label stripping and hidden full reset remain intact."
