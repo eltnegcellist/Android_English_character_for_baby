@@ -125,7 +125,7 @@ internal fun EmmaHomeScreen(
                 ) {
                     if (recording) {
                         OutlinedButton(
-                            onClick = if (tutorialStep == 2) onTutorialFinish else onManualRespond,
+                            onClick = onManualRespond,
                             enabled = modelReady && !busy,
                             modifier = Modifier
                                 .fillMaxWidth()
