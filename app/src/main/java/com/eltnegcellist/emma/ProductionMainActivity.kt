@@ -481,7 +481,7 @@ private fun ProductionEmmaApp() {
         onProgress: (String, Int?) -> Unit,
         onFinished: (Result<Unit>) -> Unit,
     ) {
-        EmmaWorkQueue.execute {
+        Thread({
             while (!disposed) {
                 val snapshot = ModelPreparationManager.snapshot(context)
                 if (snapshot.kind == kind && snapshot.asrModel == requestedAsr) {
@@ -498,12 +498,14 @@ private fun ProductionEmmaApp() {
                         mainHandler.post {
                             if (!disposed) onFinished(result)
                         }
-                        return@execute
+                        break
                     }
                 }
                 Thread.sleep(500L)
             }
-        }
+        }, "ModelPreparationMonitor").apply {
+            isDaemon = true
+        }.start()
     }
 
     fun startLiteAutomaticSetup() {
@@ -641,8 +643,12 @@ private fun ProductionEmmaApp() {
         fullSetupError = null
         fullSetupProgressPercent = 0
         fullSetupPhase = "Fullの準備を始めています…"
-        status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "みつことば Fullをバックグラウンドで準備しています…"
+        status = if (modelReady) ProductionEmmaStatus.IDLE else ProductionEmmaStatus.MODEL_IMPORTING
+        statusMessage = if (modelReady) {
+            "Fullをバックグラウンドで準備中です。Liteはそのまま使えます。"
+        } else {
+            "みつことば Fullをバックグラウンドで準備しています…"
+        }
 
         if (!ModelPreparationManager.start(context, ModelPreparationKind.FULL, requestedAsr)) {
             fullSetupBusy = false
@@ -1010,8 +1016,25 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    val busy = firstRunBusy || fullSetupBusy || liteSetupBusy || generating || status == ProductionEmmaStatus.MODEL_IMPORTING ||
-        status == ProductionEmmaStatus.MODEL_LOADING || status == ProductionEmmaStatus.THINKING || status == ProductionEmmaStatus.SPEAKING
+    val blockingModelPreparation = firstRunBusy || liteSetupBusy
+    val busy = blockingModelPreparation || generating ||
+        (status == ProductionEmmaStatus.MODEL_IMPORTING && !fullSetupBusy) ||
+        status == ProductionEmmaStatus.MODEL_LOADING ||
+        status == ProductionEmmaStatus.THINKING ||
+        status == ProductionEmmaStatus.SPEAKING
+
+    val backgroundPreparationActive =
+        (fullSetupBusy && !fullSetupOpen) || (liteSetupBusy && !liteSetupDialogOpen)
+    val backgroundPreparationPhase = when {
+        fullSetupBusy -> fullSetupPhase
+        liteSetupBusy -> liteSetupPhase
+        else -> ""
+    }
+    val backgroundPreparationPercent = when {
+        fullSetupBusy -> fullSetupProgressPercent
+        liteSetupBusy -> liteSetupProgressPercent
+        else -> null
+    }
 
     val visualState = when (status) {
         ProductionEmmaStatus.IDLE, ProductionEmmaStatus.MODEL_IMPORTING, ProductionEmmaStatus.MODEL_LOADING -> EmmaVisualState.IDLE
@@ -1230,6 +1253,9 @@ private fun ProductionEmmaApp() {
             latestEmmaText = latestEmmaText,
             aiName = resolvedAiName,
             engineMode = engineMode,
+            backgroundPreparationActive = backgroundPreparationActive,
+            backgroundPreparationPhase = backgroundPreparationPhase,
+            backgroundPreparationPercent = backgroundPreparationPercent,
             onRequestParentFull = { parentFullPromptOpen = true },
             onOpenAbout = { aboutOpen = true },
             onOpenSettings = {
