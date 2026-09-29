@@ -523,7 +523,36 @@ private fun ProductionEmmaApp() {
             liteSetupDialogOpen = false
             status = ProductionEmmaStatus.ERROR
             statusMessage = "別のモデル準備が進行中です。"
+            return
         }
+
+        monitorModelPreparation(
+            ModelPreparationKind.LITE,
+            requestedAsr,
+            onProgress = { phase, percent ->
+                liteSetupPhase = phase
+                liteSetupProgressPercent = percent
+                statusMessage = phase
+            },
+            onFinished = { result ->
+                liteSetupBusy = false
+                liteSetupDialogOpen = false
+                kittenInstalled = KittenModelStore.isInstalled(context)
+                modelPresent = modeModelsPresent(engineMode)
+                if (result.isSuccess) {
+                    if (kittenInstalled) kitten.resetModel()
+                    liteSetupProgressPercent = 100
+                    status = ProductionEmmaStatus.IDLE
+                    statusMessage = "音声モデルの準備ができました。"
+                    if (modelPresent) loadModel()
+                } else {
+                    liteSetupProgressPercent = null
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "音声モデルの準備に失敗しました。"
+                    settingsOpen = true
+                }
+            },
+        )
     }
 
     fun startFirstRunSetup(selectedMode: ConversationEngineMode) {
