@@ -648,7 +648,36 @@ private fun ProductionEmmaApp() {
             fullSetupBusy = false
             fullSetupError = "別のモデル準備が進行中です。"
             status = ProductionEmmaStatus.ERROR
+            return
         }
+
+        monitorModelPreparation(
+            ModelPreparationKind.FULL,
+            requestedAsr,
+            onProgress = { phase, percent ->
+                fullSetupPhase = phase
+                fullSetupProgressPercent = percent
+                statusMessage = phase
+            },
+            onFinished = { result ->
+                fullSetupBusy = false
+                kittenInstalled = KittenModelStore.isInstalled(context)
+                modelPresent = modeModelsPresent(ConversationEngineMode.FULL, requestedAsr)
+                if (result.isSuccess) {
+                    if (kittenInstalled) kitten.resetModel()
+                    fullSetupProgressPercent = 100
+                    fullSetupPhase = "Fullの準備ができました"
+                    fullSetupOpen = false
+                    fullSetupError = null
+                    activateEngineMode(ConversationEngineMode.FULL)
+                } else {
+                    fullSetupProgressPercent = null
+                    fullSetupError = "Fullの準備を完了できませんでした。通信環境と空き容量を確認してください。"
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = fullSetupError.orEmpty()
+                }
+            },
+        )
     }
 
     fun beginRecording() {
