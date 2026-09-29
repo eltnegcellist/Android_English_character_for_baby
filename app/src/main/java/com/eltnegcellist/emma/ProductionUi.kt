@@ -910,12 +910,17 @@ internal fun EmmaSettingsScreen(
 internal fun LiteModelInstallDialog(
     phase: String,
     progressPercent: Int?,
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
-        onDismissRequest = {},
-        confirmButton = {},
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("画面を閉じる")
+            }
+        },
         properties = DialogProperties(
-            dismissOnBackPress = false,
+            dismissOnBackPress = true,
             dismissOnClickOutside = false,
         ),
         title = {
@@ -935,7 +940,7 @@ internal fun LiteModelInstallDialog(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "インストール中のためお待ちください。完了するまでアプリを閉じたり、他の操作をしたりしないでください。",
+                    "他の画面に移動したり、アプリを閉じても準備は続きます。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
