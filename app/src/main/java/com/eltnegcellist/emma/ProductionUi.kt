@@ -77,6 +77,9 @@ internal fun EmmaHomeScreen(
     latestEmmaText: String,
     aiName: String,
     engineMode: ConversationEngineMode,
+    backgroundPreparationActive: Boolean,
+    backgroundPreparationPhase: String,
+    backgroundPreparationPercent: Int?,
     onRequestParentFull: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -176,6 +179,39 @@ internal fun EmmaHomeScreen(
                         Text("会話は外部へ送信しません", style = MaterialTheme.typography.bodySmall)
                     }
                     Text("●", color = MaterialTheme.colorScheme.primary)
+                }
+            }
+
+            if (backgroundPreparationActive) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f),
+                    shape = MaterialTheme.shapes.large,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            "モデルをバックグラウンドで準備中",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            backgroundPreparationPhase.ifBlank { "ダウンロードを続けています…" },
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            backgroundPreparationPercent?.let { "$it%" } ?: "進捗を確認中…",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            "この間も、準備済みのLite機能はそのまま使えます。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
 
