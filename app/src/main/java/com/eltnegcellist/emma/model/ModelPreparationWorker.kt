@@ -42,7 +42,7 @@ internal class ModelPreparationWorker(
             },
             onFailure = { error ->
                 if (runAttemptCount < 3) {
-                    ModelPreparationStateStore.queued(applicationContext, kind, asr)
+                    ModelPreparationStateStore.retrying(applicationContext, kind, asr)
                     Result.retry()
                 } else {
                     ModelPreparationStateStore.failed(
