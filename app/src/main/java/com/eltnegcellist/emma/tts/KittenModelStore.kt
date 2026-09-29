@@ -28,7 +28,9 @@ object KittenModelStore {
         context: Context,
         progress: (Int?) -> Unit,
     ): Result<Unit> = runCatching {
-        val archive = File(context.cacheDir, "$MODEL_NAME.auto-download.tar.bz2")
+        val downloadDir = File(context.filesDir, "model-downloads")
+        downloadDir.mkdirs()
+        val archive = File(downloadDir, "$MODEL_NAME.auto-download.tar.bz2")
         try {
             InAppModelDownloader.download(
                 url = MODEL_URL,
