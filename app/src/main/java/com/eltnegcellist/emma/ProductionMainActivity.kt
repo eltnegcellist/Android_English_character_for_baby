@@ -589,7 +589,47 @@ private fun ProductionEmmaApp() {
             firstRunBusy = false
             firstRunError = "別のモデル準備が進行中です。"
             status = ProductionEmmaStatus.ERROR
+            return
         }
+
+        monitorModelPreparation(
+            kind,
+            requestedAsr,
+            onProgress = { phase, percent ->
+                firstRunPhase = phase
+                firstRunProgressPercent = percent
+                statusMessage = phase
+            },
+            onFinished = { result ->
+                kittenInstalled = KittenModelStore.isInstalled(context)
+                modelPresent = modeModelsPresent(selectedMode, requestedAsr)
+                firstRunBusy = false
+                if (result.isSuccess) {
+                    if (kittenInstalled) kitten.resetModel()
+                    firstRunReady = true
+                    firstRunProgressPercent = 100
+                    firstRunPhase = "準備できました"
+                    preferences.edit()
+                        .putBoolean("onboarding_completed_v4", true)
+                        .putString("conversation_engine_mode", selectedMode.savedValue)
+                        .remove("voice_backend")
+                        .apply()
+                    onboardingOpen = false
+                    tutorialStep = 0
+                    screenIntroductionPlayed = false
+                    autoStartPending = false
+                    status = ProductionEmmaStatus.IDLE
+                    statusMessage = "モデルを起動しています…"
+                    if (modelPresent) loadModel()
+                } else {
+                    firstRunReady = false
+                    firstRunProgressPercent = null
+                    firstRunError = "初期設定を完了できませんでした。通信環境と空き容量を確認してください。"
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage = "みつことばの初期設定を完了できませんでした。"
+                }
+            },
+        )
     }
 
     fun startFullAutomaticSetup() {
