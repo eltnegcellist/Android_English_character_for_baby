@@ -911,7 +911,7 @@ private fun ProductionEmmaApp() {
             return
         }
 
-        val minimumSeconds = if (automatic) 0.35 else 0.20
+        val minimumSeconds = if (automatic) 0.45 else 0.8
         if (recorder.secondsAvailable() < minimumSeconds) {
             if (!automatic) {
                 status = ProductionEmmaStatus.LISTENING

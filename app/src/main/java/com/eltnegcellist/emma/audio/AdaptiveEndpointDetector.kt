@@ -55,11 +55,6 @@ internal class AdaptiveEndpointDetector(
         if (voiced) {
             voicedMillis += frameMillis
             silenceMillis = 0L
-            if (voicedMillis >= MAX_UTTERANCE_MS) {
-                val event = VoiceActivityEvent.Endpoint(voicedMillis, 0L)
-                reset()
-                return event
-            }
             return null
         }
 
@@ -100,10 +95,9 @@ internal class AdaptiveEndpointDetector(
         const val MIN_ONSET_MS = 160L
         const val MIN_UTTERANCE_MS = 450L
         const val FALSE_START_SILENCE_MS = 700L
-        const val MIN_SPEECH_RMS = 0.006f
-        const val NOISE_MULTIPLIER = 2.0f
+        const val MIN_SPEECH_RMS = 0.010f
+        const val NOISE_MULTIPLIER = 2.8f
         const val MIN_NOISE_FLOOR = 0.0015f
-        const val MAX_NOISE_FLOOR = 0.015f
-        const val MAX_UTTERANCE_MS = 12_000L
+        const val MAX_NOISE_FLOOR = 0.025f
     }
 }
