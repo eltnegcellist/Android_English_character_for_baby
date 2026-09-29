@@ -77,6 +77,9 @@ android {
     }
 
     packaging {
+        jniLibs {
+            pickFirsts += "**/libonnxruntime.so"
+        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }

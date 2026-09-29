@@ -13,7 +13,7 @@ import kotlin.math.max
 
 class KittenSpeaker(
     private val context: Context,
-    private val onDone: (Long, Long) -> Unit,
+    private val onDone: (Long, Long, Long) -> Unit,
     private val onError: (String) -> Unit,
     private val onAmplitude: (Float) -> Unit = {},
 ) {
@@ -63,13 +63,13 @@ class KittenSpeaker(
                     "voice=Kiki speed=$KITTEN_SPEED chars=${text.length} " +
                         "samples=${pcm.size} generationMs=$generationMs firstAudioMs=$firstAudioMs totalMs=$totalMs",
                 )
-                firstAudioMs to totalMs
+                Triple(firstAudioMs, generationMs, totalMs)
             }.onSuccess { value ->
                 main.post {
                     if (!closed && requestId == id) {
                         requestId = null
                         onAmplitude(0f)
-                        onDone(value.first, value.second)
+                        onDone(value.first, value.second, value.third)
                     }
                 }
             }.onFailure { error ->
@@ -187,7 +187,9 @@ class KittenSpeaker(
     }
 
 
-    private companion object {
+    companion object {
+        const val KIKI_SPEAKER_ID = 7
+        const val THREADS = 2
         const val KITTEN_SPEED = 0.8f
         const val PLAYBACK_CHUNK_SAMPLES = 2048
         const val PLAYBACK_TIMEOUT_MS = 60_000L
