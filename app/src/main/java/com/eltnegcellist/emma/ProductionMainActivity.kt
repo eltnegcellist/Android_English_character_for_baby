@@ -1069,10 +1069,11 @@ private fun ProductionEmmaApp() {
             onPrepare = { startFirstRunSetup(onboardingMode) },
             onOpenAbout = { aboutOpen = true },
         )
-    } else if (liteSetupBusy) {
+    } else if (liteSetupBusy && liteSetupDialogOpen) {
         LiteModelInstallDialog(
             phase = liteSetupPhase,
             progressPercent = liteSetupProgressPercent,
+            onDismiss = { liteSetupDialogOpen = false },
         )
     } else if (fullSetupOpen) {
         FullModeSetupScreen(
@@ -1086,8 +1087,8 @@ private fun ProductionEmmaApp() {
             kittenNeeded = !kittenInstalled,
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
+                fullSetupOpen = false
                 if (!fullSetupBusy) {
-                    fullSetupOpen = false
                     fullSetupError = null
                     if (
                         engineMode == ConversationEngineMode.FULL &&
