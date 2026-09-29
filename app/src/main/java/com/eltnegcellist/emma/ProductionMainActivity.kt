@@ -480,79 +480,18 @@ private fun ProductionEmmaApp() {
 
         val requestedAsr = asrModel
         liteSetupBusy = true
+        liteSetupDialogOpen = true
         liteSetupProgressPercent = 0
         liteSetupPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
         modelReady = false
         status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "音声モデルを準備しています…"
+        statusMessage = "音声モデルをバックグラウンドで準備しています…"
 
-        EmmaWorkQueue.execute {
-            runCatching {
-                lite.close()
-                if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
-                    MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
-                        mainHandler.post {
-                            if (!disposed) {
-                                liteSetupProgressPercent = percent
-                                liteSetupPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
-                            }
-                        }
-                    }.getOrThrow()
-                }
-
-                if (!KittenModelStore.isInstalled(context)) {
-                    mainHandler.post {
-                        if (!disposed) {
-                            liteSetupProgressPercent = 0
-                            liteSetupPhase = "Kitten TTS Nano / Kikiを準備しています…"
-                        }
-                    }
-                    KittenModelStore.downloadAndInstall(context) { percent ->
-                        mainHandler.post {
-                            if (!disposed) {
-                                liteSetupProgressPercent = percent
-                                liteSetupPhase = "Kitten TTS Nano / Kikiを準備しています…"
-                            }
-                        }
-                    }.getOrThrow()
-                }
-
-                if (engineMode == ConversationEngineMode.LITE) {
-                    lite.initialize(requestedAsr).getOrThrow()
-                }
-            }.onSuccess {
-                mainHandler.post {
-                    if (disposed) return@post
-                    kittenInstalled = true
-                    kitten.resetModel()
-                    liteSetupBusy = false
-                    liteSetupProgressPercent = 100
-                    modelPresent = modeModelsPresent(engineMode)
-                    if (engineMode == ConversationEngineMode.LITE) {
-                        modelReady = true
-                        status = ProductionEmmaStatus.IDLE
-                        statusMessage = "みつことば Liteの準備ができました。"
-                    } else if (modelPresent) {
-                        status = ProductionEmmaStatus.IDLE
-                        statusMessage = "Moonshine ${requestedAsr.shortLabel}の準備ができました。Fullを起動します…"
-                        mainHandler.post { if (!disposed) loadModel() }
-                    } else {
-                        status = ProductionEmmaStatus.IDLE
-                        statusMessage = "Moonshine ${requestedAsr.shortLabel}の準備ができました。"
-                    }
-                }
-            }.onFailure { error ->
-                mainHandler.post {
-                    if (disposed) return@post
-                    kittenInstalled = KittenModelStore.isInstalled(context)
-                    liteSetupBusy = false
-                    liteSetupProgressPercent = null
-                    modelPresent = modeModelsPresent(engineMode)
-                    status = ProductionEmmaStatus.ERROR
-                    statusMessage = "音声モデルの準備に失敗しました: ${error.message ?: error.javaClass.simpleName}"
-                    settingsOpen = true
-                }
-            }
+        if (!ModelPreparationManager.start(context, ModelPreparationKind.LITE, requestedAsr)) {
+            liteSetupBusy = false
+            liteSetupDialogOpen = false
+            status = ProductionEmmaStatus.ERROR
+            statusMessage = "別のモデル準備が進行中です。"
         }
     }
 
@@ -566,146 +505,30 @@ private fun ProductionEmmaApp() {
             .putString("asr_model", requestedAsr.savedValue)
             .putBoolean("asr_model_manual", startWithTiny)
             .putBoolean("first_run_start_tiny", startWithTiny)
-            .apply()
-        firstRunBusy = true
-        firstRunReady = false
-        firstRunError = null
-        firstRunProgressPercent = 0
-        firstRunPhase = "みつことば ${selectedMode.label}を準備しています…"
-        status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "みつことばの初期設定をしています…"
-        engineMode = selectedMode
-        preferences.edit()
             .putString("conversation_engine_mode", selectedMode.savedValue)
             .apply()
         if (selectedMode != ConversationEngineMode.FULL) {
             preferences.edit().putString("audience_mode", "BABY").apply()
         }
 
-        EmmaWorkQueue.execute {
-            runCatching {
-                lite.close()
-                gemma.close()
+        firstRunBusy = true
+        firstRunReady = false
+        firstRunError = null
+        firstRunProgressPercent = 0
+        firstRunPhase = "みつことば ${selectedMode.label}を準備しています…"
+        status = ProductionEmmaStatus.MODEL_IMPORTING
+        statusMessage = "必要なデータをバックグラウンドで準備しています…"
+        engineMode = selectedMode
 
-                when (selectedMode) {
-                    ConversationEngineMode.LITE -> {
-                        if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
-                            mainHandler.post {
-                                if (!disposed) {
-                                    firstRunPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
-                                    firstRunProgressPercent = 0
-                                }
-                            }
-                            MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
-                                mainHandler.post {
-                                    if (!disposed) firstRunProgressPercent = percent
-                                }
-                            }.getOrThrow()
-                        }
-                        if (!KittenModelStore.isInstalled(context)) {
-                            mainHandler.post {
-                                if (!disposed) {
-                                    firstRunPhase = "Kitten TTS Nano / Kikiを準備しています…"
-                                    firstRunProgressPercent = 0
-                                }
-                            }
-                            KittenModelStore.downloadAndInstall(context) { percent ->
-                                mainHandler.post {
-                                    if (!disposed) firstRunProgressPercent = percent
-                                }
-                            }.getOrThrow()
-                        }
-                        mainHandler.post {
-                            if (!disposed) {
-                                firstRunPhase = "みつことば Liteを起動しています…"
-                                firstRunProgressPercent = null
-                            }
-                        }
-                        lite.initialize(requestedAsr).getOrThrow()
-                    }
-                    ConversationEngineMode.FULL -> {
-                        if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
-                            mainHandler.post {
-                                if (!disposed) {
-                                    firstRunPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
-                                    firstRunProgressPercent = 0
-                                }
-                            }
-                            MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
-                                mainHandler.post { if (!disposed) firstRunProgressPercent = percent }
-                            }.getOrThrow()
-                        }
-                        if (!KittenModelStore.isInstalled(context)) {
-                            mainHandler.post {
-                                if (!disposed) {
-                                    firstRunPhase = "Kitten TTS Nano / Kikiを準備しています…"
-                                    firstRunProgressPercent = 0
-                                }
-                            }
-                            KittenModelStore.downloadAndInstall(context) { percent ->
-                                mainHandler.post { if (!disposed) firstRunProgressPercent = percent }
-                            }.getOrThrow()
-                        }
-                        if (!GemmaModelStore.hasUsableModel(context)) {
-                            mainHandler.post {
-                                if (!disposed) {
-                                    firstRunPhase = "Gemmaをダウンロードしています（2GB超）"
-                                    firstRunProgressPercent = 0
-                                }
-                            }
-                            GemmaModelStore.downloadModel(context) { percent ->
-                                mainHandler.post {
-                                    if (!disposed) firstRunProgressPercent = percent
-                                }
-                            }.getOrThrow()
-                        }
-                        mainHandler.post {
-                            if (!disposed) {
-                                firstRunPhase = "みつことば Fullを起動しています…"
-                                firstRunProgressPercent = null
-                            }
-                        }
-                        gemma.initialize(modelFile.absolutePath, requestedAsr).getOrThrow()
-                    }
-                }
-            }.onSuccess {
-                mainHandler.post {
-                    if (disposed) return@post
-                    kittenInstalled = KittenModelStore.isInstalled(context)
-                    kitten.resetModel()
-                    modelPresent = modeModelsPresent(selectedMode)
-                    modelReady = true
-                    firstRunBusy = false
-                    firstRunReady = true
-                    firstRunProgressPercent = 100
-                    firstRunPhase = "準備できました"
-                    preferences.edit()
-                        .putBoolean("onboarding_completed_v4", true)
-                        .putString("conversation_engine_mode", selectedMode.savedValue)
-                        .remove("voice_backend")
-                        .apply()
-                    onboardingOpen = false
-                    tutorialStep = 0
-                    screenIntroductionPlayed = false
-                    autoStartPending = false
-                    status = ProductionEmmaStatus.IDLE
-                    statusMessage = "使い方を3ステップで確認しましょう。"
-                }
-            }.onFailure { error ->
-                mainHandler.post {
-                    if (disposed) return@post
-                    kittenInstalled = KittenModelStore.isInstalled(context)
-                    modelPresent = modeModelsPresent(selectedMode)
-                    modelReady = false
-                    firstRunBusy = false
-                    firstRunReady = false
-                    firstRunProgressPercent = null
-                    firstRunError = error.message
-                        ?: "初期設定を完了できませんでした。通信環境と空き容量を確認してください。"
-                    status = ProductionEmmaStatus.ERROR
-                    statusMessage = "みつことばの初期設定を完了できませんでした。"
-                }
-            }
+        val kind = if (selectedMode == ConversationEngineMode.FULL) {
+            ModelPreparationKind.FULL
+        } else {
+            ModelPreparationKind.LITE
+        }
+        if (!ModelPreparationManager.start(context, kind, requestedAsr)) {
+            firstRunBusy = false
+            firstRunError = "別のモデル準備が進行中です。"
+            status = ProductionEmmaStatus.ERROR
         }
     }
 
@@ -716,81 +539,15 @@ private fun ProductionEmmaApp() {
         asrModel = requestedAsr
         fullSetupBusy = true
         fullSetupError = null
-        fullSetupProgressPercent = null
+        fullSetupProgressPercent = 0
         fullSetupPhase = "Fullの準備を始めています…"
         status = ProductionEmmaStatus.MODEL_IMPORTING
-        statusMessage = "みつことば Fullを準備しています…"
+        statusMessage = "みつことば Fullをバックグラウンドで準備しています…"
 
-        EmmaWorkQueue.execute {
-            runCatching {
-                lite.close()
-                gemma.close()
-
-                if (!MoonshineModelStore.isInstalled(context, requestedAsr)) {
-                    mainHandler.post {
-                        if (!disposed) {
-                            fullSetupPhase = "Moonshine 日本語${requestedAsr.shortLabel}を準備しています…"
-                            fullSetupProgressPercent = 0
-                        }
-                    }
-                    MoonshineModelStore.downloadAndInstall(context, requestedAsr) { percent ->
-                        mainHandler.post { if (!disposed) fullSetupProgressPercent = percent }
-                    }.getOrThrow()
-                }
-
-                if (!KittenModelStore.isInstalled(context)) {
-                    mainHandler.post {
-                        if (!disposed) {
-                            fullSetupPhase = "Kitten TTS Nano / Kikiを準備しています…"
-                            fullSetupProgressPercent = 0
-                        }
-                    }
-                    KittenModelStore.downloadAndInstall(context) { percent ->
-                        mainHandler.post { if (!disposed) fullSetupProgressPercent = percent }
-                    }.getOrThrow()
-                }
-
-                if (!GemmaModelStore.hasUsableModel(context)) {
-                    mainHandler.post {
-                        if (!disposed) {
-                            fullSetupPhase = "Gemmaをダウンロードしています（2GB超）"
-                            fullSetupProgressPercent = 0
-                        }
-                    }
-                    GemmaModelStore.downloadModel(context) { percent ->
-                        mainHandler.post {
-                            if (!disposed) {
-                                fullSetupPhase = "Gemmaをダウンロードしています（2GB超）"
-                                fullSetupProgressPercent = percent
-                            }
-                        }
-                    }.getOrThrow()
-                }
-            }.onSuccess {
-                mainHandler.post {
-                    if (disposed) return@post
-                    modelPresent = GemmaModelStore.hasUsableModel(context)
-                    kittenInstalled = KittenModelStore.isInstalled(context)
-                    if (kittenInstalled) kitten.resetModel()
-                    fullSetupBusy = false
-                    fullSetupProgressPercent = 100
-                    fullSetupPhase = "Fullの準備ができました"
-                    fullSetupOpen = false
-                    fullSetupError = null
-                    activateEngineMode(ConversationEngineMode.FULL)
-                }
-            }.onFailure { error ->
-                mainHandler.post {
-                    if (disposed) return@post
-                    modelPresent = modeModelsPresent(engineMode)
-                    fullSetupBusy = false
-                    fullSetupProgressPercent = null
-                    fullSetupError = error.message
-                        ?: "Fullの準備を完了できませんでした。通信環境と空き容量を確認してください。"
-                    status = ProductionEmmaStatus.ERROR
-                    statusMessage = "みつことば Fullの準備を完了できませんでした。"
-                }
-            }
+        if (!ModelPreparationManager.start(context, ModelPreparationKind.FULL, requestedAsr)) {
+            fullSetupBusy = false
+            fullSetupError = "別のモデル準備が進行中です。"
+            status = ProductionEmmaStatus.ERROR
         }
     }
 
