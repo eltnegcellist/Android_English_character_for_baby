@@ -20,3 +20,12 @@ Failing any gate means no integration APK is offered for device testing.
 ## Candidate policy
 
 Misaki is not assumed safe merely because fallback=None is documented. The pinned implementation and every vendored dictionary/data file must be license-audited, and reference fixtures must establish behavior before a Kotlin port is accepted.
+
+
+## Misaki audit finding
+
+Upstream documents English `G2P(trf=false, british=false, fallback=None)` as the no-eSpeak mode. Unknown tokens remain detectable rather than silently invoking eSpeak. The hosted demo is not a valid no-GPL reference because it explicitly constructs `EspeakFallback`.
+
+The validation reference therefore MUST instantiate Misaki with fallback=None and MUST fail fixtures containing unresolved tokens. No eSpeak-derived fallback output may be used as expected data.
+
+A native port is not accepted by license label alone: dictionary/data provenance is audited separately and parity fixtures are pinned before implementation.
