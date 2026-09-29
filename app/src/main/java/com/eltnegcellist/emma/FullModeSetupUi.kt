@@ -109,10 +109,17 @@ internal fun FullModeSetupScreen(
                     )
                 }
                 Text(
-                    "ダウンロード中はこの画面を開いたままにしてください。",
+                    "他の画面に移動したり、アプリを閉じても準備は続きます。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Spacer(Modifier.height(10.dp))
+                OutlinedButton(
+                    onClick = onCancel,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("画面を閉じる（準備は続きます）")
+                }
             } else {
                 Button(
                     onClick = onPrepare,
