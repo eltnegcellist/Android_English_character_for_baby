@@ -1,0 +1,13 @@
+# text | purpose
+Hello, little one! | basic infant-directed speech
+Peekaboo! I see you. | app vocabulary
+Let's have some milk. | contraction and app vocabulary
+Good morning, Hana. | name handling
+I read a book yesterday. | homograph context
+Please read the book. | homograph context
+The wind is gentle. | homograph context
+Wind up the toy. | homograph context
+It's 3 o'clock. | contraction and number
+You have 2 little hands. | number
+Mmm, yummy milk! | expressive/OOV-prone vocabulary
+Tummy time is fun. | compound app vocabulary
