@@ -475,6 +475,37 @@ private fun ProductionEmmaApp() {
         }
     }
 
+    fun monitorModelPreparation(
+        kind: ModelPreparationKind,
+        requestedAsr: MoonshineAsrModel,
+        onProgress: (String, Int?) -> Unit,
+        onFinished: (Result<Unit>) -> Unit,
+    ) {
+        EmmaWorkQueue.execute {
+            while (!disposed) {
+                val snapshot = ModelPreparationManager.snapshot(context)
+                if (snapshot.kind == kind && snapshot.asrModel == requestedAsr) {
+                    mainHandler.post {
+                        if (!disposed) onProgress(snapshot.phase, snapshot.percent)
+                    }
+                    if (!snapshot.active) {
+                        val result = if (snapshot.status == ModelPreparationStatus.SUCCEEDED) {
+                            Result.success(Unit)
+                        } else {
+                            Result.failure(IllegalStateException(snapshot.error ?: "モデルの準備を完了できませんでした。"))
+                        }
+                        ModelPreparationManager.markHandled(context, snapshot)
+                        mainHandler.post {
+                            if (!disposed) onFinished(result)
+                        }
+                        return@execute
+                    }
+                }
+                Thread.sleep(500L)
+            }
+        }
+    }
+
     fun startLiteAutomaticSetup() {
         if (disposed || liteSetupBusy) return
 
