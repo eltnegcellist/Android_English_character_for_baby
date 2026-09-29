@@ -50,6 +50,19 @@ internal object ModelPreparationStateStore {
     fun succeeded(context: Context, kind: ModelPreparationKind, asr: MoonshineAsrModel) =
         write(context, kind, asr, ModelPreparationStatus.SUCCEEDED, "準備ができました", 100, null)
 
+    fun retrying(context: Context, kind: ModelPreparationKind, asr: MoonshineAsrModel) {
+        val current = read(context)
+        write(
+            context,
+            kind,
+            asr,
+            ModelPreparationStatus.QUEUED,
+            "通信が中断されました。自動で再開します…",
+            current.percent,
+            null,
+        )
+    }
+
     fun failed(context: Context, kind: ModelPreparationKind, asr: MoonshineAsrModel, error: String) =
         write(context, kind, asr, ModelPreparationStatus.FAILED, "準備を完了できませんでした", null, error)
 
