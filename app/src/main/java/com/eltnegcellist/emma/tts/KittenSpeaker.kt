@@ -22,6 +22,7 @@ class KittenSpeaker(
 
     @Volatile private var requestId: String? = null
     @Volatile private var track: AudioTrack? = null
+    @Volatile private var playbackThread: Thread? = null
     @Volatile private var closed = false
     private var engine: KittenOnnxEngine? = null
 
@@ -54,7 +55,9 @@ class KittenSpeaker(
                 }
 
                 val pcm = toPcm16(generated)
+                if (closed || requestId != id) return@runCatching null
                 val firstAudioMs = play(id, pcm, KittenOnnxEngine.OUTPUT_SAMPLE_RATE, started)
+                if (closed || requestId != id) return@runCatching null
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
 
                 DiagnosticStore.mark(
@@ -65,7 +68,7 @@ class KittenSpeaker(
                 )
                 Triple(firstAudioMs, generationMs, totalMs)
             }.onSuccess { value ->
-                main.post {
+                if (value != null) main.post {
                     if (!closed && requestId == id) {
                         requestId = null
                         onAmplitude(0f)
@@ -151,6 +154,7 @@ class KittenSpeaker(
             .build()
 
         track = player
+        playbackThread = Thread.currentThread()
         check(player.state == AudioTrack.STATE_INITIALIZED) { "音声出力を初期化できません。" }
 
         var offset = 0
@@ -182,6 +186,7 @@ class KittenSpeaker(
             player.runCatching { stop() }
             player.runCatching { release() }
             if (track === player) track = null
+            if (playbackThread === Thread.currentThread()) playbackThread = null
         }
         return firstAudioMs
     }
