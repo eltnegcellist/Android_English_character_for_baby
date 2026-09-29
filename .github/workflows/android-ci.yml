@@ -49,16 +49,6 @@ jobs:
           test -f "$ANDROID_HOME/platforms/android-37.1/android.jar"
           test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
 
-      - name: Download pinned sherpa-onnx Android runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p app/libs
-          curl -fL --retry 3 --retry-delay 2 \
-            https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-static-link-onnxruntime-1.13.8.aar \
-            -o app/libs/sherpa-onnx-static-1.13.8.aar
-          echo "b22c3fc1b6a45666d28892bb2f7694beeb77a8362d7ebd77c1a5431ec9435471  app/libs/sherpa-onnx-static-1.13.8.aar" | sha256sum --check
-
       - name: Validate Android PNG resources
         shell: bash
         run: |
@@ -104,6 +94,18 @@ jobs:
 
       - name: Test and build
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug --stacktrace
+
+      - name: Verify non-GPL Kitten ONNX packaging
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          unzip -l "$APK" | grep 'lib/arm64-v8a/libonnxruntime.so'
+          unzip -l "$APK" | grep 'lib/arm64-v8a/libonnxruntime4j_jni.so'
+          if unzip -l "$APK" | grep -Eiq 'espeak|piper|sherpa'; then
+            echo "Forbidden legacy TTS dependency found in APK."
+            exit 1
+          fi
 
       - name: Prepare and verify APK
         id: apk
