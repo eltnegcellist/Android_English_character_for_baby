@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.13-beta2-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.13-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -121,7 +121,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.13-beta2
+          name: Mitsukotoba-v1.9.13
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.13-beta2"
+          TAG="mitsukotoba-v1.9.13"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -155,5 +155,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.13-beta2" \
-            --notes "Mitsukotoba v1.9.12 cleans up Settings and restores detailed voice diagnostics. The redundant ready-state Lite/Full preparation card is hidden once the selected edition is ready, while recovery controls still appear if required models are missing. Hidden developer settings now show Kitten TTS Nano FP32 parameters (Kiki sid, speed, threads, target peak, max boost, playback chunk) and live timing metrics including TTS generation time, Kitten-to-first-audio, total TTS time, endpoint-to-TTS-request, and endpoint-to-first-audio. Kiki preview remains hidden behind the five-tap developer entry. v1.9.11 tutorial refinements and speaking blink animation remain intact."
+            --title "みつことば v1.9.13" \
+            --notes "Mitsukotoba v1.9.13 adds background and resumable model preparation. Lite remains usable while Gemma downloads in the background, the home screen shows live preparation progress, Kitten and Gemma downloads resume from partial files, and interrupted transfers retry automatically."
