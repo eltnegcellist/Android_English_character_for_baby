@@ -35,11 +35,15 @@ import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
+import com.eltnegcellist.emma.model.ModelPreparationKind
+import com.eltnegcellist.emma.model.ModelPreparationManager
+import com.eltnegcellist.emma.model.ModelPreparationStatus
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.ui.EmmaTheme
 import com.eltnegcellist.emma.ui.EmmaVisualState
+import kotlinx.coroutines.delay
 
 private const val NONVERBAL_RESPONSE_COOLDOWN_MS = 15_000L
 private const val BABY_VOCAL_CONTEXT = "赤ちゃんが声を出している"
@@ -185,6 +189,7 @@ private fun ProductionEmmaApp() {
     var fullSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
     var fullSetupError by remember { mutableStateOf<String?>(null) }
     var liteSetupBusy by remember { mutableStateOf(false) }
+    var liteSetupDialogOpen by remember { mutableStateOf(false) }
     var liteSetupPhase by remember { mutableStateOf("") }
     var liteSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
     var lastSpeechMillis by remember { mutableStateOf<Long?>(null) }
@@ -198,6 +203,7 @@ private fun ProductionEmmaApp() {
     var screenIntroductionPlayed by remember { mutableStateOf(false) }
     var screenIntroductionPlaying by remember { mutableStateOf(false) }
     var tutorialUserSpoke by remember { mutableStateOf(false) }
+    var lastHandledPreparationAtMillis by remember { mutableStateOf(0L) }
 
     DisposableEffect(recording, keepScreenOn) {
         val window = (context as? ComponentActivity)?.window
