@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.18-beta1-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.18-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -124,7 +124,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.18-beta1
+          name: Mitsukotoba-v1.9.18
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -133,14 +133,14 @@ jobs:
           retention-days: 7
           compression-level: 0
 
-      - name: Publish avatar-color beta release
+      - name: Publish stable public release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.18-beta1"
+          TAG="mitsukotoba-v1.9.18"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -157,6 +157,6 @@ jobs:
 
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
-            --prerelease \
-            --title "みつことば v1.9.18-beta1" \
-            --notes "Mitsukotoba v1.9.18-beta1 restores appearance settings for all 12 illustrated expression frames and adds a visible face outline on white backgrounds."
+            --latest \
+            --title "みつことば v1.9.18" \
+            --notes "Mitsukotoba v1.9.18 restores appearance settings for all 12 illustrated expression frames, adds visible face outlines on white backgrounds, and defaults to a white face with red accents. Existing saved color preferences are preserved."
