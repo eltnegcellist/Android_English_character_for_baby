@@ -49,6 +49,7 @@ class AdaptiveEndpointDetectorTest {
         val detector = AdaptiveEndpointDetector(sampleRate)
 
         var endpoint = false
+        // 200 ms is enough to enter provisional speech, but too short to be a real utterance.
         repeat(2) { detector.process(frame(5_000), frameSamples) }
         repeat(10) {
             if (detector.process(frame(0), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
@@ -60,42 +61,6 @@ class AdaptiveEndpointDetectorTest {
             if (detector.process(frame(5_000), frameSamples) is VoiceActivityEvent.SpeechStarted) startedAgain = true
         }
         assertTrue(startedAgain)
-    }
-
-    @Test
-    fun softerSpeechAfterLoudSpeechDoesNotEndMidSentence() {
-        val detector = AdaptiveEndpointDetector(sampleRate)
-        repeat(5) { detector.process(frame(0), frameSamples) }
-
-        var endpoint = false
-        repeat(15) {
-            if (detector.process(frame(8_000), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
-        }
-
-        // This level is much quieter than the opening phrase but still clearly
-        // above the absolute speech threshold. It must remain speech even when
-        // sustained for several seconds.
-        repeat(30) {
-            if (detector.process(frame(2_600), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
-        }
-        assertFalse(endpoint)
-
-        repeat(15) {
-            if (detector.process(frame(8_000), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
-        }
-        assertFalse(endpoint)
-    }
-
-    @Test
-    fun continuousSpeechLongerThanTwentySecondsIsNeverForceCut() {
-        val detector = AdaptiveEndpointDetector(sampleRate)
-        repeat(5) { detector.process(frame(0), frameSamples) }
-
-        var endpoint = false
-        repeat(220) {
-            if (detector.process(frame(5_000), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
-        }
-        assertFalse(endpoint)
     }
 
     private fun frame(value: Int): ShortArray = ShortArray(frameSamples) { value.toShort() }

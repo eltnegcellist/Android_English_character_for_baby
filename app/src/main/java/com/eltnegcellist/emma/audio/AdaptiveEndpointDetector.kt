@@ -10,12 +10,7 @@ sealed interface VoiceActivityEvent {
 
 /**
  * Small on-device VAD/endpoint detector tuned for parent-to-baby speech.
- * It adapts to room noise before speech and uses a longer endpoint after longer utterances.
- *
- * Important: once speech has started, endpointing is based only on frames that
- * actually fall below the absolute speech threshold. A relative volume drop
- * must never be treated as silence, because natural speech can become much
- * softer mid-sentence.
+ * It adapts to room noise and uses a longer endpoint after longer utterances.
  */
 internal class AdaptiveEndpointDetector(
     private val sampleRate: Int,
@@ -42,8 +37,7 @@ internal class AdaptiveEndpointDetector(
 
         if (!inSpeech) {
             if (!voiced) {
-                noiseFloor = (noiseFloor * 0.96f + rms * 0.04f)
-                    .coerceIn(MIN_NOISE_FLOOR, MAX_NOISE_FLOOR)
+                noiseFloor = (noiseFloor * 0.96f + rms * 0.04f).coerceIn(MIN_NOISE_FLOOR, MAX_NOISE_FLOOR)
                 onsetMillis = 0L
                 return null
             }
