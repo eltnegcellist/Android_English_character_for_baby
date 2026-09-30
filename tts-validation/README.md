@@ -41,3 +41,7 @@ See [results/2026-09-30-cmu-candidate-findings.md](results/2026-09-30-cmu-candid
 ## Expanded pronunciation gate
 
 See [results/2026-09-30-pronunciation-findings.md](results/2026-09-30-pronunciation-findings.md). Independent word/sense fixtures exposed errors in the CMU-backed candidate, including two actual Lite replies. The repaired candidate passes 39 expanded checks and the earlier 61 checks, while retaining zero lexical/token failures in the 202/780 corpus matrix. This is still not comprehensive pronunciation or audio approval. `validate_pronunciation.py` returns success for its fixtures only; `validate_clean_candidate.py` continues to block integration.
+
+## Fixed Lite words and isolated ONNX diagnostics
+
+See [results/2026-09-30-onnx-findings.md](results/2026-09-30-onnx-findings.md). The independently authored 149-token/1,260-occurrence fixed-bank segment and specified primary-stress gate passed all 202 utterances, alongside 30 boundary checks. A hash-gated diagnostic runner then generated valid 24 kHz PCM for those 202 utterances and completed 100 generate/discard repetitions. This bounded lab result is not acoustic equivalence, playback/cancellation endurance, or app approval. No APK is built. Model download selects only explicitly hashed model/voice/token/license/readme resources and never extracts eSpeak data.

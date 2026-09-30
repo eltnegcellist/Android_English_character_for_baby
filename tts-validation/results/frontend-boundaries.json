@@ -1,0 +1,317 @@
+{
+  "total": 30,
+  "passed": 30,
+  "failed": 0,
+  "integration_approved": false,
+  "records": [
+    {
+      "group": "word_or_numeric_context",
+      "text": "We are open and close to the park.",
+      "word": "close",
+      "expected": [
+        "kloʊs"
+      ],
+      "actual": [
+        "kloʊs"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "Open and close your hands.",
+      "word": "close",
+      "expected": [
+        "kloʊz"
+      ],
+      "actual": [
+        "kloʊz"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "Please open and close.",
+      "word": "close",
+      "expected": [
+        "kloʊz"
+      ],
+      "actual": [
+        "kloʊz"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "Keep your eyes close to the book.",
+      "word": "close",
+      "expected": [
+        "kloʊs"
+      ],
+      "actual": [
+        "kloʊs"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "Please close your eyes.",
+      "word": "close",
+      "expected": [
+        "kloʊz"
+      ],
+      "actual": [
+        "kloʊz"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "She does not sing.",
+      "word": "does",
+      "expected": [
+        "dʌz"
+      ],
+      "actual": [
+        "dʌz"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "Hold the lead.",
+      "word": "lead",
+      "expected": [
+        "lid"
+      ],
+      "actual": [
+        "lid"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "The pipe is made of lead.",
+      "word": "lead",
+      "expected": [
+        "lɛd"
+      ],
+      "actual": [
+        "lɛd"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "Outside time!",
+      "word": "Outside",
+      "expected": [
+        "aʊtsaɪd"
+      ],
+      "actual": [
+        "aʊtsaɪd"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "Rain outside!",
+      "word": "outside",
+      "expected": [
+        "aʊtsaɪd"
+      ],
+      "actual": [
+        "aʊtsaɪd"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "You have 0 toys.",
+      "word": "0",
+      "expected": [
+        "zɪɹoʊ",
+        "ziɹoʊ"
+      ],
+      "actual": [
+        "zɪɹoʊ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "You have 0.5 ounces.",
+      "word": "0.5",
+      "expected": [
+        "zɪɹoʊ pɔɪnt faɪv",
+        "ziɹoʊ pɔɪnt faɪv"
+      ],
+      "actual": [
+        "zɪɹoʊ pɔɪnt faɪv"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "You have -0.5 ounces.",
+      "word": "-0.5",
+      "expected": [
+        "maɪnəs zɪɹoʊ pɔɪnt faɪv",
+        "maɪnəs ziɹoʊ pɔɪnt faɪv"
+      ],
+      "actual": [
+        "maɪnəs zɪɹoʊ pɔɪnt faɪv"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "You have 50% milk.",
+      "word": "50%",
+      "expected": [
+        "fɪfti pəɹsɛnt"
+      ],
+      "actual": [
+        "fɪfti pəɹsɛnt"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "You have 2nd place.",
+      "word": "2nd",
+      "expected": [
+        "sɛkənd"
+      ],
+      "actual": [
+        "sɛkənd"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "You have 1.5 ounces.",
+      "word": "1.5",
+      "expected": [
+        "wʌn pɔɪnt faɪv"
+      ],
+      "actual": [
+        "wʌn pɔɪnt faɪv"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "I'm listening.",
+      "word": "I'm",
+      "expected": [
+        "aɪm"
+      ],
+      "actual": [
+        "aɪm"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_or_numeric_context",
+      "text": "You're warm.",
+      "word": "You're",
+      "expected": [
+        "jʊɹ",
+        "jɔɹ",
+        "jəɹ"
+      ],
+      "actual": [
+        "jʊɹ"
+      ],
+      "match": true
+    },
+    {
+      "group": "explicit_name_metadata",
+      "text": "Hello, Hana-chan!",
+      "actual": [
+        "hˈɑnɑ tʃɑn"
+      ],
+      "match": true
+    },
+    {
+      "group": "explicit_name_metadata",
+      "text": "Hana-chan's hands are warm.",
+      "actual": [
+        "hˈɑnɑ tʃɑn"
+      ],
+      "match": true
+    },
+    {
+      "group": "explicit_name_metadata",
+      "text": "HANA-CHAN, hello!",
+      "actual": [
+        "hˈɑnɑ tʃɑn"
+      ],
+      "match": true
+    },
+    {
+      "group": "no_guessed_name_or_oov",
+      "text": "Hello, qzxvplm.",
+      "unresolved": [
+        "qzxvplm"
+      ],
+      "match": true
+    },
+    {
+      "group": "no_guessed_name_or_oov",
+      "text": "Hello, Tsumugi.",
+      "unresolved": [
+        "Tsumugi"
+      ],
+      "match": true
+    },
+    {
+      "group": "no_guessed_name_or_oov",
+      "text": "Hana-chanx, hello!",
+      "unresolved": [
+        "Hana-chanx"
+      ],
+      "match": true
+    },
+    {
+      "group": "embedded_alias_rejection",
+      "text": "[Hana](/hɑnɑ/)",
+      "match": true
+    },
+    {
+      "group": "embedded_alias_rejection",
+      "text": "Hello, Hana\n[xx]",
+      "match": true
+    },
+    {
+      "group": "embedded_alias_rejection",
+      "text": "Hello ] world",
+      "match": true
+    },
+    {
+      "group": "bass_scope_rejection",
+      "text": "The bass guitar is here. Please bring the bass.",
+      "unresolved_meaning": [
+        "bass"
+      ],
+      "match": true
+    },
+    {
+      "group": "bass_scope_rejection",
+      "text": "The bass swims; please bring the bass.",
+      "unresolved_meaning": [
+        "bass"
+      ],
+      "match": true
+    },
+    {
+      "group": "bass_scope_rejection",
+      "text": "The bass guitar is here: a bass swims.",
+      "unresolved_meaning": [
+        "bass",
+        "bass"
+      ],
+      "match": true
+    }
+  ]
+}

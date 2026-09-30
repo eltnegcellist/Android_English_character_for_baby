@@ -1,0 +1,18 @@
+{
+  "source_commit": "62f39abc095dd29a57d86a0efdef5400a2bb4293",
+  "source_hashes": {
+    "LiteResponseEngine.kt": "6c5f2009fa79c2f9ea0af38ea36ccdd7c57b80ce6791d538be4a8fd6c62dd2fb",
+    "LiteSpeechStyle.kt": "5f2645c62a26914020816af368b326ec28f9869e0d9d0d2eb621a43d6b066130"
+  },
+  "fixture_sha256": "00f4c178f3311196492163836e0dfff53f905fd00cf92822b13a9b7ecfef0ce0",
+  "frontend_sha256": "b6068e593f3c400612c305c25a58ecaeda8cb36a25f07c96b53b4da5b5346f79",
+  "utterances": 202,
+  "lexical_occurrences": 1260,
+  "unique_lexical_tokens": 149,
+  "fixture_words": 149,
+  "missing_expectations": [],
+  "failed_utterances": 7,
+  "failed_occurrences": 8,
+  "scope": "Independently authored American-English segment expectations for the baseline Lite vocabulary. Primary stress for specified content words is checked; expressive length and t/flap allophony are outside this gate. Listed alternatives permit weak forms and common American vowel variation. Not candidate snapshots and not acoustic approval. CMU pinned source independently confirms here/hear HH IY1 R; /iɹ/ and /ɪɹ/ are accepted for these words. Weak /ɐ/ is accepted separately from /ə/ for a/am. Contractions and repeated compounds are included as lexical tokens.",
+  "integration_approved": false
+}

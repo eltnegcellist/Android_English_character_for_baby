@@ -1,0 +1,869 @@
+{
+  "policy": "Independently authored American-English segment expectations for the baseline Lite vocabulary. Primary stress for specified content words is checked; expressive length and t/flap allophony are outside this gate. Listed alternatives permit weak forms and common American vowel variation. Not candidate snapshots and not acoustic approval. CMU pinned source independently confirms here/hear HH IY1 R; /iɹ/ and /ɪɹ/ are accepted for these words. Weak /ɐ/ is accepted separately from /ə/ for a/am. Contractions and repeated compounds are included as lexical tokens.",
+  "words": {
+    "a": [
+      "ə",
+      "ɐ",
+      "eɪ"
+    ],
+    "again": [
+      "əɡɛn",
+      "əɡeɪn"
+    ],
+    "ahh": [
+      "ɑ",
+      "ɑh"
+    ],
+    "all": [
+      "ɔl",
+      "ɑl"
+    ],
+    "am": [
+      "æm",
+      "əm",
+      "ɐm"
+    ],
+    "and": [
+      "ænd",
+      "ənd",
+      "ən"
+    ],
+    "are": [
+      "ɑɹ",
+      "əɹ"
+    ],
+    "arm": [
+      "ɑɹm"
+    ],
+    "around": [
+      "əɹaʊnd"
+    ],
+    "at": [
+      "æt",
+      "ət"
+    ],
+    "awake": [
+      "əweɪk"
+    ],
+    "baby": [
+      "beɪbi"
+    ],
+    "bath": [
+      "bæθ"
+    ],
+    "be": [
+      "bi"
+    ],
+    "big": [
+      "bɪɡ"
+    ],
+    "bite": [
+      "baɪt"
+    ],
+    "book": [
+      "bʊk"
+    ],
+    "bright": [
+      "bɹaɪt"
+    ],
+    "can": [
+      "kæn",
+      "kən"
+    ],
+    "change": [
+      "tʃeɪndʒ"
+    ],
+    "clean": [
+      "klin"
+    ],
+    "close": [
+      "kloʊs",
+      "kloʊz"
+    ],
+    "closely": [
+      "kloʊsli"
+    ],
+    "clothes": [
+      "kloʊðz",
+      "kloʊz"
+    ],
+    "comes": [
+      "kʌmz"
+    ],
+    "cozy": [
+      "koʊzi"
+    ],
+    "cuddle": [
+      "kʌdəl"
+    ],
+    "day": [
+      "deɪ"
+    ],
+    "dear": [
+      "dɪɹ"
+    ],
+    "diaper": [
+      "daɪpəɹ",
+      "daɪəpəɹ"
+    ],
+    "done": [
+      "dʌn"
+    ],
+    "down": [
+      "daʊn"
+    ],
+    "dress": [
+      "dɹɛs"
+    ],
+    "dressed": [
+      "dɹɛst"
+    ],
+    "drip": [
+      "dɹɪp"
+    ],
+    "drop": [
+      "dɹɑp",
+      "dɹɔp"
+    ],
+    "easy": [
+      "izi"
+    ],
+    "eat": [
+      "it"
+    ],
+    "explore": [
+      "ɪksplɔɹ",
+      "ɛksplɔɹ"
+    ],
+    "eyes": [
+      "aɪz"
+    ],
+    "far": [
+      "fɑɹ"
+    ],
+    "feet": [
+      "fit"
+    ],
+    "fingers": [
+      "fɪŋɡəɹz"
+    ],
+    "food": [
+      "fud"
+    ],
+    "for": [
+      "fɔɹ",
+      "fəɹ"
+    ],
+    "fresh": [
+      "fɹɛʃ"
+    ],
+    "fun": [
+      "fʌn"
+    ],
+    "gentle": [
+      "dʒɛntəl"
+    ],
+    "getting": [
+      "ɡɛtɪŋ"
+    ],
+    "go": [
+      "ɡoʊ"
+    ],
+    "good": [
+      "ɡʊd"
+    ],
+    "hands": [
+      "hændz"
+    ],
+    "happy": [
+      "hæpi"
+    ],
+    "hear": [
+      "hɪɹ",
+      "hiɹ"
+    ],
+    "hello": [
+      "həloʊ",
+      "hɛloʊ"
+    ],
+    "here": [
+      "hɪɹ",
+      "hiɹ"
+    ],
+    "hey": [
+      "heɪ"
+    ],
+    "hi": [
+      "haɪ"
+    ],
+    "hmm": [
+      "hm",
+      "həm",
+      "m"
+    ],
+    "hug": [
+      "hʌɡ"
+    ],
+    "i": [
+      "aɪ"
+    ],
+    "is": [
+      "ɪz",
+      "əz",
+      "z"
+    ],
+    "it": [
+      "ɪt",
+      "ət"
+    ],
+    "just": [
+      "dʒʌst",
+      "dʒəst"
+    ],
+    "kick": [
+      "kɪk"
+    ],
+    "listen": [
+      "lɪsən"
+    ],
+    "listening": [
+      "lɪsənɪŋ",
+      "lɪsnɪŋ"
+    ],
+    "little": [
+      "lɪtəl"
+    ],
+    "look": [
+      "lʊk"
+    ],
+    "me": [
+      "mi"
+    ],
+    "milk": [
+      "mɪlk"
+    ],
+    "mmm": [
+      "m"
+    ],
+    "moment": [
+      "moʊmənt"
+    ],
+    "morning": [
+      "mɔɹnɪŋ"
+    ],
+    "much": [
+      "mʌtʃ"
+    ],
+    "music": [
+      "mjuzɪk"
+    ],
+    "near": [
+      "nɪɹ"
+    ],
+    "next": [
+      "nɛkst"
+    ],
+    "nice": [
+      "naɪs"
+    ],
+    "no": [
+      "noʊ"
+    ],
+    "now": [
+      "naʊ"
+    ],
+    "oh": [
+      "oʊ"
+    ],
+    "on": [
+      "ɑn",
+      "ɔn"
+    ],
+    "one": [
+      "wʌn"
+    ],
+    "ooh": [
+      "u"
+    ],
+    "open": [
+      "oʊpən"
+    ],
+    "out": [
+      "aʊt"
+    ],
+    "outside": [
+      "aʊtsaɪd"
+    ],
+    "over": [
+      "oʊvəɹ"
+    ],
+    "page": [
+      "peɪdʒ"
+    ],
+    "pause": [
+      "pɔz",
+      "pɑz"
+    ],
+    "play": [
+      "pleɪ"
+    ],
+    "quiet": [
+      "kwaɪət"
+    ],
+    "rain": [
+      "ɹeɪn"
+    ],
+    "read": [
+      "ɹid",
+      "ɹɛd"
+    ],
+    "ready": [
+      "ɹɛdi"
+    ],
+    "rest": [
+      "ɹɛst"
+    ],
+    "right": [
+      "ɹaɪt"
+    ],
+    "rush": [
+      "ɹʌʃ"
+    ],
+    "see": [
+      "si"
+    ],
+    "sing": [
+      "sɪŋ"
+    ],
+    "sip": [
+      "sɪp"
+    ],
+    "sips": [
+      "sɪps"
+    ],
+    "sleep": [
+      "slip"
+    ],
+    "sleepy": [
+      "slipi"
+    ],
+    "slow": [
+      "sloʊ"
+    ],
+    "smile": [
+      "smaɪl"
+    ],
+    "so": [
+      "soʊ"
+    ],
+    "song": [
+      "sɔŋ",
+      "sɑŋ"
+    ],
+    "splash": [
+      "splæʃ"
+    ],
+    "squeeze": [
+      "skwiz"
+    ],
+    "steady": [
+      "stɛdi"
+    ],
+    "story": [
+      "stɔɹi"
+    ],
+    "sunshine": [
+      "sʌnʃaɪn"
+    ],
+    "sweet": [
+      "swit"
+    ],
+    "take": [
+      "teɪk"
+    ],
+    "talking": [
+      "tɔkɪŋ",
+      "tɑkɪŋ"
+    ],
+    "tap": [
+      "tæp"
+    ],
+    "the": [
+      "ðə",
+      "ði"
+    ],
+    "there": [
+      "ðɛɹ"
+    ],
+    "time": [
+      "taɪm"
+    ],
+    "tiny": [
+      "taɪni"
+    ],
+    "to": [
+      "tu",
+      "tə",
+      "tʊ"
+    ],
+    "toes": [
+      "toʊz"
+    ],
+    "together": [
+      "təɡɛðəɹ",
+      "tʊɡɛðəɹ"
+    ],
+    "tummy": [
+      "tʌmi"
+    ],
+    "turn": [
+      "tɜɹn"
+    ],
+    "up": [
+      "ʌp"
+    ],
+    "very": [
+      "vɛɹi"
+    ],
+    "voice": [
+      "vɔɪs"
+    ],
+    "warm": [
+      "wɔɹm"
+    ],
+    "wash": [
+      "wɑʃ",
+      "wɔʃ"
+    ],
+    "watch": [
+      "wɑtʃ",
+      "wɔtʃ"
+    ],
+    "we": [
+      "wi"
+    ],
+    "what": [
+      "wʌt",
+      "wɑt"
+    ],
+    "wiggle": [
+      "wɪɡəl"
+    ],
+    "wipe": [
+      "waɪp"
+    ],
+    "with": [
+      "wɪð",
+      "wɪθ"
+    ],
+    "wonder": [
+      "wʌndəɹ"
+    ],
+    "you": [
+      "ju",
+      "jə"
+    ],
+    "your": [
+      "jɔɹ",
+      "jəɹ",
+      "jʊɹ"
+    ],
+    "yum": [
+      "jʌm"
+    ],
+    "yummy": [
+      "jʌmi"
+    ],
+    "i'm": [
+      "aɪm"
+    ],
+    "let's": [
+      "lɛts"
+    ],
+    "you're": [
+      "jʊɹ",
+      "jɔɹ",
+      "jəɹ"
+    ],
+    "night-night": [
+      "naɪtnaɪt"
+    ],
+    "pitter-patter": [
+      "pɪtəɹpætəɹ"
+    ],
+    "la-la-la": [
+      "lɑlɑlɑ"
+    ]
+  },
+  "primary_stress_syllable": {
+    "again": [
+      1
+    ],
+    "all": [
+      0
+    ],
+    "arm": [
+      0
+    ],
+    "around": [
+      1
+    ],
+    "awake": [
+      1
+    ],
+    "baby": [
+      0
+    ],
+    "bath": [
+      0
+    ],
+    "big": [
+      0
+    ],
+    "bite": [
+      0
+    ],
+    "book": [
+      0
+    ],
+    "bright": [
+      0
+    ],
+    "change": [
+      0
+    ],
+    "clean": [
+      0
+    ],
+    "close": [
+      0
+    ],
+    "closely": [
+      0
+    ],
+    "clothes": [
+      0
+    ],
+    "comes": [
+      0
+    ],
+    "cozy": [
+      0
+    ],
+    "cuddle": [
+      0
+    ],
+    "day": [
+      0
+    ],
+    "dear": [
+      0
+    ],
+    "diaper": [
+      0
+    ],
+    "done": [
+      0
+    ],
+    "down": [
+      0
+    ],
+    "dress": [
+      0
+    ],
+    "dressed": [
+      0
+    ],
+    "drip": [
+      0
+    ],
+    "drop": [
+      0
+    ],
+    "easy": [
+      0
+    ],
+    "eat": [
+      0
+    ],
+    "explore": [
+      1
+    ],
+    "eyes": [
+      0
+    ],
+    "far": [
+      0
+    ],
+    "feet": [
+      0
+    ],
+    "fingers": [
+      0
+    ],
+    "food": [
+      0
+    ],
+    "fresh": [
+      0
+    ],
+    "fun": [
+      0
+    ],
+    "gentle": [
+      0
+    ],
+    "getting": [
+      0
+    ],
+    "go": [
+      0
+    ],
+    "good": [
+      0
+    ],
+    "hands": [
+      0
+    ],
+    "happy": [
+      0
+    ],
+    "hear": [
+      0
+    ],
+    "hello": [
+      1
+    ],
+    "here": [
+      0
+    ],
+    "hey": [
+      0
+    ],
+    "hi": [
+      0
+    ],
+    "hug": [
+      0
+    ],
+    "just": [
+      0
+    ],
+    "kick": [
+      0
+    ],
+    "listen": [
+      0
+    ],
+    "listening": [
+      0
+    ],
+    "little": [
+      0
+    ],
+    "look": [
+      0
+    ],
+    "milk": [
+      0
+    ],
+    "moment": [
+      0
+    ],
+    "morning": [
+      0
+    ],
+    "much": [
+      0
+    ],
+    "music": [
+      0
+    ],
+    "near": [
+      0
+    ],
+    "next": [
+      0
+    ],
+    "nice": [
+      0
+    ],
+    "no": [
+      0
+    ],
+    "now": [
+      0
+    ],
+    "oh": [
+      0
+    ],
+    "one": [
+      0
+    ],
+    "ooh": [
+      0
+    ],
+    "open": [
+      0
+    ],
+    "out": [
+      0
+    ],
+    "outside": [
+      0,
+      1
+    ],
+    "over": [
+      0
+    ],
+    "page": [
+      0
+    ],
+    "pause": [
+      0
+    ],
+    "play": [
+      0
+    ],
+    "quiet": [
+      0
+    ],
+    "rain": [
+      0
+    ],
+    "read": [
+      0
+    ],
+    "ready": [
+      0
+    ],
+    "rest": [
+      0
+    ],
+    "right": [
+      0
+    ],
+    "rush": [
+      0
+    ],
+    "see": [
+      0
+    ],
+    "sing": [
+      0
+    ],
+    "sip": [
+      0
+    ],
+    "sips": [
+      0
+    ],
+    "sleep": [
+      0
+    ],
+    "sleepy": [
+      0
+    ],
+    "slow": [
+      0
+    ],
+    "smile": [
+      0
+    ],
+    "song": [
+      0
+    ],
+    "splash": [
+      0
+    ],
+    "squeeze": [
+      0
+    ],
+    "steady": [
+      0
+    ],
+    "story": [
+      0
+    ],
+    "sunshine": [
+      0
+    ],
+    "sweet": [
+      0
+    ],
+    "take": [
+      0
+    ],
+    "talking": [
+      0
+    ],
+    "tap": [
+      0
+    ],
+    "there": [
+      0
+    ],
+    "time": [
+      0
+    ],
+    "tiny": [
+      0
+    ],
+    "toes": [
+      0
+    ],
+    "together": [
+      1
+    ],
+    "tummy": [
+      0
+    ],
+    "turn": [
+      0
+    ],
+    "up": [
+      0
+    ],
+    "very": [
+      0
+    ],
+    "voice": [
+      0
+    ],
+    "warm": [
+      0
+    ],
+    "wash": [
+      0
+    ],
+    "watch": [
+      0
+    ],
+    "wiggle": [
+      0
+    ],
+    "wipe": [
+      0
+    ],
+    "wonder": [
+      0
+    ],
+    "yum": [
+      0
+    ],
+    "yummy": [
+      0
+    ],
+    "i'm": [
+      0
+    ],
+    "let's": [
+      0
+    ],
+    "you're": [
+      0
+    ]
+  },
+  "stress_policy": "For lexical content words, require one primary stress on the independently specified vowel nucleus index. Diphthongs count as one nucleus. Weak function words and expressive/repeated interjections have no primary-stress requirement in this gate.",
+  "stress_reference": "https://dictionary.cambridge.org/pronunciation/english/outside (both first- and last-syllable main stress patterns); raw CMU outside entry has two primary markers, which is preserved in the source but normalized for this candidate input policy"
+}

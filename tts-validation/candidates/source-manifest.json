@@ -26,12 +26,28 @@
   },
   "independent_code": {
     "number_words.py": "new implementation from English number composition rules; not copied from LGPL num2words",
-    "clean_frontend.py": "CMU ARPABET conversion and audited POS variant selection; independent bounded name/number/idiom rules; per-clause bass ambiguity handling"
+    "clean_frontend.py": "CMU ARPABET conversion and audited POS variant selection; independent bounded name/number/idiom rules; per-clause bass ambiguity handling",
+    "isolated_onnx.py": "New bounded diagnostic runner from verified tensor/metadata formats; no Sherpa runtime or SDK/phonemizer imports"
   },
   "bounded_context_rules": {
     "open_close": "CMU close(2) only after open comma/and, before sentence punctuation",
     "lead_role": "CMU lead(2) in specified take/hold/in-the-lead idioms",
     "does_deer": "CMU doe plus /z/, only determiner or count plus does before graze/roam/feed/leap",
-    "bass_scope": "one occurrence per clause with explicit music/fish evidence; otherwise unresolved"
+    "bass_scope": "one occurrence per clause with explicit music/fish evidence; otherwise unresolved",
+    "outside_stress": "CMU segment sequence unchanged; independently defined single-primary-stress convention, first for adjective/noun and last for other tags; other primary demoted to secondary"
+  },
+  "kitten_assets": {
+    "archive_url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kitten-nano-en-v0_8-fp32.tar.bz2",
+    "archive_sha256": "16092117bfe591ddcd58d078e1454603b8e1caea46f85653b2c2efae76bd883e",
+    "selected_files": [
+      "model.fp32.onnx",
+      "voices.bin",
+      "tokens.txt",
+      "LICENSE",
+      "README.md"
+    ],
+    "espeak_data": "never extracted",
+    "hashes": "isolated_onnx.ASSET_HASHES and fetch_kitten_assets.HASHES",
+    "model_metadata_has_espeak": "retained provenance field only; no fallback or data dependency is invoked by diagnostic runner"
   }
 }

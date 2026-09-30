@@ -1,0 +1,31 @@
+{
+  "source_commit": "62f39abc095dd29a57d86a0efdef5400a2bb4293",
+  "source_hashes": {
+    "LiteResponseEngine.kt": "6c5f2009fa79c2f9ea0af38ea36ccdd7c57b80ce6791d538be4a8fd6c62dd2fb",
+    "LiteSpeechStyle.kt": "5f2645c62a26914020816af368b326ec28f9869e0d9d0d2eb621a43d6b066130"
+  },
+  "frontend_dependencies_sha256": {
+    "candidates/clean_frontend.py": "213b8d59187ae9b887077fc58d45b66c1b2059a827fa64497fafc734c853a02e",
+    "candidates/fetch_cmudict.py": "cc75d2ed67f5682df4e9fc3d6e9b31f4b5c274b82181d4e0eb41601cfec8d2e8",
+    "candidates/fetch_kitten_assets.py": "b1e6ad9d145dc56edd49a0df5cd80e0685936457352b8d23e34a98f3aaaca50a",
+    "candidates/isolated_onnx.py": "b28fc38a84e9d8e80f56111163fa77b1ff77a2ab80aa829a7a6f3be0de089fdb",
+    "candidates/number_words.py": "9ed469307f92c459b9fec437fc9d99209eab2f0146af9dde31c926032f21f62c",
+    "candidates/vendor/misaki/__init__.py": "7387ed6295a0905c73d97be53f5859a173e7b7d69c80bcdd9615f34020c5dfae",
+    "candidates/vendor/misaki/data/__init__.py": "c48ba6a32e371d87bc95f75ec81477817b6e9743cdfb300bfd8d29fceb2f304c",
+    "candidates/vendor/misaki/en.py": "ed850c1aaed5c1a8a35460aa6bbfcb99d8b22abfcec14cf0eb9bff322f362414",
+    "candidates/vendor/misaki/token.py": "5ff6ce45da6766cdc1e3d5c91b0b2b093d912b8df6f2da327af56f88ad43f073",
+    "candidates/source-manifest.json": "2e8e77c573ca982ee6319b6b40e3387e406d84a88398069fe55afb5615d7dce8",
+    "frontend_fingerprint.py": "233010ae6dbb20b21ae42a6de6cd89cdad8228065cc65a94574ad4f400f6f876"
+  },
+  "fixture_sha256": "00f4c178f3311196492163836e0dfff53f905fd00cf92822b13a9b7ecfef0ce0",
+  "frontend_sha256": "213b8d59187ae9b887077fc58d45b66c1b2059a827fa64497fafc734c853a02e",
+  "utterances": 202,
+  "lexical_occurrences": 1260,
+  "unique_lexical_tokens": 149,
+  "fixture_words": 149,
+  "missing_expectations": [],
+  "failed_utterances": 0,
+  "failed_occurrences": 0,
+  "scope": "Independently authored American-English segment expectations for the baseline Lite vocabulary. Primary stress for specified content words is checked; expressive length and t/flap allophony are outside this gate. Listed alternatives permit weak forms and common American vowel variation. Not candidate snapshots and not acoustic approval. CMU pinned source independently confirms here/hear HH IY1 R; /iɹ/ and /ɪɹ/ are accepted for these words. Weak /ɐ/ is accepted separately from /ə/ for a/am. Contractions and repeated compounds are included as lexical tokens.",
+  "integration_approved": false
+}

@@ -112,6 +112,15 @@ class Frontend:
         lexicon['wind'] = {'DEFAULT': pronunciations['wind(2)'], 'VERB': pronunciations['wind']}
         lexicon['tear'] = {'DEFAULT': pronunciations['tear(2)'], 'VERB': pronunciations['tear']}
         lexicon['used'] = {'DEFAULT': pronunciations['used'], 'VBD': 'jˈust'}
+        # CMU outside has two primary stresses. Choose one main stress for this
+        # candidate's Kitten input convention; retain the other as secondary.
+        # Segment sequence remains CMU; stress policy is independently defined.
+        outside = pronunciations['outside']
+        lexicon['outside'] = {
+            'DEFAULT': outside.replace('ˈ', 'ˌ', 1),
+            'ADJ': outside[::-1].replace('ˈ', 'ˌ', 1)[::-1],
+            'NOUN': outside[::-1].replace('ˈ', 'ˌ', 1)[::-1],
+        }
         # CMU numbered alternatives do not encode POS. Select only audited pairs;
         # a successful lookup alone is not evidence of the intended pronunciation.
         for word, default, overrides in [
