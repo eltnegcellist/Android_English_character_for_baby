@@ -1,0 +1,76 @@
+{
+  "counts": {
+    "core_fixture": {
+      "total": 12,
+      "unresolved_or_error": 1
+    },
+    "extra_stress": {
+      "total": 8,
+      "unresolved_or_error": 2
+    },
+    "fixed_bank": {
+      "total": 202,
+      "unresolved_or_error": 0
+    },
+    "name_stress": {
+      "total": 780,
+      "unresolved_or_error": 780
+    },
+    "pronunciation_contrast": {
+      "total": 8,
+      "unresolved_or_error": 0
+    }
+  },
+  "bank_counts": {
+    "fillers": 40,
+    "generic": 56,
+    "neutral_closers": 6,
+    "scenes": 100
+  },
+  "unresolved_words": [
+    "Aoi-chan",
+    "Hana",
+    "Hana!",
+    "Hana-chan",
+    "Haruto-chan",
+    "Tsumugi",
+    "Tsumugi-chan",
+    "qzxvplm"
+  ],
+  "gpl_family_metadata_hits": [
+    {
+      "name": "num2words",
+      "version": "0.5.14",
+      "license_metadata": "LGPL\n\nLicense :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)"
+    }
+  ],
+  "forbidden_packages": [],
+  "contrast_matches": 7,
+  "contrast_total": 8,
+  "contrast_failures": [
+    {
+      "text": "The bass is low.",
+      "expected": "bˈAs",
+      "actual": "bˈæs"
+    }
+  ],
+  "fixed_bank_raw_symbol_failures": 66,
+  "fixed_bank_semantic_alias_symbols": [
+    "A",
+    "I",
+    "O",
+    "T",
+    "W",
+    "Y",
+    "ᵊ"
+  ],
+  "raw_unsupported_symbols": [
+    "ᵊ",
+    "❓"
+  ],
+  "expanded_unsupported_symbols": [
+    "❓"
+  ],
+  "corpus_same_as_compare_ref": true,
+  "decision": "BLOCKED: no app integration; license/data provenance and Kitten adapter remain unqualified"
+}

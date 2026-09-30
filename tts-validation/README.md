@@ -29,3 +29,7 @@ Upstream documents English `G2P(trf=false, british=false, fallback=None)` as the
 The validation reference therefore MUST instantiate Misaki with fallback=None and MUST fail fixtures containing unresolved tokens. No eSpeak-derived fallback output may be used as expected data.
 
 A native port is not accepted by license label alone: dictionary/data provenance is audited separately and parity fixtures are pinned before implementation.
+
+## Executed discovery probe (2026-09-30)
+
+See [results/2026-09-30-findings.md](results/2026-09-30-findings.md) for the executed corpus/name/contrast probe and its blockers. The current candidate is **not approved for integration**. `validate_g2p.py` is a read-only discovery tool and exits nonzero; its selective reference environment still contains LGPL num2words and is not a production non-GPL implementation.
