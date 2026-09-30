@@ -18,8 +18,8 @@
     <application
         android:name=".EmmaApplication"
         android:allowBackup="true"
-        android:icon="@drawable/mitsukotoba_english_icon_safe"
-        android:roundIcon="@drawable/mitsukotoba_english_icon_safe"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="みつことば"
         android:largeHeap="true"
         android:supportsRtl="true"
