@@ -63,5 +63,76 @@ class AdaptiveEndpointDetectorTest {
         assertTrue(startedAgain)
     }
 
+    @Test
+    fun noisyBackgroundAfterSpeechStillEndsTurn() {
+        val detector = AdaptiveEndpointDetector(sampleRate)
+        repeat(5) { detector.process(frame(0), frameSamples) }
+
+        repeat(20) { detector.process(frame(8_000), frameSamples) }
+
+        // 2,600 is deliberately above the detector's old absolute threshold,
+        // so the previous implementation would keep treating this as speech.
+        var endpoint = false
+        repeat(12) {
+            if (detector.process(frame(2_600), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
+        }
+        assertTrue(endpoint)
+    }
+
+    @Test
+    fun briefRelativeDropDoesNotCutOffOngoingSpeech() {
+        val detector = AdaptiveEndpointDetector(sampleRate)
+        repeat(5) { detector.process(frame(0), frameSamples) }
+        repeat(20) { detector.process(frame(8_000), frameSamples) }
+
+        var endpoint = false
+        repeat(6) {
+            if (detector.process(frame(2_600), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
+        }
+        assertFalse(endpoint)
+
+        repeat(12) {
+            if (detector.process(frame(8_000), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
+        }
+        assertFalse(endpoint)
+    }
+
+    @Test
+    fun learnedNoisyBackgroundDoesNotImmediatelyStartNextTurn() {
+        val detector = AdaptiveEndpointDetector(sampleRate)
+        repeat(5) { detector.process(frame(0), frameSamples) }
+        repeat(20) { detector.process(frame(8_000), frameSamples) }
+
+        var endpoint = false
+        repeat(12) {
+            if (detector.process(frame(2_600), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
+        }
+        assertTrue(endpoint)
+
+        var startedFromNoise = false
+        repeat(10) {
+            if (detector.process(frame(2_600), frameSamples) is VoiceActivityEvent.SpeechStarted) startedFromNoise = true
+        }
+        assertFalse(startedFromNoise)
+
+        var realSpeechStarted = false
+        repeat(6) {
+            if (detector.process(frame(8_000), frameSamples) is VoiceActivityEvent.SpeechStarted) realSpeechStarted = true
+        }
+        assertTrue(realSpeechStarted)
+    }
+
+    @Test
+    fun continuousSpeechLongerThanTwelveSecondsIsNeverForceCut() {
+        val detector = AdaptiveEndpointDetector(sampleRate)
+        repeat(5) { detector.process(frame(0), frameSamples) }
+
+        var endpoint = false
+        repeat(200) {
+            if (detector.process(frame(5_000), frameSamples) is VoiceActivityEvent.Endpoint) endpoint = true
+        }
+        assertFalse(endpoint)
+    }
+
     private fun frame(value: Int): ShortArray = ShortArray(frameSamples) { value.toShort() }
 }

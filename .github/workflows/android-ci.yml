@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.14-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.15-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -124,7 +124,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.14
+          name: Mitsukotoba-v1.9.15
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -140,7 +140,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.14"
+          TAG="mitsukotoba-v1.9.15"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -158,5 +158,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.14" \
-            --notes "Mitsukotoba v1.9.14 switches the Android launcher to a proper adaptive icon using the new baby + ABC artwork. It also retains the v1.9.13 background and resumable model preparation improvements."
+            --title "みつことば v1.9.15" \
+            --notes "Mitsukotoba v1.9.15 improves noisy-room speech endpointing. The detector now learns sustained background noise during a turn and uses a conservative relative drop from recent speech level while preserving the existing 0.85–1.75 second endpoint timings. The manual 「ここで返事して」 control is unchanged."
