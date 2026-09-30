@@ -37,3 +37,7 @@ See [results/2026-09-30-findings.md](results/2026-09-30-findings.md) for the exe
 ## Additional CMU-backed candidate
 
 See [results/2026-09-30-cmu-candidate-findings.md](results/2026-09-30-cmu-candidate-findings.md). The second candidate excludes original Misaki dictionaries and LGPL num2words, and resolves the fixed bank plus the configured Japanese-name matrix. This is lexical/token coverage only; pronunciation, unrestricted Full output, voice parity, Android lifecycle, and APK gates are still unqualified. `validate_clean_candidate.py` remains nonzero and does not authorize integration.
+
+## Expanded pronunciation gate
+
+See [results/2026-09-30-pronunciation-findings.md](results/2026-09-30-pronunciation-findings.md). Independent word/sense fixtures exposed errors in the CMU-backed candidate, including two actual Lite replies. The repaired candidate passes 39 expanded checks and the earlier 61 checks, while retaining zero lexical/token failures in the 202/780 corpus matrix. This is still not comprehensive pronunciation or audio approval. `validate_pronunciation.py` returns success for its fixtures only; `validate_clean_candidate.py` continues to block integration.

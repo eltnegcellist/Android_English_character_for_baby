@@ -1,0 +1,560 @@
+{
+  "total": 39,
+  "passed": 39,
+  "failed": 0,
+  "decision": "Fixture pass only; other G2P/audio/Android gates remain unqualified",
+  "records": [
+    {
+      "group": "word_pronunciation",
+      "text": "Please close the door.",
+      "word": "close",
+      "expected": "klˈoʊz",
+      "actual": [
+        "klˈoʊz"
+      ],
+      "tags": [
+        "VB"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Stay close to me.",
+      "word": "close",
+      "expected": "klˈoʊs",
+      "actual": [
+        "klˈoʊs"
+      ],
+      "tags": [
+        "RB"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "We live here.",
+      "word": "live",
+      "expected": "lˈɪv",
+      "actual": [
+        "lˈɪv"
+      ],
+      "tags": [
+        "VBP"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "This is live music.",
+      "word": "live",
+      "expected": "lˈaɪv",
+      "actual": [
+        "lˈaɪv"
+      ],
+      "tags": [
+        "JJ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "I will present the gift.",
+      "word": "present",
+      "expected": "pɹizˈɛnt",
+      "actual": [
+        "pɹizˈɛnt"
+      ],
+      "tags": [
+        "VB"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "This present is for you.",
+      "word": "present",
+      "expected": "pɹˈɛzənt",
+      "actual": [
+        "pɹˈɛzənt"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Please record your voice.",
+      "word": "record",
+      "expected": "ɹəkˈɔɹd",
+      "actual": [
+        "ɹəkˈɔɹd"
+      ],
+      "tags": [
+        "VB"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "This record sounds lovely.",
+      "word": "record",
+      "expected": "ɹˈɛkəɹd",
+      "actual": [
+        "ɹˈɛkəɹd"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Please lead the way.",
+      "word": "lead",
+      "expected": "lˈid",
+      "actual": [
+        "lˈid"
+      ],
+      "tags": [
+        "VB"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "The pipe contains lead.",
+      "word": "lead",
+      "expected": "lˈɛd",
+      "actual": [
+        "lˈɛd"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "I object to that.",
+      "word": "object",
+      "expected": "əbdʒˈɛkt",
+      "actual": [
+        "əbdʒˈɛkt"
+      ],
+      "tags": [
+        "VBP"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Look at this object.",
+      "word": "object",
+      "expected": "ˈɑbdʒɛkt",
+      "actual": [
+        "ˈɑbdʒɛkt"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "I am content.",
+      "word": "content",
+      "expected": "kəntˈɛnt",
+      "actual": [
+        "kəntˈɛnt"
+      ],
+      "tags": [
+        "JJ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "The content is helpful.",
+      "word": "content",
+      "expected": "kˈɑntɛnt",
+      "actual": [
+        "kˈɑntɛnt"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "She does the work.",
+      "word": "does",
+      "expected": "dˈʌz",
+      "actual": [
+        "dˈʌz"
+      ],
+      "tags": [
+        "VBZ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "The does graze in the field.",
+      "word": "does",
+      "expected": "dˈoʊz",
+      "actual": [
+        "dˈoʊz"
+      ],
+      "tags": [
+        "VBZ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "I use a spoon.",
+      "word": "use",
+      "expected": "jˈuz",
+      "actual": [
+        "jˈuz"
+      ],
+      "tags": [
+        "VBP"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "This spoon has a use.",
+      "word": "use",
+      "expected": "jˈus",
+      "actual": [
+        "jˈus"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "I read every night.",
+      "word": "read",
+      "expected": "ɹˈid",
+      "actual": [
+        "ɹˈid"
+      ],
+      "tags": [
+        "VBP"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Yesterday I read the book.",
+      "word": "read",
+      "expected": "ɹˈɛd",
+      "actual": [
+        "ɹˈɛd"
+      ],
+      "tags": [
+        "VBD"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "The wind blows.",
+      "word": "wind",
+      "expected": "wˈɪnd",
+      "actual": [
+        "wˈɪnd"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Please wind the toy.",
+      "word": "wind",
+      "expected": "wˈaɪnd",
+      "actual": [
+        "wˈaɪnd"
+      ],
+      "tags": [
+        "VB"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "A tear is falling.",
+      "word": "tear",
+      "expected": "tˈɪɹ",
+      "actual": [
+        "tˈɪɹ"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Do not tear the page.",
+      "word": "tear",
+      "expected": "tˈɛɹ",
+      "actual": [
+        "tˈɛɹ"
+      ],
+      "tags": [
+        "VB"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "She took the lead.",
+      "word": "lead",
+      "expected": "lˈid",
+      "actual": [
+        "lˈid"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Little hands! Open, close. Wiggle, wiggle!",
+      "word": "close",
+      "expected": "klˈoʊz",
+      "actual": [
+        "klˈoʊz"
+      ],
+      "tags": [
+        "JJ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Hands, hands! Open and close. Wiggle, wiggle!",
+      "word": "close",
+      "expected": "klˈoʊz",
+      "actual": [
+        "klˈoʊz"
+      ],
+      "tags": [
+        "JJ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "Nice and close.",
+      "word": "close",
+      "expected": "klˈoʊs",
+      "actual": [
+        "klˈoʊs"
+      ],
+      "tags": [
+        "JJ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "They live together.",
+      "word": "live",
+      "expected": "lˈɪv",
+      "actual": [
+        "lˈɪv"
+      ],
+      "tags": [
+        "VBP"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "We took the lead.",
+      "word": "lead",
+      "expected": "lˈid",
+      "actual": [
+        "lˈid"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "These does roam in the forest.",
+      "word": "does",
+      "expected": "dˈoʊz",
+      "actual": [
+        "dˈoʊz"
+      ],
+      "tags": [
+        "VBZ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "He does like music.",
+      "word": "does",
+      "expected": "dˈʌz",
+      "actual": [
+        "dˈʌz"
+      ],
+      "tags": [
+        "VBZ"
+      ],
+      "match": true
+    },
+    {
+      "group": "word_pronunciation",
+      "text": "The lead is heavy.",
+      "word": "lead",
+      "expected": "lˈɛd",
+      "actual": [
+        "lˈɛd"
+      ],
+      "tags": [
+        "NN"
+      ],
+      "match": true
+    },
+    {
+      "group": "bass_occurrence_scope",
+      "text": "I play the bass guitar. The bass swims.",
+      "expected_policies": [
+        "music",
+        "fish"
+      ],
+      "actual_policies": [
+        "music",
+        "fish"
+      ],
+      "actual_phonemes": [
+        "bˈeɪs",
+        "bˈæs"
+      ],
+      "expected_phonemes_when_resolved": [
+        "bˈeɪs",
+        "bˈæs"
+      ],
+      "expected_resolved": true,
+      "actual_resolved": true,
+      "match": true
+    },
+    {
+      "group": "bass_occurrence_scope",
+      "text": "I play the bass guitar. Please bring the bass.",
+      "expected_policies": [
+        "music",
+        null
+      ],
+      "actual_policies": [
+        "music",
+        null
+      ],
+      "actual_phonemes": [
+        "bˈeɪs",
+        "bˈæs"
+      ],
+      "expected_phonemes_when_resolved": null,
+      "expected_resolved": false,
+      "actual_resolved": false,
+      "match": true
+    },
+    {
+      "group": "bass_occurrence_scope",
+      "text": "The bass swims. Please bring the bass.",
+      "expected_policies": [
+        "fish",
+        null
+      ],
+      "actual_policies": [
+        "fish",
+        null
+      ],
+      "actual_phonemes": [
+        "bˈæs",
+        "bˈæs"
+      ],
+      "expected_phonemes_when_resolved": null,
+      "expected_resolved": false,
+      "actual_resolved": false,
+      "match": true
+    },
+    {
+      "group": "bass_occurrence_scope",
+      "text": "The bass guitar and the bass fish are here.",
+      "expected_policies": [
+        null,
+        null
+      ],
+      "actual_policies": [
+        null,
+        null
+      ],
+      "actual_phonemes": [
+        "bˈæs",
+        "bˈæs"
+      ],
+      "expected_phonemes_when_resolved": null,
+      "expected_resolved": false,
+      "actual_resolved": false,
+      "match": true
+    },
+    {
+      "group": "bass_occurrence_scope",
+      "text": "I play the bass guitar; the bass swims.",
+      "expected_policies": [
+        "music",
+        "fish"
+      ],
+      "actual_policies": [
+        "music",
+        "fish"
+      ],
+      "actual_phonemes": [
+        "bˈeɪs",
+        "bˈæs"
+      ],
+      "expected_phonemes_when_resolved": [
+        "bˈeɪs",
+        "bˈæs"
+      ],
+      "expected_resolved": true,
+      "actual_resolved": true,
+      "match": true
+    },
+    {
+      "group": "bass_occurrence_scope",
+      "text": "The bass is low.",
+      "expected_policies": [
+        null
+      ],
+      "actual_policies": [
+        null
+      ],
+      "actual_phonemes": [
+        "bˈæs"
+      ],
+      "expected_phonemes_when_resolved": null,
+      "expected_resolved": false,
+      "actual_resolved": false,
+      "match": true
+    }
+  ]
+}

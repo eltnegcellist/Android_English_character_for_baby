@@ -89,6 +89,9 @@
         "bass"
       ],
       "bass_context_policy": null,
+      "bass_occurrence_policies": [
+        null
+      ],
       "repaired_punctuation": [],
       "tokens": [
         {

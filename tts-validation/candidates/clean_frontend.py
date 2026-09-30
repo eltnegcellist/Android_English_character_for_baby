@@ -112,8 +112,25 @@ class Frontend:
         lexicon['wind'] = {'DEFAULT': pronunciations['wind(2)'], 'VERB': pronunciations['wind']}
         lexicon['tear'] = {'DEFAULT': pronunciations['tear(2)'], 'VERB': pronunciations['tear']}
         lexicon['used'] = {'DEFAULT': pronunciations['used'], 'VBD': 'jˈust'}
+        # CMU numbered alternatives do not encode POS. Select only audited pairs;
+        # a successful lookup alone is not evidence of the intended pronunciation.
+        for word, default, overrides in [
+            ('close', 'close', {'VERB': 'close(2)'}),
+            ('live', 'live', {'VERB': 'live(2)'}),
+            ('present', 'present', {'VERB': 'present(2)'}),
+            ('record', 'record(2)', {'VERB': 'record'}),
+            ('lead', 'lead', {'VERB': 'lead(2)'}),
+            ('object', 'object', {'VERB': 'object(2)'}),
+            ('content', 'content', {'ADJ': 'content(2)'}),
+            ('use', 'use', {'VERB': 'use(2)'}),
+        ]:
+            lexicon[word] = {'DEFAULT': pronunciations[default],
+                             **{tag: pronunciations[source] for tag, source in overrides.items()}}
         # Keep both bass senses; only narrow, explicit music/fish contexts qualify.
         self.bass_music = pronunciations['bass(2)']
+        self.close_verb = pronunciations['close(2)']
+        self.lead_role = pronunciations['lead(2)']
+        self.does_deer = pronunciations['doe'] + 'z'
         self.provenance = {'source': MANIFEST['cmudict'], 'cmu_words': len(lexicon),
                            'own_entries': {**OWN_EXPRESSIVE, 'used_before_to': 'jˈust'},
                            'original_misaki_dictionary_assets': 'not included',
@@ -139,12 +156,34 @@ class Frontend:
     def __call__(self, text, japanese_name=None):
         if '[' in text or ']' in text or '\n' in text:
             raise ValueError('Untrusted embedded phoneme syntax')
-        bass_tokens = list(re.finditer(r'\bbass\b', text, re.I))
-        bass_music = bool(re.search(r'\bbass\s+(?:guitar|clef|drum|player|singer)\b|\bdouble\s+bass\b|\bplay(?:ing|ed)?\s+the\s+bass\b', text, re.I))
-        bass_fish = bool(re.search(r'\bbass\s+(?:fish|swims?|swimming)\b|\b(?:caught|catch|fishing\s+for)\s+(?:a\s+)?bass\b', text, re.I))
-        ambiguous = ['bass'] if bass_tokens and (bass_music == bass_fish) else []
-        if bass_tokens and bass_music and not bass_fish:
-            text = re.sub(r'\bbass\b', lambda m: f'[{m[0]}](/{self.bass_music}/)', text, flags=re.I)
+        # Short nursery imperatives are tagged JJ by the small POS model.
+        # Preserve the adjective in "nice and close"; override only this action.
+        text = re.sub(r'\b(open\s*(?:,|and)\s+)(close)(?=\s*[.!?])',
+                      lambda m: m[1] + f'[{m[2]}](/{self.close_verb}/)', text, flags=re.I)
+        # Noun senses are not separable by POS alone. These are bounded idioms,
+        # not a general semantic classifier. Doe plural is CMU doe + voiced /z/.
+        text = re.sub(r'\b((?:take|takes|taking|took|taken|hold|holds|held|holding|in|into)\s+the\s+)(lead)\b',
+                      lambda m: m[1] + f'[{m[2]}](/{self.lead_role}/)', text, flags=re.I)
+        text = re.sub(r'\b((?:the|these|those|two|three)\s+)(does)(?=\s+(?:graze|roam|feed|leap)\b)',
+                      lambda m: m[1] + f'[{m[2]}](/{self.does_deer}/)', text, flags=re.I)
+        # Never let a clear sense in one sentence resolve a separate occurrence.
+        # Multiple occurrences in one clause remain unqualified, conservatively.
+        ambiguous, bass_decisions = [], []
+        clauses = re.split(r'([.!?;,])', text)
+        for i in range(0, len(clauses), 2):
+            clause = clauses[i]
+            hits = list(re.finditer(r'\bbass\b', clause, re.I))
+            if not hits:
+                continue
+            music = bool(re.search(r'\bbass\s+(?:guitar|clef|drum|player|singer)\b|\bdouble\s+bass\b|\bplay(?:ing|ed)?\s+the\s+bass\b', clause, re.I))
+            fish = bool(re.search(r'\bbass\s+(?:fish|swims?|swimming)\b|\b(?:caught|catch|fishing\s+for)\s+(?:a\s+)?bass\b', clause, re.I))
+            decision = 'music' if len(hits) == 1 and music and not fish else 'fish' if len(hits) == 1 and fish and not music else None
+            bass_decisions.extend([decision] * len(hits))
+            if decision is None:
+                ambiguous.extend(['bass'] * len(hits))
+            elif decision == 'music':
+                clauses[i] = re.sub(r'\bbass\b', lambda m: f'[{m[0]}](/{self.bass_music}/)', clause, flags=re.I)
+        text = ''.join(clauses)
         if japanese_name:
             ps = romaji_name(japanese_name)
             # Misaki explicit phoneme aliases for separately authorized name metadata only.
@@ -164,6 +203,7 @@ class Frontend:
         return {'phonemes': phonemes, 'ipa': None if unresolved or ambiguous else kitten_ipa(phonemes),
                 'unresolved': unresolved,
                 'unresolved_meaning': ambiguous,
-                'bass_context_policy': 'music' if bass_music and not bass_fish else 'fish' if bass_fish and not bass_music else None,
+                'bass_context_policy': bass_decisions[0] if bass_decisions and len(set(bass_decisions)) == 1 else None,
+                'bass_occurrence_policies': bass_decisions,
                 'repaired_punctuation': repaired_punctuation,
                 'tokens': [{'text': t.text, 'tag': t.tag, 'phonemes': t.phonemes} for t in tokens]}

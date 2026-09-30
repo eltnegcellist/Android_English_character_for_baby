@@ -26,6 +26,12 @@
   },
   "independent_code": {
     "number_words.py": "new implementation from English number composition rules; not copied from LGPL num2words",
-    "clean_frontend.py": "new candidate adapter; CMU ARPABET mapping, name approximation, punctuation preservation, narrow bass contexts"
+    "clean_frontend.py": "CMU ARPABET conversion and audited POS variant selection; independent bounded name/number/idiom rules; per-clause bass ambiguity handling"
+  },
+  "bounded_context_rules": {
+    "open_close": "CMU close(2) only after open comma/and, before sentence punctuation",
+    "lead_role": "CMU lead(2) in specified take/hold/in-the-lead idioms",
+    "does_deer": "CMU doe plus /z/, only determiner or count plus does before graze/roam/feed/leap",
+    "bass_scope": "one occurrence per clause with explicit music/fish evidence; otherwise unresolved"
   }
 }
