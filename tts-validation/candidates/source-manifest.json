@@ -1,0 +1,31 @@
+{
+  "version": "0.9.4",
+  "files": {
+    "en.py": {
+      "upstream_sha256": "ddf67ad3bc4dd98143dcc9b6fbcde259b9d879d8b91684201cf0deeb07aa9910",
+      "vendored_sha256": "ed850c1aaed5c1a8a35460aa6bbfcb99d8b22abfcec14cf0eb9bff322f362414",
+      "modification": "replace num2words import with independent number_words"
+    },
+    "token.py": {
+      "upstream_sha256": "5ff6ce45da6766cdc1e3d5c91b0b2b093d912b8df6f2da327af56f88ad43f073",
+      "vendored_sha256": "5ff6ce45da6766cdc1e3d5c91b0b2b093d912b8df6f2da327af56f88ad43f073",
+      "modification": "none"
+    }
+  },
+  "cmudict": {
+    "commit": "74790861f652b15e4ac49015a90074ad62a27690",
+    "dictionary_sha256": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22",
+    "license_sha256": "bd4ce8e44170a5f9f481310ca85c51de3c4f851a65e679b40e603b143bd3542a"
+  },
+  "selected_misaki_source": {
+    "upstream_repository": "https://github.com/hexgrad/misaki",
+    "audited_commit": "fba1236595f2d2bf21d414ba6e57d25256afada3",
+    "dictionary_data": "excluded entirely",
+    "license": "Apache-2.0",
+    "original_pypi_distribution": "misaki==0.9.4"
+  },
+  "independent_code": {
+    "number_words.py": "new implementation from English number composition rules; not copied from LGPL num2words",
+    "clean_frontend.py": "new candidate adapter; CMU ARPABET mapping, name approximation, punctuation preservation, narrow bass contexts"
+  }
+}

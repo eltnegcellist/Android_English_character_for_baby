@@ -33,3 +33,7 @@ A native port is not accepted by license label alone: dictionary/data provenance
 ## Executed discovery probe (2026-09-30)
 
 See [results/2026-09-30-findings.md](results/2026-09-30-findings.md) for the executed corpus/name/contrast probe and its blockers. The current candidate is **not approved for integration**. `validate_g2p.py` is a read-only discovery tool and exits nonzero; its selective reference environment still contains LGPL num2words and is not a production non-GPL implementation.
+
+## Additional CMU-backed candidate
+
+See [results/2026-09-30-cmu-candidate-findings.md](results/2026-09-30-cmu-candidate-findings.md). The second candidate excludes original Misaki dictionaries and LGPL num2words, and resolves the fixed bank plus the configured Japanese-name matrix. This is lexical/token coverage only; pronunciation, unrestricted Full output, voice parity, Android lifecycle, and APK gates are still unqualified. `validate_clean_candidate.py` remains nonzero and does not authorize integration.

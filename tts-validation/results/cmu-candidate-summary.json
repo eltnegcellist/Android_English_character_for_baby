@@ -1,0 +1,132 @@
+{
+  "counts": {
+    "ambiguous_meaning": {
+      "total": 1,
+      "unresolved_or_error": 1
+    },
+    "clear_bass_context": {
+      "total": 4,
+      "unresolved_or_error": 0
+    },
+    "core_fixture": {
+      "total": 12,
+      "unresolved_or_error": 0
+    },
+    "fixed_bank": {
+      "total": 202,
+      "unresolved_or_error": 0
+    },
+    "name_stress": {
+      "total": 780,
+      "unresolved_or_error": 0
+    },
+    "negative_unknown": {
+      "total": 2,
+      "unresolved_or_error": 2
+    },
+    "number_output_g2p": {
+      "total": 26,
+      "unresolved_or_error": 0
+    },
+    "pronunciation_contrast": {
+      "total": 8,
+      "unresolved_or_error": 1
+    },
+    "unseen_english_stress": {
+      "total": 20,
+      "unresolved_or_error": 0
+    }
+  },
+  "assertions": {
+    "ambiguous_meaning_detection": {
+      "total": 1,
+      "failed": 0
+    },
+    "bass_clear_context": {
+      "total": 4,
+      "failed": 0
+    },
+    "invalid_adapter_rejection": {
+      "total": 2,
+      "failed": 0
+    },
+    "name_policy": {
+      "total": 7,
+      "failed": 0
+    },
+    "number_spelling": {
+      "total": 26,
+      "failed": 0
+    },
+    "phoneme_adapter": {
+      "total": 8,
+      "failed": 0
+    },
+    "unknown_detection": {
+      "total": 2,
+      "failed": 0
+    },
+    "unsupported_name_rejection": {
+      "total": 5,
+      "failed": 0
+    },
+    "unsupported_number_rejection": {
+      "total": 6,
+      "failed": 0
+    }
+  },
+  "contrast_matches": 7,
+  "contrast_total": 8,
+  "contrast_failures": [
+    {
+      "text": "The bass is low.",
+      "group": "pronunciation_contrast",
+      "name_metadata": null,
+      "phonemes": "ðə bˈæs ˈɪz lˈO.",
+      "ipa": null,
+      "unresolved": [],
+      "unresolved_meaning": [
+        "bass"
+      ],
+      "bass_context_policy": null,
+      "repaired_punctuation": [],
+      "tokens": [
+        {
+          "text": "The",
+          "tag": "DT",
+          "phonemes": "ðə"
+        },
+        {
+          "text": "bass",
+          "tag": "NN",
+          "phonemes": "bˈæs"
+        },
+        {
+          "text": "is",
+          "tag": "VBZ",
+          "phonemes": "ˈɪz"
+        },
+        {
+          "text": "low",
+          "tag": "JJ",
+          "phonemes": "lˈO"
+        },
+        {
+          "text": ".",
+          "tag": ".",
+          "phonemes": "."
+        }
+      ],
+      "unsupported_kitten_symbols": [],
+      "resolved": false,
+      "expected_phonemes": "bˈAs",
+      "actual_phonemes": "bˈæs",
+      "reference_match": false
+    }
+  ],
+  "unresolved_bank_words": [],
+  "gpl_family_metadata_hits": [],
+  "forbidden_installed_packages": [],
+  "same_corpus_as_compare_ref": true,
+  "decision": "BLOCKED: G2P correctness/Full coverage and audio parity are not established; no app integration"
+}
