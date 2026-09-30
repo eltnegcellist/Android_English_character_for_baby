@@ -30,7 +30,7 @@ internal enum class EmmaColorMode(
 
     companion object {
         fun fromSaved(value: String?): EmmaColorMode =
-            entries.firstOrNull { it.savedValue == value } ?: COLOR_SHIFT
+            entries.firstOrNull { it.savedValue == value } ?: MONO_RED
     }
 }
 
@@ -136,3 +136,4 @@ internal object EmmaColors {
         )
     }
 }
+
