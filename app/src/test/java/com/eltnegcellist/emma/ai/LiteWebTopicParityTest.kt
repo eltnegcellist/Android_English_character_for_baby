@@ -7,6 +7,9 @@ import org.junit.Test
 class LiteWebTopicParityTest {
     @Test fun publishedWebFixturesAgree() {
         val cases = listOf(
+            Triple("てがみだよ", "generic", true),
+            Triple("ほんとだね", "generic", true),
+            Triple("ほんとうだね", "generic", true),
             Triple("こんにちは そろそろ寝ましょうね", "sleep", true),
             Triple("そろそろねましょうね", "sleep", true),
             Triple("もう寝ちゃったね", "sleep", true),
