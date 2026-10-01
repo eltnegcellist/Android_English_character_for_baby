@@ -155,10 +155,10 @@ Kitten TTS Nano 0.8 / Kiki
 ```
 
 - 日本語ASR：Moonshine Japanese Tiny / Small Streaming
-- Liteの既定：Tiny
+- Liteの既定：Small
 - TTS：Kitten TTS Nano 0.8 / Kiki
 - 初期準備後の推論は端末内で実行
-- Small ASRも設定から選択可能
+- Tiny ASRも軽量オプションとして設定から選択可能
 
 Liteは、毎回生成AIに文章を作らせるのではなく、軽量な応答エンジンから場面に合う英語を選びます。
 
@@ -192,7 +192,7 @@ Fullでは追加で2GBを超えるGemmaモデルデータが必要です。
 
 初回起動時に、次のどちらかを選びます。
 
-- **Lite** — 既定はMoonshine Tiny + LiteResponseEngine + Kitten TTS
+- **Lite** — 既定はMoonshine Small + LiteResponseEngine + Kitten TTS
 - **Full** — 既定はMoonshine Small + Gemma + Kitten TTS
 
 選択したエディションは保存され、後から設定画面で変更できます。旧バージョンの保存値は、現在のLite / Full構成へ移行されます。
@@ -218,12 +218,12 @@ LiteとFullでは、次の機能を共通で利用します。
 
 ### Web版
 
-APKをインストールせずブラウザで使える **みつことば Web Lite** もあります。
+APKをインストールせずブラウザで使える **みつことば Web** もあります。
 
 - Web版を開く: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 - Web版リポジトリ: https://github.com/eltnegcellist/Web_EmmaLocal_English_for_babies
 
-Web版はLiteのみです。FullはAndroid版で提供します。
+Web版はブラウザ向けの軽量構成です。Android版ではWeb版相当の軽量構成に加えて、Gemmaを使うFullも利用できます。
 
 ### プライバシーとローカル処理
 
@@ -254,19 +254,15 @@ Web版はLiteのみです。FullはAndroid版で提供します。
 - Kotlin 2.3.21
 - compileSdk 37.1
 - targetSdk 36
-- sherpa-onnx 1.13.8
 - Moonshine Voice 0.1.5
+- Microsoft ONNX Runtime Android 1.23.2
+- OkHttp 4.12.0
+- AndroidX WorkManager 2.12.0
+- LiteRT-LM 0.16.0（Full）
 
-sherpa-onnxのAndroidランタイムはリポジトリへ直接含めず、ビルド前に取得します。
+Moonshine 0.1.5のAndroid AARには独自に縮小した `libonnxruntime.so` が含まれます。みつことばではGradleのArtifact Transformでそのファイルだけを除去し、Kitten TTSにも必要なMicrosoft公式ONNX Runtime Android 1.23.2完全版をMoonshineとKittenで共有します。
 
-```bash
-mkdir -p app/libs
-curl -fL \
-  https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-static-link-onnxruntime-1.13.8.aar \
-  -o app/libs/sherpa-onnx-static-1.13.8.aar
-```
-
-その後、次のコマンドでテストとビルドを行います。
+追加のsherpa AARを手動取得する必要はありません。
 
 ```bash
 gradle :app:testDebugUnitTest :app:assembleDebug
@@ -274,14 +270,24 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### モデルと主要依存関係
 
-- Moonshine Voice / Moonshine Japanese Tiny / Small Streaming — MIT
-- Kitten TTS Nano 0.8 — Apache-2.0
-- sherpa-onnx — Apache-2.0
-- LiteRT-LM / Gemma — Fullモードで使用
+| コンポーネント | 用途 | 主なライセンス |
+| --- | --- | --- |
+| Moonshine Voice / Japanese Streaming | 日本語ASR | MIT |
+| Kitten TTS Nano 0.8 FP32 | 英語TTSモデル | Apache-2.0 |
+| CMU Pronouncing Dictionary | 英語phonemizer辞書 | BSD-style |
+| ONNX Runtime Android 1.23.2 | Kitten / Moonshine推論 | MIT |
+| Eigen（ORT等の第三者依存） | 数値計算 | MPL-2.0 |
+| OkHttp 4.12.0 | モデルダウンロード | Apache-2.0 |
+| AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
+| LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
+
+Android v1.9.20はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
-詳細は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
+詳細：
+- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) — 第三者依存と帰属
+- [LICENSE_AUDIT.md](LICENSE_AUDIT.md) — GPL / eSpeak依存監査
 
 ### プロジェクト状況
 
@@ -289,13 +295,17 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.20を再現可能な「みつことば」安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.20を再現可能な安定基準版として保持します。
 
 ### ライセンス
 
 みつことば本体のソースコードについては、現時点で独自の利用ライセンスを設定していません。第三者コンポーネントには、それぞれのライセンスが適用されます。
 
+第三者ライセンスの一覧と監査結果は、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) と [LICENSE_AUDIT.md](LICENSE_AUDIT.md) を参照してください。
+
 ---
+
+# Mitsukotoba---
 
 # Mitsukotoba — English Time Made Together by Parent, Baby, and AI
 
@@ -439,10 +449,10 @@ Mitsukotoba avatar
 ```
 
 - Japanese ASR: Moonshine Japanese Tiny / Small Streaming
-- Lite default: Tiny
+- Lite default: Small
 - TTS: Kitten TTS Nano 0.8 / Kiki
 - Inference runs on-device after setup
-- Small ASR can also be selected manually
+- Tiny ASR remains available as a lightweight option
 
 Lite stays compact and predictable by using a curated lightweight response engine instead of generating every utterance with a large model.
 
@@ -476,7 +486,7 @@ Full requires more than 2 GB of additional local Gemma model data.
 
 On first launch, the family selects one of the following:
 
-- **Lite** — default: Moonshine Tiny + LiteResponseEngine + Kitten TTS
+- **Lite** — default: Moonshine Small + LiteResponseEngine + Kitten TTS
 - **Full** — default: Moonshine Small + Gemma + Kitten TTS
 
 The selected edition is saved and can later be changed from Settings. Legacy saved edition values are migrated to the current Lite / Full structure.
@@ -502,12 +512,12 @@ The edition boundary is intentionally simple:
 
 ### Web Edition
 
-Mitsukotoba also has a browser-based **Web Lite** edition that does not require APK installation.
+Mitsukotoba also has a browser-based **Web edition** that does not require APK installation.
 
 - Open Mitsukotoba Web: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 - Web repository: https://github.com/eltnegcellist/Web_EmmaLocal_English_for_babies
 
-The Web edition is Lite-only. Full is provided by the Android application.
+The Web edition uses the lightweight browser configuration. Android provides the same lightweight style of interaction plus the Gemma-based Full mode.
 
 ### Privacy and Local Processing
 
@@ -538,19 +548,15 @@ The current project uses:
 - Kotlin 2.3.21
 - compileSdk 37.1
 - targetSdk 36
-- sherpa-onnx 1.13.8
 - Moonshine Voice 0.1.5
+- Microsoft ONNX Runtime Android 1.23.2
+- OkHttp 4.12.0
+- AndroidX WorkManager 2.12.0
+- LiteRT-LM 0.16.0 for Full
 
-The sherpa-onnx Android runtime is intentionally not committed to the repository and is downloaded before building.
+Moonshine 0.1.5's Android AAR contains a reduced `libonnxruntime.so`. Mitsukotoba removes only that native library through a Gradle Artifact Transform and lets Moonshine and Kitten share the official full Microsoft ONNX Runtime Android 1.23.2 runtime.
 
-```bash
-mkdir -p app/libs
-curl -fL \
-  https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-static-link-onnxruntime-1.13.8.aar \
-  -o app/libs/sherpa-onnx-static-1.13.8.aar
-```
-
-Then run:
+No manual sherpa AAR download is required.
 
 ```bash
 gradle :app:testDebugUnitTest :app:assembleDebug
@@ -558,14 +564,24 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### Models and Major Dependencies
 
-- Moonshine Voice / Moonshine Japanese Tiny / Small Streaming — MIT
-- Kitten TTS Nano 0.8 — Apache-2.0
-- sherpa-onnx — Apache-2.0
-- LiteRT-LM / Gemma — used for Full mode
+| Component | Purpose | Main license |
+| --- | --- | --- |
+| Moonshine Voice / Japanese Streaming | Japanese ASR | MIT |
+| Kitten TTS Nano 0.8 FP32 | English TTS model | Apache-2.0 |
+| CMU Pronouncing Dictionary | English phonemizer lexicon | BSD-style |
+| ONNX Runtime Android 1.23.2 | Kitten / Moonshine inference | MIT |
+| Eigen (third-party dependency provenance) | Numerical routines | MPL-2.0 |
+| OkHttp 4.12.0 | Resumable model downloads | Apache-2.0 |
+| AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
+| LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
+
+Android v1.9.20 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
-See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
+See:
+- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) — third-party licenses and attribution
+- [LICENSE_AUDIT.md](LICENSE_AUDIT.md) — GPL / eSpeak dependency audit
 
 ### Project Status
 
@@ -578,3 +594,6 @@ Future functional changes should be released under a new version so that v1.9.20
 ### License
 
 No license for the Mitsukotoba application source code has been granted yet. Third-party components remain subject to their respective licenses.
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [LICENSE_AUDIT.md](LICENSE_AUDIT.md) for the third-party license inventory and audit status.
+

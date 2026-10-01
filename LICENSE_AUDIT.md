@@ -1,6 +1,6 @@
 # Android GPL / eSpeak Dependency Audit
 
-Audit date: 2026-10-01
+Audit date: 2026-10-02
 
 Baseline before remediation:
 `b3671b1dd132b522d110d60617c97fd4bef1dc8c` (v1.9.18)
@@ -43,10 +43,23 @@ Android CI rejects source/build references to:
 
 The built APK is also inspected for eSpeak/sherpa filenames and DEX strings.
 
+## Stable-release verification
+
+v1.9.19 was promoted after Galaxy S25 device verification and successful
+main-branch CI. v1.9.20 retains the same non-GPL TTS architecture.
+
+Release CI verifies:
+
+- no known eSpeak/sherpa TTS identifiers in the source/build path;
+- no eSpeak/sherpa filenames or DEX references in the APK;
+- Moonshine's reduced ONNX Runtime is removed before packaging;
+- the APK contains the official full ONNX Runtime Android 1.23.2 library for
+  arm64-v8a and armeabi-v7a.
+
 ## Conclusion
 
-For the v1.9.19 candidate, the Android Kitten TTS execution path is designed to
-contain no eSpeak NG or sherpa TTS runtime dependency.
+For the stable v1.9.19+ / v1.9.20 line, no known eSpeak NG or sherpa TTS
+runtime dependency remains in the audited Android Kitten TTS execution path.
 
 This audit is technical rather than legal advice. The overall application is
 not "permissive-only": Moonshine and ONNX Runtime provenance includes
