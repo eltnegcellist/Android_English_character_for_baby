@@ -1,6 +1,6 @@
 # Third-party components
 
-Updated: 2026-10-01
+Updated: 2026-10-02
 
 Mitsukotoba Android downloads or uses third-party software, models, and data.
 Each component remains subject to its own license. See also `LICENSE_AUDIT.md`.
@@ -24,9 +24,24 @@ English text
 
 The build no longer depends on `sherpa-onnx-static-1.13.8.aar`.
 
-This means "GPL-free" for the audited TTS execution path; it does not mean the
-whole dependency graph is permissive-only. Moonshine/ONNX Runtime provenance
-can include separately licensed material such as Eigen under MPL-2.0.
+The v1.9.19 stable release and the v1.9.20 continuation passed source, DEX,
+and APK checks for known eSpeak/sherpa TTS payloads. This means "GPL-free" for
+the audited TTS execution path; it does not mean the whole dependency graph is
+permissive-only. Moonshine/ONNX Runtime provenance can include separately
+licensed material such as Eigen under MPL-2.0.
+
+## Major dependency summary
+
+| Component | Version / model | License / terms |
+| --- | --- | --- |
+| Moonshine Voice | 0.1.5 / Japanese Streaming | MIT |
+| Kitten TTS Nano | 0.8 FP32 | Apache-2.0 |
+| CMUDict | pinned 74790861… | BSD-style |
+| ONNX Runtime Android | 1.23.2 | MIT |
+| Eigen provenance | ORT / native dependency surface | MPL-2.0 |
+| OkHttp | 4.12.0 | Apache-2.0 |
+| AndroidX WorkManager | 2.12.0 | Apache-2.0 |
+| LiteRT-LM / Gemma | Full only | respective distribution terms |
 
 ## Moonshine Voice / Japanese Streaming STT
 
@@ -73,11 +88,31 @@ conditions, and disclaimer are retained/reproduced as required by its license.
 - Maven: `com.microsoft.onnxruntime:onnxruntime-android:1.23.2`
 - Upstream: https://github.com/microsoft/onnxruntime
 - License: MIT
-- Used to execute the Kitten FP32 ONNX model directly.
+- Used to execute the Kitten FP32 ONNX model directly and shared with Moonshine.
+
+Moonshine 0.1.5 ships a reduced `libonnxruntime.so` in its Android AAR.
+Mitsukotoba removes that duplicate through a Gradle Artifact Transform and
+packages the official full ONNX Runtime Android 1.23.2 library instead. CI
+verifies the packaged arm64-v8a and armeabi-v7a runtime.
 
 ONNX Runtime has its own ThirdPartyNotices. In particular, its dependency
 surface includes Eigen material under MPL-2.0. MPL-2.0 is not GPL, but its
 notice/source-availability obligations remain applicable.
+
+## OkHttp
+
+- Version: 4.12.0
+- Upstream: https://square.github.io/okhttp/
+- License: Apache-2.0
+- Used for model downloads, redirects, retry-on-connection-failure, and HTTP
+  Range resume.
+
+## AndroidX WorkManager
+
+- Version: 2.12.0
+- Upstream: https://developer.android.com/jetpack/androidx/releases/work
+- License: Apache-2.0
+- Used for foreground/background model preparation and retry scheduling.
 
 ## LiteRT-LM and Gemma
 
