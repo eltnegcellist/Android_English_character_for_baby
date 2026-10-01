@@ -143,6 +143,11 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            // Keep the selected full ORT byte-identical to Microsoft's AAR so
+            // CI can prove Moonshine's reduced build was not packaged.
+            keepDebugSymbols += "**/libonnxruntime.so"
+        }
     }
 }
 
