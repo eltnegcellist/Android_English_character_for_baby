@@ -49,6 +49,12 @@ jobs:
           test -f "$ANDROID_HOME/platforms/android-37.1/android.jar"
           test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
 
+      - name: Prepare Moonshine AAR without reduced ONNX Runtime
+        shell: bash
+        run: |
+          chmod +x scripts/prepare-moonshine-android-aar.sh
+          scripts/prepare-moonshine-android-aar.sh
+
       - name: Validate Android PNG resources
         shell: bash
         run: |
