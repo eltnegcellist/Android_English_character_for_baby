@@ -1,7 +1,70 @@
+import org.gradle.api.artifacts.transform.InputArtifact
+import org.gradle.api.artifacts.transform.TransformAction
+import org.gradle.api.artifacts.transform.TransformOutputs
+import org.gradle.api.artifacts.transform.TransformParameters
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Provider
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+abstract class StripBundledOnnxRuntime : TransformAction<TransformParameters.None> {
+    @get:InputArtifact
+    abstract val inputArtifact: Provider<FileSystemLocation>
+
+    override fun transform(outputs: TransformOutputs) {
+        val input = inputArtifact.get().asFile
+        val output = outputs.file(input.nameWithoutExtension + "-without-onnxruntime.aar")
+
+        ZipFile(input).use { zip ->
+            ZipOutputStream(output.outputStream().buffered()).use { out ->
+                val entries = zip.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    if (
+                        !entry.isDirectory &&
+                        entry.name.matches(Regex("""jni/[^/]+/libonnxruntime\.so"""))
+                    ) {
+                        continue
+                    }
+
+                    val copy = ZipEntry(entry.name)
+                    if (entry.time >= 0L) copy.time = entry.time
+                    out.putNextEntry(copy)
+                    if (!entry.isDirectory) {
+                        zip.getInputStream(entry).use { source -> source.copyTo(out) }
+                    }
+                    out.closeEntry()
+                }
+            }
+        }
+    }
+}
+
+val moonshineRaw = configurations.create("moonshineRaw") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+
+dependencies.registerTransform(StripBundledOnnxRuntime::class.java) {
+    from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "aar")
+    to.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "moonshine-aar-without-ort")
+}
+
+val strippedMoonshine = moonshineRaw.incoming.artifactView {
+    attributes.attribute(
+        ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
+        "moonshine-aar-without-ort",
+    )
+}.files
+
 
 val signingStorePath = providers.gradleProperty("emma.signingStoreFile")
     .orElse(providers.environmentVariable("EMMA_SIGNING_STORE_FILE"))
@@ -80,12 +143,6 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        jniLibs {
-            // Moonshine Voice and ONNX Runtime Android both contain libonnxruntime.so.
-            // Keep one copy; CI verifies the packaged file byte-for-byte against
-            // the official full ONNX Runtime Android 1.23.2 AAR.
-            pickFirsts += "**/libonnxruntime.so"
-        }
     }
 }
 
@@ -98,10 +155,14 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    // Put the full ONNX Runtime Android AAR before Moonshine so the packaging
-    // pickFirst selects the full operator build. CI verifies the result.
+    // Kitten uses the full Microsoft ONNX Runtime operator build.
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.23.2")
-    implementation("ai.moonshine:moonshine-voice:0.1.5")
+
+    // Moonshine bundles its own reduced libonnxruntime.so. Resolve its AAR
+    // through a transform that removes only that duplicate native library so
+    // Moonshine and Kitten share the verified full ORT above.
+    add(moonshineRaw.name, "ai.moonshine:moonshine-voice:0.1.5")
+    implementation(files(strippedMoonshine))
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
