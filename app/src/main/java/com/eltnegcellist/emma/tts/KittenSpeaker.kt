@@ -1,17 +1,17 @@
 package com.eltnegcellist.emma.tts
 
+import ai.onnxruntime.OnnxTensor
+import ai.onnxruntime.OrtEnvironment
+import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
-import com.k2fsa.sherpa.onnx.GenerationConfig
-import com.k2fsa.sherpa.onnx.OfflineTts
-import com.k2fsa.sherpa.onnx.OfflineTtsConfig
-import com.k2fsa.sherpa.onnx.OfflineTtsKittenModelConfig
-import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import java.io.File
+import java.nio.FloatBuffer
+import java.nio.LongBuffer
 import java.util.UUID
 import java.util.concurrent.Executors
 import kotlin.math.abs
@@ -48,32 +48,32 @@ class KittenSpeaker(
                     DiagnosticStore.mark(
                         context,
                         "kitten_runtime_initialized",
-                        "model=Nano-FP32 voice=Kiki sid=$KIKI_SPEAKER_ID threads=$THREADS speed=$KITTEN_SPEED",
+                        "runtime=onnxruntime-android phonemizer=cmudict model=Nano-FP32 voice=Kiki speed=" +
+                            KITTEN_SPEED + " effectiveSpeed=" + EFFECTIVE_SPEED,
                     )
                 }
 
                 val generationStarted = System.nanoTime()
-                val generated = active.tts.generateWithConfig(
-                    text.trim(),
-                    GenerationConfig(
-                        speed = KITTEN_SPEED,
-                        sid = KIKI_SPEAKER_ID,
-                    ),
-                )
+                val generated = active.generate(text.trim())
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
-                require(generated.samples.isNotEmpty() && generated.samples.all { it.isFinite() }) {
+                require(generated.isNotEmpty() && generated.all(Float::isFinite)) {
                     "Kitten TTS Nano returned invalid audio."
                 }
 
-                val pcm = toPcm16(generated.samples)
-                val firstAudioMs = play(id, pcm, generated.sampleRate, started)
+                val pcm = toPcm16(generated)
+                val firstAudioMs = play(id, pcm, SAMPLE_RATE, started)
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
 
                 DiagnosticStore.mark(
                     context,
                     "kitten_generation",
-                    "voice=Kiki sid=$KIKI_SPEAKER_ID speed=$KITTEN_SPEED chars=${text.length} " +
-                        "samples=${pcm.size} generationMs=$generationMs firstAudioMs=$firstAudioMs totalMs=$totalMs",
+                    "runtime=onnxruntime voice=Kiki speed=" + KITTEN_SPEED +
+                        " effectiveSpeed=" + EFFECTIVE_SPEED +
+                        " chars=" + text.length +
+                        " samples=" + pcm.size +
+                        " generationMs=" + generationMs +
+                        " firstAudioMs=" + firstAudioMs +
+                        " totalMs=" + totalMs,
                 )
                 Triple(firstAudioMs, generationMs, totalMs)
             }.onSuccess { value ->
@@ -89,7 +89,10 @@ class KittenSpeaker(
                     if (!closed && requestId == id) {
                         requestId = null
                         onAmplitude(0f)
-                        onError("Kitten TTS Nano生成に失敗しました: ${error.message ?: error.javaClass.simpleName}")
+                        onError(
+                            "Kitten TTS Nano生成に失敗しました: " +
+                                (error.message ?: error.javaClass.simpleName),
+                        )
                     }
                 }
             }
@@ -172,7 +175,7 @@ class KittenSpeaker(
             while (offset < pcm.size && requestId == id && !closed) {
                 val count = minOf(PLAYBACK_CHUNK_SAMPLES, pcm.size - offset)
                 val written = player.write(pcm, offset, count, AudioTrack.WRITE_BLOCKING)
-                check(written > 0) { "音声出力エラー: $written" }
+                check(written > 0) { "音声出力エラー: " + written }
                 if (firstAudioMs == 0L) {
                     firstAudioMs = (System.nanoTime() - started) / 1_000_000L
                 }
@@ -200,33 +203,132 @@ class KittenSpeaker(
 
     private class Engine(context: Context) : AutoCloseable {
         private val dir = KittenModelStore.directory(context)
-        val tts = OfflineTts(
-            assetManager = null,
-            config = OfflineTtsConfig(
-                model = OfflineTtsModelConfig(
-                    kitten = OfflineTtsKittenModelConfig(
-                        model = File(dir, "model.fp32.onnx").path,
-                        voices = File(dir, "voices.bin").path,
-                        tokens = File(dir, "tokens.txt").path,
-                        dataDir = File(dir, "espeak-ng-data").path,
-                    ),
-                    numThreads = THREADS,
-                    debug = false,
-                    provider = "cpu",
-                ),
-                maxNumSentences = 1,
-            ),
+        private val environment = OrtEnvironment.getEnvironment()
+        private val sessionOptions = OrtSession.SessionOptions()
+        private val session = environment.createSession(
+            File(dir, "model.onnx").absolutePath,
+            sessionOptions,
         )
+        private val voiceTable = KittenVoiceLoader.loadKiki(File(dir, "voices.npz"))
+        private val phonemizer = KittenPhonemizer.fromFile(File(dir, "cmudict.dict"))
+
+        fun generate(text: String): FloatArray {
+            val chunks = chunkText(text)
+            require(chunks.isNotEmpty()) { "読み上げる英文がありません。" }
+            val generated = ArrayList<FloatArray>(chunks.size)
+            var total = 0
+            for (chunk in chunks) {
+                val audio = generateChunk(chunk)
+                generated += audio
+                total += audio.size
+            }
+            val result = FloatArray(total)
+            var offset = 0
+            for (chunk in generated) {
+                chunk.copyInto(result, offset)
+                offset += chunk.size
+            }
+            return result
+        }
+
+        private fun generateChunk(chunk: String): FloatArray {
+            val normalized = KittenTextProcessor.normalize(chunk)
+            val phonemes = phonemizer.phonemize(normalized)
+            require(phonemes.isNotBlank()) { "英文を発音記号へ変換できませんでした。" }
+
+            val tokenIds = KittenTextProcessor.cleanPhonemes(phonemes)
+            require(tokenIds.size > 3) { "Kitten TTSのトークンが不足しています。" }
+
+            val referenceIndex = minOf(tokenIds.size, voiceTable.rows - 1)
+            val style = voiceTable.styleFor(referenceIndex)
+
+            val inputIdsTensor = OnnxTensor.createTensor(
+                environment,
+                LongBuffer.wrap(tokenIds),
+                longArrayOf(1L, tokenIds.size.toLong()),
+            )
+            val styleTensor = OnnxTensor.createTensor(
+                environment,
+                FloatBuffer.wrap(style),
+                longArrayOf(1L, style.size.toLong()),
+            )
+            val speedTensor = OnnxTensor.createTensor(
+                environment,
+                FloatBuffer.wrap(floatArrayOf(EFFECTIVE_SPEED)),
+                longArrayOf(1L),
+            )
+
+            try {
+                val inputs = mapOf(
+                    "input_ids" to inputIdsTensor,
+                    "style" to styleTensor,
+                    "speed" to speedTensor,
+                )
+                val output = session.run(inputs)
+                try {
+                    val waveform = output[0] as? OnnxTensor
+                        ?: error("Kitten TTSのwaveform出力がありません。")
+                    val buffer = waveform.floatBuffer
+                        ?: error("Kitten TTSのwaveformがfloat32ではありません。")
+                    val raw = FloatArray(buffer.remaining())
+                    buffer.get(raw)
+                    val keep = (raw.size - AUDIO_TRIM_SAMPLES).coerceAtLeast(0)
+                    require(keep > 0) { "Kitten TTSの音声出力が短すぎます。" }
+                    return raw.copyOf(keep)
+                } finally {
+                    output.close()
+                }
+            } finally {
+                inputIdsTensor.close()
+                styleTensor.close()
+                speedTensor.close()
+            }
+        }
 
         override fun close() {
-            tts.release()
+            session.close()
+            sessionOptions.close()
+        }
+
+        private fun chunkText(text: String): List<String> {
+            val sentences = text.split(Regex("""[.!?]+"""))
+            val chunks = ArrayList<String>()
+            for (raw in sentences) {
+                val sentence = raw.trim()
+                if (sentence.isEmpty()) continue
+                if (sentence.length <= MAX_CHUNK_CHARS) {
+                    chunks += ensurePunctuation(sentence)
+                } else {
+                    var current = StringBuilder()
+                    for (word in sentence.split(Regex("""\s+"""))) {
+                        if (current.isEmpty() || current.length + 1 + word.length <= MAX_CHUNK_CHARS) {
+                            if (current.isNotEmpty()) current.append(' ')
+                            current.append(word)
+                        } else {
+                            chunks += ensurePunctuation(current.toString())
+                            current = StringBuilder(word)
+                        }
+                    }
+                    if (current.isNotEmpty()) chunks += ensurePunctuation(current.toString())
+                }
+            }
+            return chunks
+        }
+
+        private fun ensurePunctuation(text: String): String {
+            val trimmed = text.trim()
+            if (trimmed.isEmpty()) return trimmed
+            return if (trimmed.last() in charArrayOf('.', '!', '?', ',', ';', ':')) trimmed else trimmed + ","
         }
     }
 
     companion object {
-        const val KIKI_SPEAKER_ID = 7
         const val KITTEN_SPEED = 0.8f
-        const val THREADS = 2
+        private const val KIKI_SPEED_PRIOR = 0.8f
+        const val EFFECTIVE_SPEED = KITTEN_SPEED * KIKI_SPEED_PRIOR
+        const val SAMPLE_RATE = 24_000
+        const val AUDIO_TRIM_SAMPLES = 5_000
+        const val MAX_CHUNK_CHARS = 400
         const val PLAYBACK_CHUNK_SAMPLES = 2048
         const val PLAYBACK_TIMEOUT_MS = 60_000L
         const val TTS_TARGET_PEAK = 0.92f
@@ -234,9 +336,7 @@ class KittenSpeaker(
 
         private fun toPcm16(samples: FloatArray): ShortArray {
             var peak = 0f
-            for (sample in samples) {
-                peak = max(peak, abs(sample))
-            }
+            for (sample in samples) peak = max(peak, abs(sample))
             val gain = if (peak > 0f) {
                 (TTS_TARGET_PEAK / peak).coerceIn(1f, TTS_MAX_VOLUME_BOOST)
             } else {
@@ -251,7 +351,7 @@ class KittenSpeaker(
             if (count <= 0) return 0f
             var peak = 0
             val end = minOf(samples.size, offset + count)
-            for (i in offset until end) peak = max(peak, abs(samples[i].toInt()))
+            for (index in offset until end) peak = max(peak, abs(samples[index].toInt()))
             return (peak / 12000f).coerceIn(0f, 1f)
         }
     }
