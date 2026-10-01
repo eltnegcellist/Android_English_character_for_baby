@@ -1,0 +1,15 @@
+{
+  "archive_sha256": "66bff884a461ea4c2409a39bf4b56ea9fcad634004ff15bc673585a41e7735ec",
+  "files": 36,
+  "scope": "Pre-native checkpoint; integration remains blocked. No app or APK changes.",
+  "fixed_audio": {
+    "total": 202,
+    "failed": 0
+  },
+  "configured_name_audio": {
+    "total": 780,
+    "failed": 0
+  },
+  "jvm_cancel_restart_cycles": 100,
+  "native_g2p_complete": false
+}
