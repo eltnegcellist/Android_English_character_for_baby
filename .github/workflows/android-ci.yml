@@ -141,8 +141,17 @@ jobs:
           for ABI in arm64-v8a armeabi-v7a; do
             unzip -p "$ORT_AAR" "jni/$ABI/libonnxruntime.so" > "$RUNNER_TEMP/official-$ABI-libonnxruntime.so"
             unzip -p "$APK" "lib/$ABI/libonnxruntime.so" > "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so"
-            cmp "$RUNNER_TEMP/official-$ABI-libonnxruntime.so" "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so"
-            echo "Verified full ONNX Runtime 1.23.2 for $ABI."
+            OFFICIAL_SIZE="$(stat -c%s "$RUNNER_TEMP/official-$ABI-libonnxruntime.so")"
+            APK_SIZE="$(stat -c%s "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so")"
+            echo "$ABI ORT sizes: official=$OFFICIAL_SIZE apk=$APK_SIZE"
+
+            # AGP strips native symbols while packaging, so a byte-for-byte compare
+            # is not stable. Moonshine's reduced ORT is only ~30% of the stock
+            # library; requiring >=70% of the official AAR cleanly distinguishes
+            # the stock operator set while allowing normal symbol stripping.
+            test $((APK_SIZE * 100)) -ge $((OFFICIAL_SIZE * 70))
+            strings "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so" | grep -q 'VERS_1\.23\.2'
+            echo "Verified stock-sized ONNX Runtime 1.23.2 for $ABI."
           done
           rm -rf "$RUNNER_TEMP/mitsukotoba-apk-scan"
           mkdir -p "$RUNNER_TEMP/mitsukotoba-apk-scan"
