@@ -11,8 +11,8 @@ import java.security.MessageDigest
 /**
  * Kitten TTS assets for the GPL-free Android path.
  *
- * Unlike the old sherpa-onnx bundle this installs no espeak-ng-data. The
- * phonemizer is Mitsukotoba's CMUDict-based implementation.
+ * Installs only the official Kitten ONNX model, voice embeddings, and CMUDict.
+ * The phonemizer is Mitsukotoba's CMUDict-based implementation.
  */
 object KittenModelStore {
     const val MODEL_NAME = "kitten-nano-en-v0_8-fp32-cmudict-v1"
