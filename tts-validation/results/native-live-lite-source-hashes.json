@@ -1,0 +1,11 @@
+{
+  "baseline": "62f39abc095dd29a57d86a0efdef5400a2bb4293",
+  "executed_sources_sha256": {
+    "app/src/main/java/com/eltnegcellist/emma/ai/AiCharacterName.kt": "3564345872ab817db3cb25c1d8007991abc2e17ceaafa15a5d5d0b4680a9208b",
+    "app/src/main/java/com/eltnegcellist/emma/ai/LiteSpeechStyle.kt": "5f2645c62a26914020816af368b326ec28f9869e0d9d0d2eb621a43d6b066130",
+    "app/src/main/java/com/eltnegcellist/emma/ai/BabySpeechStyle.kt": "f1f04f9b6e11252bf21db945001fcbf44d025ecfef4deadb7243e95e929357f7",
+    "app/src/main/java/com/eltnegcellist/emma/ai/LitePhoneticSceneMatcher.kt": "62d2e6e407f1ef01edcfa2fd93423ef603eb32949b215cc2dda11cf8da0f73f0",
+    "app/src/main/java/com/eltnegcellist/emma/ai/LiteResponseEngine.kt": "6c5f2009fa79c2f9ea0af38ea36ccdd7c57b80ce6791d538be4a8fd6c62dd2fb"
+  },
+  "production_changes": false
+}

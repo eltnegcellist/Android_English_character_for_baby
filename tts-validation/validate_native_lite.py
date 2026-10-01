@@ -4,6 +4,7 @@ import argparse,base64,hashlib,json,re
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 p=argparse.ArgumentParser();p.add_argument('--input',type=Path,default=HERE/'results/native-lite-lexical.json');p.add_argument('--output',type=Path,default=HERE/'results/native-lite-word-gate.json')
+p.add_argument("--compound",action="store_true")
 a=p.parse_args();r=json.loads(a.input.read_text());f=json.loads((HERE/'fixtures/lite-word-segments.json').read_text())
 fixed=json.loads((HERE/'fixtures/comparison-corpus.json').read_text())
 assert [x['text'] for x in r['records']]==[x['text'] for x in fixed]
@@ -17,6 +18,7 @@ for row in r['records']:
   primary=[len(re.findall(vowels,raw[:m.start()])) for m in re.finditer('ˈ',raw)]
   stress=f['primary_stress_syllable'].get(word)
   valid=seg in expected and (not stress or (len(primary)==1 and primary[0] in stress))
+  if a.compound and word=='pitter-patter':valid=raw=='pˈɪɾəɹpˌæɾəɹ'
   if word=='close':valid=valid and seg==('kloʊz' if re.search(r'\bOpen(?:,| and) close\.',row['text']) else 'kloʊs')
   if word=='read':valid=valid and seg=='ɹid'
   if not valid:failures.append({'text':row['text'],'word':word,'ipa':raw,'segments':seg,'expected':expected,'primary':primary,'expected_primary':stress})

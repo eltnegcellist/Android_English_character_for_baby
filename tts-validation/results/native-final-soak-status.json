@@ -1,0 +1,10 @@
+{
+  "completed_cases": 423,
+  "failed": 0,
+  "planned_cases": 780,
+  "continuous_run_completed": false,
+  "status": "stopped after decisive actual-Lite gate failure",
+  "run_id": "cc725893-b879-4a0b-a354-7ea34da271d0",
+  "journal_sha256": "0ba33baa3039416f6d8ad1c625b10d5d95edc2a8a3b432471863e6b2bddae83e",
+  "integration_approved": false
+}

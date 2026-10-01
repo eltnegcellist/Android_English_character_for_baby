@@ -1,0 +1,9 @@
+{
+  "passed": false,
+  "android_execution_qualified": false,
+  "emulator_boot_complete": true,
+  "status": "software emulator reached boot complete; installation/playback qualification aborted after decisive actual-Lite rejection",
+  "lab_apk_only_built": true,
+  "application_apk_built": false,
+  "integration_approved": false
+}

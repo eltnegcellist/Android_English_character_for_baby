@@ -1,0 +1,11 @@
+"""Record the terminal rejection of this bounded native candidate, not project cancellation."""
+import json,subprocess
+from pathlib import Path
+HERE=Path(__file__).resolve().parent
+r=json.loads((HERE/'results/native-live-lite.json').read_text())
+assert r['runtime_lite_cases']==2520 and r['failed']==35 and not r['introduction_accepted']
+changed=subprocess.check_output(['git','diff','62f39abc095dd29a57d86a0efdef5400a2bb4293','--name-only'],cwd=HERE.parent,text=True).splitlines()
+untracked=subprocess.check_output(['git','ls-files','--others','--exclude-standard'],cwd=HERE.parent,text=True).splitlines()
+assert all(x.startswith('tts-validation/') for x in changed+untracked)
+report={'candidate':'independent bounded Kotlin CMU frontend','decision':'REJECTED','candidate_validation_closed':True,'non_gpl_migration_completed':False,'pre_apk_stage_complete':False,'integration_approved':False,'decisive_failures':{'actual_lite_cases':2520,'rejected':35,'default_introduction':r['default_introduction'],'introduction_accepted':False},'why':'Pinned raw template coverage does not establish coverage of actual Lite runtime output; normal app text fails before synthesis. This violates unchanged-behavior gate.','completed_additional_checks':['202 compound-corrected native waveforms and independent word/token checks','202 paired ASR comparison: 6.466% stable vs 6.692% candidate','7 source-derived stable callback/reset/shutdown contract scenarios'], 'unqualified':['Uninterrupted 780-case final soak stopped after rejection','Android AudioTrack/native execution: lab built and emulator booted, playback qualification aborted after rejection','Kiki naturalness/speaker equivalence and name acoustics','Unrestricted Full and custom-name behavior'], 'application_apk_built':False,'final_apk_inspection_performed':False,'production_changed':False,'main_update_performed':False,'future_work':'A different, separately scoped candidate must cover actual runtime utterances, introduction and typed names before any new endurance or Android integration work. This decision does not cancel the overall non-GPL goal.'}
+(HERE/'results/native-final-decision.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report));raise SystemExit(1)

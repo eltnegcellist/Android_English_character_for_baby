@@ -49,3 +49,7 @@ See [results/2026-09-30-onnx-findings.md](results/2026-09-30-onnx-findings.md). 
 ## Independent native alternative (2026-10-01)
 
 See [executed native findings](results/2026-10-01-native-findings.md) and [isolated harness](android-isolated/README.md). Native fixed-Lite lexical/audio and bounded JVM stop/restart checks now have executed evidence. An interrupted name run was recovered as composite 780-case coverage, explicitly not continuous-soak approval. Full G2P, acoustic equivalence and actual Android playback/state transitions remain blockers. `evaluate_native_pre_apk.py` exits 1; no integration or APK is authorized by these results.
+
+## Terminal candidate decision
+
+The bounded native CMU candidate is **REJECTED**, not awaiting integration. [Final decision](results/2026-10-01-final-decision.md) records 35 rejected actual Lite outputs out of 2,520 and a rejected default introduction. Raw-template success was insufficient. Production is unchanged; the overall non-GPL goal is not marked complete. Do not repeat endurance runs for this same input-limited candidate to seek approval.

@@ -21,10 +21,14 @@ object NativeLiteProbe {
         val rows=mutableListOf<String>();var failed=0
         val backend=if(args.size==7) OnnxBackend(File(args[4])) else null
         val started=System.nanoTime()
+        val runId=java.util.UUID.randomUUID().toString()
+        val journal=System.getenv("TTS_PROBE_JOURNAL")?.let(::File)
+        journal?.writeText("{\"event\":\"run_start\",\"run_id\":\"$runId\"}\n")
         try {
             for((i,line) in File(args[2]).readLines().withIndex()) {
                 val fields=line.split('\t');val text=string(fields[0]);val name=fields[1].takeIf {it!="-"}?.let {JapaneseRomajiName(string(it))}
                 val index=fields.getOrNull(2)?.toInt() ?: i
+                journal?.appendText("{\"event\":\"started\",\"run_id\":\"$runId\",\"index\":$index,\"time_ns\":${System.nanoTime()}}\n")
                 try {
                     val analysis=planner.analyze(text,name);val chunks=planner.planNamed(text,name)
                     val words=analysis.words.joinToString(",") {"{\"text\":${quote(it.text)},\"ipa\":${quote(it.ipa)}}"}
@@ -38,8 +42,9 @@ object NativeLiteProbe {
                     }
                     rows.add("{\"index\":$index,\"text\":${quote(text)},\"name\":${if(name==null) "null" else quote(name.text)},\"ipa\":${quote(analysis.ipa)},\"chunks\":${chunks.size},\"words\":[$words],\"valid\":true$waveform}")
                 } catch(e: Exception) {
-                    failed++;rows.add("{\"index\":$i,\"text\":${quote(text)},\"valid\":false,\"error\":${quote(e.toString())}}")
+                    failed++;rows.add("{\"index\":$index,\"text\":${quote(text)},\"valid\":false,\"error\":${quote(e.toString())}}")
                 }
+                journal?.appendText("{\"event\":\"finished\",\"run_id\":\"$runId\",\"record\":"+rows.last()+"}\n")
                 if((i+1)%50==0) println("completed ${i+1}, failed $failed")
             }
             // Unknown text, untagged name, foreign name, injected IPA all reject.
