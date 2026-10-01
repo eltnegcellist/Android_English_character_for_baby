@@ -753,7 +753,7 @@ internal fun EmmaSettingsScreen(
                             ConversationEngineMode.LITE -> {
                                 Text(
                                     if (asrModel == MoonshineAsrModel.TINY) {
-                                        "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano 約31MB。合計約64MBです。"
+                                        "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano / Kiki / CMUDict 約64MB。合計約96MBです。"
                                     } else {
                                         "Moonshine 日本語Smallの追加データ + Kitten TTS Nanoを準備します。"
                                     },

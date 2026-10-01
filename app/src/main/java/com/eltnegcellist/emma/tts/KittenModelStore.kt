@@ -28,7 +28,7 @@ object KittenModelStore {
         "https://huggingface.co/KittenML/kitten-tts-nano-0.8-fp32/resolve/" +
             KITTEN_REVISION + "/voices.npz"
     const val CMUDICT_URL =
-        "https://raw.githubusercontent.com/cmusphinx/cmudict/" +
+        "https://cdn.jsdelivr.net/gh/cmusphinx/cmudict@" +
             CMUDICT_REVISION + "/cmudict.dict"
 
     const val MODEL_SHA256 =

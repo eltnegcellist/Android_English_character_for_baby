@@ -550,7 +550,8 @@ private fun ProductionEmmaApp() {
                 } else {
                     liteSetupProgressPercent = null
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "音声モデルの準備に失敗しました。"
+                    val detail = result.exceptionOrNull()?.message ?: "原因を確認できませんでした。"
+                    statusMessage = "音声モデルの準備に失敗しました: $detail"
                     settingsOpen = true
                 }
             },
@@ -626,9 +627,10 @@ private fun ProductionEmmaApp() {
                 } else {
                     firstRunReady = false
                     firstRunProgressPercent = null
-                    firstRunError = "初期設定を完了できませんでした。通信環境と空き容量を確認してください。"
+                    val detail = result.exceptionOrNull()?.message ?: "原因を確認できませんでした。"
+                    firstRunError = "初期設定を完了できませんでした。\n$detail"
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "みつことばの初期設定を完了できませんでした。"
+                    statusMessage = "初期設定に失敗しました: $detail"
                 }
             },
         )
@@ -678,9 +680,10 @@ private fun ProductionEmmaApp() {
                     activateEngineMode(ConversationEngineMode.FULL)
                 } else {
                     fullSetupProgressPercent = null
-                    fullSetupError = "Fullの準備を完了できませんでした。通信環境と空き容量を確認してください。"
+                    val detail = result.exceptionOrNull()?.message ?: "原因を確認できませんでした。"
+                    fullSetupError = "Fullの準備を完了できませんでした。\n$detail"
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = fullSetupError.orEmpty()
+                    statusMessage = "Fullの準備に失敗しました: $detail"
                 }
             },
         )
