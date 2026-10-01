@@ -38,8 +38,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 101
-        versionName = "1.9.18"
+        versionCode = 102
+        versionName = "1.9.19"
 
         // Emma is distributed for physical Android devices.
         // Keep both 64-bit and legacy 32-bit ARM, but omit x86/x86_64 emulator/PC ABIs.
@@ -96,8 +96,7 @@ dependencies {
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
-    implementation(files("libs/sherpa-onnx-static-1.13.8.aar"))
-    implementation("org.apache.commons:commons-compress:1.28.0")
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.23.2")
     implementation("androidx.work:work-runtime-ktx:2.12.0")
 
     testImplementation("junit:junit:4.13.2")
