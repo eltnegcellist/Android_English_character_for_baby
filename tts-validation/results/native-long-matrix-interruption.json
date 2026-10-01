@@ -1,0 +1,8 @@
+{
+  "acknowledged_completed": 650,
+  "raw_files_present": 662,
+  "terminal_report_present": false,
+  "cause": "Execution session disappeared; not established as engine failure or OOM. Current cgroup OOM counters are zero.",
+  "recovery": "Retain only acknowledged outputs 0..649; regenerate 650..779 with explicit indexed cases and -Xmx128m",
+  "uninterrupted_780_run_approved": false
+}

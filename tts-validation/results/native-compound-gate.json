@@ -1,0 +1,8 @@
+{
+  "total": 5,
+  "failed": 0,
+  "reference": "https://dictionary.cambridge.org/us/pronunciation/english/pitter-patter",
+  "policy": "Independent initial primary/secondary stress and American t-flap; existing CMU segments retained",
+  "integration_approved": false,
+  "failures": []
+}

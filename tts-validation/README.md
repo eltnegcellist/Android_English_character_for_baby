@@ -45,3 +45,7 @@ See [results/2026-09-30-pronunciation-findings.md](results/2026-09-30-pronunciat
 ## Fixed Lite words and isolated ONNX diagnostics
 
 See [results/2026-09-30-onnx-findings.md](results/2026-09-30-onnx-findings.md). The independently authored 149-token/1,260-occurrence fixed-bank segment and specified primary-stress gate passed all 202 utterances, alongside 30 boundary checks. A hash-gated diagnostic runner then generated valid 24 kHz PCM for those 202 utterances and completed 100 generate/discard repetitions. This bounded lab result is not acoustic equivalence, playback/cancellation endurance, or app approval. No APK is built. Model download selects only explicitly hashed model/voice/token/license/readme resources and never extracts eSpeak data.
+
+## Independent native alternative (2026-10-01)
+
+See [executed native findings](results/2026-10-01-native-findings.md) and [isolated harness](android-isolated/README.md). Native fixed-Lite lexical/audio and bounded JVM stop/restart checks now have executed evidence. An interrupted name run was recovered as composite 780-case coverage, explicitly not continuous-soak approval. Full G2P, acoustic equivalence and actual Android playback/state transitions remain blockers. `evaluate_native_pre_apk.py` exits 1; no integration or APK is authorized by these results.

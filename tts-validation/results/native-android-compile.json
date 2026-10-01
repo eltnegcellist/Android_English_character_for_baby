@@ -1,0 +1,14 @@
+{
+  "compile_succeeded": true,
+  "execution_on_android": false,
+  "compiler": "Kotlin 2.3.21",
+  "android_api": "37.1",
+  "ort_android": "1.22.0",
+  "sources_sha256": {
+    "Runtime.kt": "307132d1d94d7544fbddbf6b2f4269fcc3aaa999f3f31017a307502ca0434fed",
+    "SpeakerCore.kt": "a6486bcbb0472c575877c5de6e3efa961a98bf4a61686d6fceef4ad152a9416d",
+    "AndroidSink.kt": "9555d71ed73ab9d460fba5bfa2bda7d80cff8dd8da8b3e1260c5263fdd3ccf0f",
+    "NativeLitePlanner.kt": "8ba41ddb36d1f6e2fb0dcb8a152022f512a33b626e161111d9f3deaa83881b44"
+  },
+  "integration_approved": false
+}

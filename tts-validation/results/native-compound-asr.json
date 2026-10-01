@@ -1,0 +1,88 @@
+{
+  "summary": {
+    "total": 5,
+    "reference_words": 26,
+    "stable_wer": 0.11538461538461539,
+    "candidate_wer": 0.15384615384615385,
+    "wer_delta": 0.038461538461538464,
+    "predeclared_max_delta": 0.05,
+    "asr_regression_gate_passed": true,
+    "elapsed_seconds": 4.047125353999945,
+    "integration_approved": false,
+    "limitations": [
+      "ASR is an imperfect proxy",
+      "does not measure naturalness or speaker similarity",
+      "no name acoustic qualification",
+      "Android untested"
+    ],
+    "decoder_no_repeat_ngram_size": 3
+  },
+  "model_path": "/workspace/scratch/834216868fe2/tts-asr-audit/model-restored",
+  "records": [
+    {
+      "index": 0,
+      "text": "Pitter-patter!",
+      "reference_words": 2,
+      "stable": {
+        "transcript": "Pitter powder.",
+        "word_errors": 1
+      },
+      "candidate": {
+        "transcript": "Pidopatter.",
+        "word_errors": 2
+      }
+    },
+    {
+      "index": 1,
+      "text": "Rain, rain! Pitter-patter! Listen, listen!",
+      "reference_words": 6,
+      "stable": {
+        "transcript": "Rain, rain, pitter patter, listen, listen.",
+        "word_errors": 0
+      },
+      "candidate": {
+        "transcript": "Rain, rain, pitter, patter, listen, listen.",
+        "word_errors": 0
+      }
+    },
+    {
+      "index": 2,
+      "text": "Pitter-patter! Rain, rain! Drip, drop!",
+      "reference_words": 6,
+      "stable": {
+        "transcript": "A pitter pattern. Rain, rain, drip, drop.",
+        "word_errors": 2
+      },
+      "candidate": {
+        "transcript": "Pitter powder, rain rain, drip drop.",
+        "word_errors": 1
+      }
+    },
+    {
+      "index": 3,
+      "text": "Listen, listen! Rain outside! Pitter-patter!",
+      "reference_words": 6,
+      "stable": {
+        "transcript": "Listen, listen, rain outside, pitter patter.",
+        "word_errors": 0
+      },
+      "candidate": {
+        "transcript": "Listen, listen, rain outside, piddo-patter.",
+        "word_errors": 1
+      }
+    },
+    {
+      "index": 4,
+      "text": "rain outside! Pitter-patter! Listen, listen!",
+      "reference_words": 6,
+      "stable": {
+        "transcript": "Rain outside, pitter patter, listen, listen.",
+        "word_errors": 0
+      },
+      "candidate": {
+        "transcript": "Rain outside, pitter patter, listen, listen.",
+        "word_errors": 0
+      }
+    }
+  ]
+}

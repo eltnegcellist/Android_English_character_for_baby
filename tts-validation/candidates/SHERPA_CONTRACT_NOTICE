@@ -1,0 +1,5 @@
+Output timing contract derived from Apache-2.0 Sherpa-ONNX v1.13.8:
+https://github.com/k2-fsa/sherpa-onnx/blob/v1.13.8/sherpa-onnx/csrc/offline-tts.cc
+Copyright (c) 2023 Xiaomi Corporation (upstream file notice).
+Independent NumPy/Kotlin implementations of documented output thresholds;
+no Sherpa binary, eSpeak code, phonemes or data are included in candidate.
