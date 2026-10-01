@@ -10,14 +10,14 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.18**  
-**versionCode：101**
+**現在のAndroid安定版：v1.9.20**  
+**versionCode：103**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.18
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.18/Mitsukotoba-v1.9.18-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.20
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.20/Mitsukotoba-v1.9.20-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.18は、AIイラストの12種類の表情に外観設定を反映し、白い背景でも顔が見分けられる輪郭線を追加した版です。初期配色は白い顔・赤いアクセント・黒い目と輪郭です。保存済みの色設定は保持し、口パク・まばたき・会話機能を維持しています。
+v1.9.20は、Liteの話題判定をWeb版と揃えた版です。語尾・助詞・漢字とかなの違い、音声認識で崩れた話題語を補い、「足・あし」「手・指」「声」「本」「服」「歌」「おなか」だけでも話題を拾います。「飲むかい」「飲もうか」は同じ飲む動作として扱い、ミルクの文脈がある場合だけミルクを引き継ぎます。設定のLite説明から[話題の判定方法・話題一覧](https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/topic-guide.html)を開けます。v1.9.19の非GPL TTSと、既存の外観設定・口パク・まばたきを維持しています。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -285,11 +285,11 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 
 ### プロジェクト状況
 
-**v1.9.18を現在の安定基準版とします。**
+**v1.9.20を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.18を再現可能な「みつことば」安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.20を再現可能な「みつことば」安定基準版として保持します。
 
 ### ライセンス
 
@@ -309,14 +309,14 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.18**  
-**versionCode: 101**
+**Current stable Android release: v1.9.20**  
+**versionCode: 103**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.18
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.18/Mitsukotoba-v1.9.18-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.20
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.20/Mitsukotoba-v1.9.20-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.18 applies appearance settings to all 12 illustrated AI expression frames and adds visible face outlines on white backgrounds. The default is a white face with red accents and black eyes/outlines. Saved color preferences, lip sync, blinking, and conversation behavior are preserved.
+v1.9.20 aligns Lite topic detection with the published Web rules: polite conjugations, kana/kanji and phonetic matching, short childcare nouns, unspecified drinking, and six-turn context. The Lite settings description links to the [topic logic, topic list, and examples](https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/topic-guide.html). The non-GPL TTS from v1.9.19 and existing avatar behavior are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -569,11 +569,11 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for additional information.
 
 ### Project Status
 
-**v1.9.18 is the current stable baseline.**
+**v1.9.20 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.18 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.20 remains reproducible as the stable Mitsukotoba reference point.
 
 ### License
 

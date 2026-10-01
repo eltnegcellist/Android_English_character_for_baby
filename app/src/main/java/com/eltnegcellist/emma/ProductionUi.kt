@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -588,6 +589,7 @@ internal fun EmmaSettingsScreen(
     onOpenTutorial: () -> Unit,
     onResetAllData: () -> Unit,
 ) {
+    val topicGuideUriHandler = LocalUriHandler.current
     var developerTapCount by remember { mutableStateOf(0) }
     var developerToolsVisible by remember { mutableStateOf(false) }
     var resetConfirmOpen by remember { mutableStateOf(false) }
@@ -707,6 +709,10 @@ internal fun EmmaSettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         if (option == ConversationEngineMode.LITE) {
+                            TextButton(onClick = {
+                                topicGuideUriHandler.openUri("https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/topic-guide.html")
+                            }) { Text("話題の判定方法・話題一覧を見る") }
+
                             Text("音声認識", style = MaterialTheme.typography.titleSmall)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),

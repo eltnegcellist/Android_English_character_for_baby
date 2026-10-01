@@ -37,6 +37,9 @@ internal object MeaningfulJapaneseUtterance {
         if (normalized == "不明" || normalized == "unclear") return false
         if (normalized in fillerOnly) return false
 
+        if (LiteFlexibleTopicMatcher.detectDrinkingAction(raw) ||
+            LiteFlexibleTopicMatcher.detectNounTopics(raw).isNotEmpty()) return true
+
         // Short but semantically strong childcare words must remain responsive.
         if (semanticShortForms.any { it.isNotBlank() && normalized.contains(it) }) return true
 

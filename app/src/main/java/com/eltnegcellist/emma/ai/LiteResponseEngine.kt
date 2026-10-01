@@ -31,18 +31,17 @@ internal class LiteResponseEngine {
 
     fun respond(transcript: String, spokenBabyName: String = ""): LiteResponse {
         val normalized = normalize(transcript)
-        val ranked = scenes.map { scene -> scene to score(scene, normalized) }
+        val flexible = LiteFlexibleTopicMatcher.detect(transcript)
+        val ranked = scenes.map { scene -> scene to max(score(scene, normalized), flexible[scene.id] ?: 0) }
             .sortedByDescending { it.second }
         val best = ranked.firstOrNull()
         val selected = if (best != null && best.second >= MIN_SCENE_SCORE) best else null
         val rescued = if (selected == null) {
             LitePhoneticSceneMatcher.match(
-                transcript = transcript,
+                transcript = LiteFlexibleTopicMatcher.normalizeParentSpeech(transcript),
                 scenePhrases = scenes.associate { scene ->
                     scene.id to (
-                        scene.keywords +
-                            sceneChildcareAnchors[scene.id].orEmpty() +
-                            sceneSpeechHints[scene.id].orEmpty()
+                        sceneChildcareAnchors[scene.id].orEmpty() + sceneRescuePhrases[scene.id].orEmpty()
                         )
                 },
                 sceneExclusions = sceneSpeechExclusions,
@@ -51,15 +50,20 @@ internal class LiteResponseEngine {
             null
         }
 
-        val candidateScene = selected?.first
+        val detectedScene = selected?.first
             ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
-        val candidateScore = selected?.second ?: rescued?.score ?: 0
-        val candidateHasStrongTopicEvidence =
-            candidateScene != null &&
-                (
-                    rescued != null ||
-                        hasStrongTopicEvidence(candidateScene, normalized)
-                    )
+        val milkScene = scenes.first { it.id == "milk" }
+        val drinking = LiteFlexibleTopicMatcher.detectDrinkingAction(transcript)
+        val explicitMilk = "milk" in flexible || hasStrongTopicEvidence(milkScene, normalized)
+        val drinkingScene = if (drinking && !explicitMilk) {
+            if (activeSceneId == "milk" && !LiteFlexibleTopicMatcher.hasNonMilkDrink(transcript)) milkScene else drinkScene
+        } else null
+        val useDrinking = drinkingScene != null && (detectedScene == null || detectedScene.id == "milk" ||
+            !hasStrongTopicEvidence(detectedScene, normalized))
+        val candidateScene = if (useDrinking) drinkingScene else detectedScene
+        val candidateScore = if (useDrinking) 4 else selected?.second ?: rescued?.score ?: 0
+        val candidateHasStrongTopicEvidence = candidateScene != null &&
+            (useDrinking || rescued != null || candidateScene.id in flexible || hasStrongTopicEvidence(candidateScene, normalized))
         val explicitScene = when {
             candidateScene == null -> null
             activeSceneId == null -> candidateScene
@@ -69,7 +73,7 @@ internal class LiteResponseEngine {
         }
         val explicitScore = if (explicitScene != null) candidateScore else 0
         val contextualScene = if (explicitScene == null && activeSceneTurnsRemaining > 0) {
-            activeSceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
+            activeSceneId?.let { sceneId -> (scenes + drinkScene).firstOrNull { it.id == sceneId } }
         } else {
             null
         }
@@ -124,18 +128,17 @@ internal class LiteResponseEngine {
      */
     fun detectConcreteTopic(transcript: String): LiteTopicDetection? {
         val normalized = normalize(transcript)
-        val ranked = scenes.map { scene -> scene to score(scene, normalized) }
+        val flexible = LiteFlexibleTopicMatcher.detect(transcript)
+        val ranked = scenes.map { scene -> scene to max(score(scene, normalized), flexible[scene.id] ?: 0) }
             .sortedByDescending { it.second }
         val best = ranked.firstOrNull()
         val selected = if (best != null && best.second >= MIN_SCENE_SCORE) best else null
         val rescued = if (selected == null) {
             LitePhoneticSceneMatcher.match(
-                transcript = transcript,
+                transcript = LiteFlexibleTopicMatcher.normalizeParentSpeech(transcript),
                 scenePhrases = scenes.associate { scene ->
                     scene.id to (
-                        scene.keywords +
-                            sceneChildcareAnchors[scene.id].orEmpty() +
-                            sceneSpeechHints[scene.id].orEmpty()
+                        sceneChildcareAnchors[scene.id].orEmpty() + sceneRescuePhrases[scene.id].orEmpty()
                         )
                 },
                 sceneExclusions = sceneSpeechExclusions,
@@ -144,14 +147,18 @@ internal class LiteResponseEngine {
             null
         }
 
-        val candidate = selected?.first
+        val detected = selected?.first
             ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
-            ?: return null
-        val candidateScore = selected?.second ?: rescued?.score ?: 0
+        val milkScene = scenes.first { it.id == "milk" }
+        val useDrinking = LiteFlexibleTopicMatcher.detectDrinkingAction(transcript) &&
+            !("milk" in flexible || hasStrongTopicEvidence(milkScene, normalized)) &&
+            (detected == null || detected.id == "milk" || !hasStrongTopicEvidence(detected, normalized))
+        val candidate = (if (useDrinking) drinkScene else detected) ?: return null
+        val candidateScore = if (useDrinking) 4 else selected?.second ?: rescued?.score ?: 0
         return LiteTopicDetection(
             scene = candidate.id,
             score = candidateScore,
-            strongEvidence = rescued != null || hasStrongTopicEvidence(candidate, normalized),
+            strongEvidence = useDrinking || rescued != null || candidate.id in flexible || hasStrongTopicEvidence(candidate, normalized),
         )
     }
 
@@ -330,19 +337,17 @@ internal class LiteResponseEngine {
         return if (mod < 0) mod + size else mod
     }
 
-    private fun normalize(text: String): String = text
-        .lowercase()
-        .replace(Regex("[\\s、。！？!?,.・「」『』（）()ー〜~]"), "")
-        .replace("おふろ", "お風呂")
-        .replace("お風呂", "風呂")
+    private fun normalize(text: String): String = LiteFlexibleTopicMatcher.normalizeParentSpeech(text)
+        .replace("おふろ", "お風呂").replace("お風呂", "風呂")
         .replace("ねよっか", "寝よっか")
-        .replace("ねよう", "寝よう")
-        .replace("ねる", "寝る")
-        .replace("ねます", "寝ます")
-        .replace("ねて", "寝て")
-        .replace("ねた", "寝た")
+        .replace(Regex("(?<!かさ|重|たず|尋|訪|は|跳|ま|真)ねよう"), "寝よう")
+        .replace(Regex("(?<![ぁ-ん一-龯])ねる"), "寝る")
+        .replace(Regex("(?<!かさ|重|たず|尋|訪|は|跳|ま|真)ねます"), "寝ます")
+        .replace(Regex("(?<!かさ|重|たず|尋|訪|は|跳|ま|真)ねて"), "寝て")
+        .replace(Regex("(?<!かさ|重|たず|尋|訪|は|跳|ま|真)ねた"), "寝た")
 
     companion object {
+        private val drinkScene = Scene("drink", emptyList(), listOf("Little sips. Sip, sip! Nice and slow.", "Let's drink. Little sips. Nice and slow.", "Sip, sip! Take your time. Little sips.", "Small sips. Nice and easy. Take your time.", "{name}, little sips. Sip, sip! Nice and slow."))
         private const val MIN_SCENE_SCORE = 3
         private const val CONTEXT_SCENE_SCORE = 2
         private const val TOPIC_HOLD_TURNS = 6
@@ -357,8 +362,8 @@ internal class LiteResponseEngine {
         /**
          * High-confidence childcare vocabulary. These are intentionally more
          * specific than the general scene keywords: one anchor is enough to make
-         * a scene a strong candidate, while ambiguous words such as 手 / 足 / 歌
-         * stay in the ordinary scoring path.
+         * a scene a strong candidate, while short topic nouns use lexical boundaries in
+         * LiteFlexibleTopicMatcher.
          */
         private val sceneChildcareAnchors = mapOf(
             "bath" to listOf("沐浴", "お風呂", "風呂", "湯船", "シャワー"),
@@ -380,91 +385,60 @@ internal class LiteResponseEngine {
             "sun" to listOf("お日様", "太陽", "晴れ", "ぽかぽか"),
             "food" to listOf("離乳食", "ごはん", "ご飯", "いただきます", "スプーン"),
             "book" to listOf("絵本", "ページめく"),
-            "music" to listOf("音楽", "歌お", "うたお", "リズム"),
+            "music" to listOf("音楽", "歌お", "うたお", "リズム")
         )
 
         private val sceneSpeechHints = mapOf(
-            "bath" to listOf(
-                "お風呂入", "風呂入", "おふろはい", "シャワー浴", "体洗", "洗お", "湯船入",
-            ),
-            "milk" to listOf(
-                "ミルク飲", "みるく飲", "おっぱい飲", "授乳", "哺乳瓶", "ミルクにし", "おっぱいにし",
-            ),
-            "sleep" to listOf(
-                "寝よ", "寝る", "寝ます", "寝て", "寝た", "寝かし", "寝かせ", "眠ろ", "眠る",
-                "眠い", "眠そう", "眠く", "ねんね", "おねんね", "おやすみ", "昼寝", "お昼寝", "睡眠", "就寝",
-            ),
-            "wake" to listOf(
-                "起きよ", "起きる", "起きて", "起きた", "目覚め", "おはよう", "朝だ",
-            ),
-            "diaper" to listOf(
-                "おむつ替", "オムツ替", "おむつかえ", "うんち出", "うんちした", "おしっこ出",
-                "おしっこした", "お尻拭", "おしり拭",
-            ),
-            "clothes" to listOf(
-                "着替えよ", "着替えよう", "着替えよっか", "服着", "服脱", "着せよ", "脱ご",
-                "パジャマ着", "靴下はこ",
-            ),
-            "hug" to listOf(
-                "抱っこし", "だっこし", "抱っこする", "だっこする", "ぎゅー", "ぎゅっ", "抱きしめ",
-            ),
-            "hands" to listOf(
-                "おてて", "手握", "手にぎ", "指つか", "指握", "手バタ",
-            ),
-            "feet" to listOf(
-                "あんよ", "足バタ", "足けり", "足蹴", "キック", "つま先", "足動",
-            ),
-            "smile" to listOf(
-                "にこにこ", "ニコニコ", "笑った", "笑って", "笑顔", "微笑", "にやっ", "にこっ",
-            ),
-            "cry" to listOf(
-                "泣い", "泣く", "泣き", "涙", "えーん", "ぐず", "ぐずぐず", "ぐずって",
-            ),
-            "voice" to listOf(
-                "声出", "おしゃべり", "喃語", "クーイング", "あーって", "うーって", "あうあう",
-                "話してる", "しゃべって",
-            ),
-            "tummy" to listOf(
-                "げっぷ", "ゲップ", "お腹いっぱい", "おなかいっぱい", "満腹", "吐き戻", "吐いた",
-                "お腹苦", "おなか苦",
-            ),
-            "play" to listOf(
-                "遊ぼ", "あそぼ", "遊ぶ", "おもちゃ", "ガラガラ", "ぬいぐるみ", "メリー", "ボールで遊",
-            ),
-            "outside" to listOf(
-                "散歩行", "お散歩行", "さんぽ行", "外行", "お外行", "出かけ", "ベビーカー乗", "公園行",
-            ),
-            "rain" to listOf(
-                "雨降", "雨だ", "あめ降", "雨音", "傘さ",
-            ),
-            "sun" to listOf(
-                "晴れ", "晴れた", "晴れてる", "いい天気", "お日様", "太陽", "ぽかぽか",
-            ),
-            "food" to listOf(
-                "ごはん食", "ご飯食", "離乳食", "食べよ", "たべよ", "食べる", "食べた",
-                "いただきます", "スプーン", "お腹すい", "おなかすい", "お腹減", "おなか減",
-            ),
-            "book" to listOf(
-                "絵本読", "えほん読", "本読", "読も", "よもっか", "ページめく", "絵本見", "本見",
-            ),
-            "music" to listOf(
-                "歌お", "うたお", "歌う", "うたう", "音楽聞", "曲聞", "踊ろ", "リズム", "歌って",
-            ),
+            "bath" to listOf("お風呂入", "風呂入", "おふろはい", "シャワー浴", "体洗", "洗お", "湯船入"),
+            "milk" to listOf("ミルク飲", "みるく飲", "おっぱい飲", "授乳", "哺乳瓶", "ミルクにし", "おっぱいにし"),
+            "sleep" to listOf("寝よ", "寝る", "寝ます", "寝て", "寝た", "寝かし", "寝かせ", "眠ろ", "眠る", "眠い", "眠そう", "眠く", "ねんね", "おねんね", "おやすみ", "昼寝", "お昼寝", "睡眠", "就寝"),
+            "wake" to listOf("起きよ", "起きる", "起きて", "起きた", "目覚め", "おはよう", "朝だ"),
+            "diaper" to listOf("おむつ替", "オムツ替", "おむつかえ", "うんち出", "うんちした", "おしっこ出", "おしっこした", "お尻拭", "おしり拭"),
+            "clothes" to listOf("着替えよ", "着替えよう", "着替えよっか", "服着", "服脱", "着せよ", "脱ご", "パジャマ着", "靴下はこ"),
+            "hug" to listOf("抱っこし", "だっこし", "抱っこする", "だっこする", "ぎゅー", "ぎゅっ", "抱きしめ"),
+            "hands" to listOf("おてて", "手握", "手にぎ", "指つか", "指握", "手バタ"),
+            "feet" to listOf("あんよ", "足バタ", "足けり", "足蹴", "キック", "つま先", "足動"),
+            "smile" to listOf("にこにこ", "ニコニコ", "笑った", "笑って", "笑顔", "微笑", "にやっ", "にこっ"),
+            "cry" to listOf("泣い", "泣く", "泣き", "涙", "えーん", "ぐず", "ぐずぐず", "ぐずって"),
+            "voice" to listOf("声出", "おしゃべり", "喃語", "クーイング", "あーって", "うーって", "あうあう", "話してる", "しゃべって"),
+            "tummy" to listOf("げっぷ", "ゲップ", "お腹いっぱい", "おなかいっぱい", "満腹", "吐き戻", "吐いた", "お腹苦", "おなか苦"),
+            "play" to listOf("遊ぼ", "あそぼ", "遊ぶ", "おもちゃ", "ガラガラ", "ぬいぐるみ", "メリー", "ボールで遊"),
+            "outside" to listOf("散歩行", "お散歩行", "さんぽ行", "外行", "お外行", "出かけ", "ベビーカー乗", "公園行"),
+            "rain" to listOf("雨降", "雨だ", "あめ降", "雨音", "傘さ"),
+            "sun" to listOf("晴れ", "晴れた", "晴れてる", "いい天気", "お日様", "太陽", "ぽかぽか"),
+            "food" to listOf("ごはん食", "ご飯食", "離乳食", "食べよ", "たべよ", "食べる", "食べた", "いただきます", "スプーン", "お腹すい", "おなかすい", "お腹減", "おなか減"),
+            "book" to listOf("絵本読", "えほん読", "本読", "読も", "よもっか", "ページめく", "絵本見", "本見"),
+            "music" to listOf("歌お", "うたお", "歌う", "うたう", "音楽聞", "曲聞", "踊ろ", "リズム", "歌って")
         )
 
         private val sceneSpeechExclusions = mapOf(
             "bath" to listOf("風呂敷"),
-            "sleep" to listOf("寝返り"),
+            "sleep" to listOf("寝返り", "ねがえり", "重ね", "かさね"),
             "hands" to listOf("手伝", "手続", "手紙", "手数"),
             "feet" to listOf("足り", "足す", "足し"),
             "tummy" to listOf("お腹すい", "おなかすい", "お腹減", "おなか減"),
             "voice" to listOf("声優"),
-            "music" to listOf("歌舞伎"),
+            "music" to listOf("歌舞伎", "うたがう", "うたがっ", "うたがい")
         )
 
         // Generic fallback catalog generated by Gemma 4 E2B Q4 during development
         // and human-reviewed before being baked into Lite. Exact model strings are retained.
         // The runtime stays fully local and does not invoke Gemma for these replies.
+        private val sceneRescuePhrases = mapOf(
+            "bath" to listOf("お風呂入りますか", "お風呂入ろうか", "お風呂入ろうね", "お風呂に入ろうか"),
+            "milk" to listOf("ミルク飲みますか", "ミルク飲む", "ミルク飲もうか", "ミルク飲もうね", "ミルクにしようか", "ミルクの時間だよ"),
+            "sleep" to listOf("そろそろ寝ようか", "ねんねしようか", "もう寝ようね", "眠くなってきたね"),
+            "wake" to listOf("そろそろ起きようか", "起きる時間だよ", "おはよう起きたね"),
+            "diaper" to listOf("おむつ替えようか", "おむつ替えようね", "おむつ替えますか"),
+            "clothes" to listOf("着替えようか", "お着替えしようか", "着替えようね"),
+            "hug" to listOf("抱っこしようか", "抱っこする", "抱っこしようね"),
+            "play" to listOf("一緒に遊ぼうか", "遊ぼうね", "おもちゃで遊ぼうか"),
+            "outside" to listOf("お散歩行こうか", "お外行こうか", "散歩に行こうね"),
+            "food" to listOf("ごはん食べようか", "ごはん食べますか", "ごはんにしようか"),
+            "book" to listOf("絵本読もうか", "絵本読もうね", "絵本を読みますか"),
+            "music" to listOf("歌を歌おうか", "お歌歌おうか", "音楽聞こうか")
+        )
+
         private val genericReplies = listOf(
             "Hello there. Take a moment. Here we are.",
             "Hello there. Just a moment. Here we go.",

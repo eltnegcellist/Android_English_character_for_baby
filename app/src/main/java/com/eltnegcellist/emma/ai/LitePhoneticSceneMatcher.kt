@@ -170,6 +170,10 @@ internal object LitePhoneticSceneMatcher {
      * ASR homophone/kanji substitutions comparable to the baked scene bank.
      */
     private val speechAliases = linkedMapOf(
+        "沐浴" to "もくよく",
+        "母乳" to "ぼにゅう",
+        "つま先" to "つまさき",
+        "吐き戻し" to "はきもどし",
         "お風呂" to "おふろ",
         "風呂" to "ふろ",
         "お袋" to "おふろ",
