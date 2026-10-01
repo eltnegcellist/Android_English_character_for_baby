@@ -124,6 +124,20 @@ jobs:
             unzip -l "$APK" | grep -Ei 'espeak|sherpa' || true
             exit 1
           fi
+          # Both Moonshine Voice and the Java ONNX Runtime AAR provide
+          # libonnxruntime.so. The APK must contain the official full ORT build,
+          # not Moonshine's reduced operator build, because Kitten needs the full
+          # operator set.
+          ORT_AAR="$RUNNER_TEMP/onnxruntime-android-1.23.2.aar"
+          curl -fL --retry 3 --retry-delay 2 \
+            https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/1.23.2/onnxruntime-android-1.23.2.aar \
+            -o "$ORT_AAR"
+          for ABI in arm64-v8a armeabi-v7a; do
+            unzip -p "$ORT_AAR" "jni/$ABI/libonnxruntime.so" > "$RUNNER_TEMP/official-$ABI-libonnxruntime.so"
+            unzip -p "$APK" "lib/$ABI/libonnxruntime.so" > "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so"
+            cmp "$RUNNER_TEMP/official-$ABI-libonnxruntime.so" "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so"
+            echo "Verified full ONNX Runtime 1.23.2 for $ABI."
+          done
           rm -rf "$RUNNER_TEMP/mitsukotoba-apk-scan"
           mkdir -p "$RUNNER_TEMP/mitsukotoba-apk-scan"
           unzip -q "$APK" 'classes*.dex' -d "$RUNNER_TEMP/mitsukotoba-apk-scan"
