@@ -69,7 +69,7 @@ internal fun FullModeSetupScreen(
                         Text("Moonshine 日本語${asrModel.shortLabel}は導入済みです。", style = MaterialTheme.typography.bodyMedium)
                     }
                     if (kittenNeeded) {
-                        Text("Kitten TTS Nano / Kiki（約31MB）を準備します。", style = MaterialTheme.typography.bodyMedium)
+                        Text("Kitten TTS Nano / Kiki / CMUDict（約64MB）を準備します。", style = MaterialTheme.typography.bodyMedium)
                     } else {
                         Text("Kitten TTS Nano / Kikiは導入済みです。", style = MaterialTheme.typography.bodyMedium)
                     }

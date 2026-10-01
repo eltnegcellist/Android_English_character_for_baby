@@ -8,6 +8,7 @@ import androidx.work.WorkerParameters
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 internal class ModelPreparationWorker(
     appContext: Context,
@@ -41,7 +42,8 @@ internal class ModelPreparationWorker(
                 Result.success()
             },
             onFailure = { error ->
-                if (runAttemptCount < 3) {
+                val retryable = isRetryableNetworkError(error)
+                if (retryable && runAttemptCount < 3) {
                     ModelPreparationStateStore.retrying(applicationContext, kind, asr)
                     Result.retry()
                 } else {
@@ -55,6 +57,15 @@ internal class ModelPreparationWorker(
                 }
             },
         )
+    }
+
+    private fun isRetryableNetworkError(error: Throwable): Boolean {
+        var current: Throwable? = error
+        while (current != null) {
+            if (current is IOException || current is InterruptedException) return true
+            current = current.cause
+        }
+        return false
     }
 
     companion object {

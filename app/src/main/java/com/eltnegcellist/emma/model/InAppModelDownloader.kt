@@ -3,19 +3,36 @@ package com.eltnegcellist.emma.model
 import android.os.StatFs
 import java.io.File
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
+import java.io.IOException
+import java.io.InterruptedIOException
+import java.util.concurrent.TimeUnit
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 
 /**
  * Shared HTTP downloader for large on-device models.
  *
  * Incomplete transfers are deliberately preserved as `.download.part`.
  * A later attempt resumes with HTTP Range when the server supports it.
+ *
+ * OkHttp is used instead of HttpURLConnection because Hugging Face large-file
+ * downloads redirect to signed Xet/CDN URLs. OkHttp handles cross-host redirects
+ * and transient reconnects more reliably while keeping Range checkpoints.
  */
 internal object InAppModelDownloader {
     private const val BUFFER_BYTES = 4 * 1024 * 1024
-    private const val MAX_REDIRECTS = 8
     private const val HTTP_RANGE_NOT_SATISFIABLE = 416
+
+    private val client: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .retryOnConnectionFailure(true)
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
+            .build()
+    }
 
     data class Progress(
         val downloadedBytes: Long,
@@ -40,13 +57,13 @@ internal object InAppModelDownloader {
 
         var resumeFrom = partial.takeIf { it.isFile }?.length()?.coerceAtLeast(0L) ?: 0L
         var ifRange = readIfRange(metadata)
+        var response: Response? = null
 
-        var connection: HttpURLConnection? = null
         try {
-            connection = openFollowingRedirects(url, resumeFrom, ifRange)
+            response = execute(url, resumeFrom, ifRange)
 
-            if (resumeFrom > 0L && connection.responseCode == HTTP_RANGE_NOT_SATISFIABLE) {
-                val remoteTotal = parseUnsatisfiedTotal(connection.getHeaderField("Content-Range"))
+            if (resumeFrom > 0L && response.code == HTTP_RANGE_NOT_SATISFIABLE) {
+                val remoteTotal = parseUnsatisfiedTotal(response.header("Content-Range"))
                 if (remoteTotal != null && remoteTotal == resumeFrom && resumeFrom >= minimumBytes) {
                     installPartial(partial, destination)
                     metadata.delete()
@@ -54,16 +71,17 @@ internal object InAppModelDownloader {
                     return@runCatching destination
                 }
 
+                response.close()
+                response = null
                 partial.delete()
                 metadata.delete()
                 resumeFrom = 0L
                 ifRange = null
-                connection.disconnect()
-                connection = openFollowingRedirects(url, 0L, null)
+                response = execute(url, 0L, null)
             }
 
-            val resumed =
-                resumeFrom > 0L && connection.responseCode == HttpURLConnection.HTTP_PARTIAL
+            val code = response.code
+            val resumed = resumeFrom > 0L && code == 206
 
             if (resumeFrom > 0L && !resumed) {
                 // The server ignored Range, or If-Range detected a changed file.
@@ -73,9 +91,10 @@ internal object InAppModelDownloader {
                 resumeFrom = 0L
             }
 
-            val responseBytes = connection.contentLengthLong.takeIf { it > 0L }
+            val body = response.body ?: throw IOException("ダウンロード応答にデータがありません。")
+            val responseBytes = body.contentLength().takeIf { it > 0L }
             val total = when {
-                resumed -> parseContentRangeTotal(connection.getHeaderField("Content-Range"))
+                resumed -> parseContentRangeTotal(response.header("Content-Range"))
                     ?: responseBytes?.let { resumeFrom + it }
                 else -> responseBytes
             }
@@ -85,27 +104,27 @@ internal object InAppModelDownloader {
                 val available = StatFs(
                     destination.parentFile?.absolutePath ?: destination.absolutePath,
                 ).availableBytes
-                require(available > remaining + freeSpaceMarginBytes) {
+                check(available > remaining + freeSpaceMarginBytes) {
                     "空き容量が不足しています。端末の空き容量を増やしてからもう一度お試しください。"
                 }
             }
 
-            val newIfRange = connection.getHeaderField("ETag")
-                ?: connection.getHeaderField("Last-Modified")
+            val newIfRange = response.header("ETag")
+                ?: response.header("Last-Modified")
                 ?: ifRange
             writeIfRange(metadata, newIfRange)
 
             var downloaded = resumeFrom
             onProgress(Progress(downloaded, total))
 
-            connection.inputStream.use { input ->
+            body.byteStream().use { input ->
                 FileOutputStream(partial, resumed).use { output ->
                     val buffer = ByteArray(BUFFER_BYTES)
                     var lastPercent = Progress(downloaded, total).percent ?: -1
 
                     while (true) {
                         if (Thread.currentThread().isInterrupted) {
-                            throw InterruptedException("モデルのダウンロードが中断されました。")
+                            throw InterruptedIOException("モデルのダウンロードが中断されました。")
                         }
 
                         val read = input.read(buffer)
@@ -126,12 +145,15 @@ internal object InAppModelDownloader {
                 }
             }
 
-            require(partial.length() >= minimumBytes) {
-                "ダウンロードしたデータが不完全です。通信環境を確認してもう一度お試しください。"
+            if (partial.length() < minimumBytes) {
+                throw IOException("ダウンロードしたデータが不完全です。通信環境を確認してもう一度お試しください。")
             }
             total?.let { expected ->
-                require(partial.length() == expected) {
-                    "ダウンロードしたデータのサイズが一致しません。もう一度お試しください。"
+                if (partial.length() != expected) {
+                    throw IOException(
+                        "ダウンロードしたデータのサイズが一致しません（" +
+                            partial.length() + " / " + expected + " bytes）。",
+                    )
                 }
             }
 
@@ -140,9 +162,40 @@ internal object InAppModelDownloader {
             onProgress(Progress(destination.length(), total ?: destination.length()))
             destination
         } finally {
-            connection?.disconnect()
+            response?.close()
             // Keep partial + metadata on failure so the next run can resume.
         }
+    }
+
+    private fun execute(
+        url: String,
+        rangeStart: Long,
+        ifRange: String?,
+    ): Response {
+        val request = Request.Builder()
+            .url(url)
+            .header("User-Agent", "Mitsukotoba-Android/1.9.19")
+            .header("Accept", "*/*")
+            .apply {
+                if (rangeStart > 0L) {
+                    header("Range", "bytes=$rangeStart-")
+                    if (!ifRange.isNullOrBlank()) header("If-Range", ifRange)
+                }
+            }
+            .build()
+
+        val response = client.newCall(request).execute()
+        val code = response.code
+        if (code in 200..299 || code == HTTP_RANGE_NOT_SATISFIABLE) {
+            return response
+        }
+
+        response.close()
+        val message = "ダウンロードに失敗しました（HTTP $code）。"
+        if (code == 408 || code == 425 || code == 429 || code in 500..599) {
+            throw IOException(message)
+        }
+        throw IllegalStateException(message)
     }
 
     private fun installPartial(partial: File, destination: File) {
@@ -152,47 +205,6 @@ internal object InAppModelDownloader {
         if (!partial.renameTo(destination)) {
             error("ダウンロードしたデータを保存できませんでした。")
         }
-    }
-
-    private fun openFollowingRedirects(
-        sourceUrl: String,
-        rangeStart: Long,
-        ifRange: String?,
-    ): HttpURLConnection {
-        var current = sourceUrl
-        repeat(MAX_REDIRECTS + 1) { attempt ->
-            val connection = (URL(current).openConnection() as HttpURLConnection).apply {
-                instanceFollowRedirects = false
-                connectTimeout = 20_000
-                readTimeout = 60_000
-                requestMethod = "GET"
-                setRequestProperty("User-Agent", "Mitsukotoba-Android")
-                if (rangeStart > 0L) {
-                    setRequestProperty("Range", "bytes=$rangeStart-")
-                    if (!ifRange.isNullOrBlank()) {
-                        setRequestProperty("If-Range", ifRange)
-                    }
-                }
-            }
-
-            val code = connection.responseCode
-            if (code in 300..399) {
-                val location = connection.getHeaderField("Location")
-                    ?: error("ダウンロード先を確認できませんでした。")
-                connection.disconnect()
-                current = URL(URL(current), location).toString()
-            } else {
-                require(code in 200..299 || code == HTTP_RANGE_NOT_SATISFIABLE) {
-                    "ダウンロードに失敗しました（HTTP $code）。"
-                }
-                return connection
-            }
-
-            if (attempt == MAX_REDIRECTS) {
-                error("ダウンロードの転送回数が多すぎます。")
-            }
-        }
-        error("ダウンロードを開始できませんでした。")
     }
 
     private fun parseContentRangeTotal(value: String?): Long? {

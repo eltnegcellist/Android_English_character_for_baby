@@ -1,7 +1,70 @@
+import org.gradle.api.artifacts.transform.InputArtifact
+import org.gradle.api.artifacts.transform.TransformAction
+import org.gradle.api.artifacts.transform.TransformOutputs
+import org.gradle.api.artifacts.transform.TransformParameters
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Provider
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+abstract class StripBundledOnnxRuntime : TransformAction<TransformParameters.None> {
+    @get:InputArtifact
+    abstract val inputArtifact: Provider<FileSystemLocation>
+
+    override fun transform(outputs: TransformOutputs) {
+        val input = inputArtifact.get().asFile
+        val output = outputs.file(input.nameWithoutExtension + "-without-onnxruntime.aar")
+
+        ZipFile(input).use { zip ->
+            ZipOutputStream(output.outputStream().buffered()).use { out ->
+                val entries = zip.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    if (
+                        !entry.isDirectory &&
+                        entry.name.matches(Regex("""jni/[^/]+/libonnxruntime\.so"""))
+                    ) {
+                        continue
+                    }
+
+                    val copy = ZipEntry(entry.name)
+                    if (entry.time >= 0L) copy.time = entry.time
+                    out.putNextEntry(copy)
+                    if (!entry.isDirectory) {
+                        zip.getInputStream(entry).use { source -> source.copyTo(out) }
+                    }
+                    out.closeEntry()
+                }
+            }
+        }
+    }
+}
+
+val moonshineRaw = configurations.create("moonshineRaw") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+
+dependencies.registerTransform(StripBundledOnnxRuntime::class.java) {
+    from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "aar")
+    to.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "moonshine-aar-without-ort")
+}
+
+val strippedMoonshine = moonshineRaw.incoming.artifactView {
+    attributes.attribute(
+        ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
+        "moonshine-aar-without-ort",
+    )
+}.files
+
 
 val signingStorePath = providers.gradleProperty("emma.signingStoreFile")
     .orElse(providers.environmentVariable("EMMA_SIGNING_STORE_FILE"))
@@ -38,8 +101,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 101
-        versionName = "1.9.18"
+        versionCode = 102
+        versionName = "1.9.19"
 
         // Emma is distributed for physical Android devices.
         // Keep both 64-bit and legacy 32-bit ARM, but omit x86/x86_64 emulator/PC ABIs.
@@ -80,6 +143,11 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            // Keep the selected full ORT byte-identical to Microsoft's AAR so
+            // CI can prove Moonshine's reduced build was not packaged.
+            keepDebugSymbols += "**/libonnxruntime.so"
+        }
     }
 }
 
@@ -92,13 +160,19 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("ai.moonshine:moonshine-voice:0.1.5")
+    // Kitten uses the full Microsoft ONNX Runtime operator build.
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.23.2")
+
+    // Moonshine bundles its own reduced libonnxruntime.so. Resolve its AAR
+    // through a transform that removes only that duplicate native library so
+    // Moonshine and Kitten share the verified full ORT above.
+    add(moonshineRaw.name, "ai.moonshine:moonshine-voice:0.1.5")
+    implementation(files(strippedMoonshine))
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
-    implementation(files("libs/sherpa-onnx-static-1.13.8.aar"))
-    implementation("org.apache.commons:commons-compress:1.28.0")
     implementation("androidx.work:work-runtime-ktx:2.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation("junit:junit:4.13.2")
 

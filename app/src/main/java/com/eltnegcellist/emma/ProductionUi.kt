@@ -753,7 +753,7 @@ internal fun EmmaSettingsScreen(
                             ConversationEngineMode.LITE -> {
                                 Text(
                                     if (asrModel == MoonshineAsrModel.TINY) {
-                                        "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano 約31MB。合計約64MBです。"
+                                        "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano / Kiki / CMUDict 約64MB。合計約96MBです。"
                                     } else {
                                         "Moonshine 日本語Smallの追加データ + Kitten TTS Nanoを準備します。"
                                     },
@@ -889,9 +889,10 @@ internal fun EmmaSettingsScreen(
                         )
                         Text(
                             "Model: Kitten TTS Nano FP32\n" +
-                                "Voice: Kiki (sid ${KittenSpeaker.KIKI_SPEAKER_ID})\n" +
-                                "Speed: ${KittenSpeaker.KITTEN_SPEED}\n" +
-                                "Threads: ${KittenSpeaker.THREADS}\n" +
+                                "Voice: Kiki (expr-voice-5-f)\n" +
+                                "Runtime: ONNX Runtime Android\n" +
+                                "Phonemizer: CMUDict\n" +
+                                "Speed: ${KittenSpeaker.KITTEN_SPEED} (effective ${KittenSpeaker.EFFECTIVE_SPEED})\n" +
                                 "Target peak: ${KittenSpeaker.TTS_TARGET_PEAK}\n" +
                                 "Max volume boost: ${KittenSpeaker.TTS_MAX_VOLUME_BOOST}x\n" +
                                 "Playback chunk: ${KittenSpeaker.PLAYBACK_CHUNK_SAMPLES} samples",

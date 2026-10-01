@@ -49,15 +49,11 @@ jobs:
           test -f "$ANDROID_HOME/platforms/android-37.1/android.jar"
           test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
 
-      - name: Download pinned sherpa-onnx Android runtime
+      - name: Prepare Moonshine AAR without reduced ONNX Runtime
         shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p app/libs
-          curl -fL --retry 3 --retry-delay 2 \
-            https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-static-link-onnxruntime-1.13.8.aar \
-            -o app/libs/sherpa-onnx-static-1.13.8.aar
-          echo "b22c3fc1b6a45666d28892bb2f7694beeb77a8362d7ebd77c1a5431ec9435471  app/libs/sherpa-onnx-static-1.13.8.aar" | sha256sum --check
+          chmod +x scripts/prepare-moonshine-android-aar.sh
+          scripts/prepare-moonshine-android-aar.sh
 
       - name: Validate Android PNG resources
         shell: bash
@@ -102,6 +98,17 @@ jobs:
           print(f"Validated {len(files)} PNG resource(s)")
           PY
 
+      - name: Reject GPL/eSpeak/sherpa TTS regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          banned='espeak-ng-data|com\.k2fsa\.sherpa|sherpa-onnx-static|OfflineTtsKittenModelConfig'
+          if grep -RniE "$banned" app/src app/build.gradle.kts \
+              --exclude='LICENSE_AUDIT.md' --exclude='THIRD_PARTY_NOTICES.md'; then
+            echo "GPL/eSpeak or sherpa TTS regression detected."
+            exit 1
+          fi
+
       - name: Test and build
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug --stacktrace
 
@@ -112,19 +119,55 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.18-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.19-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
           unzip -l "$APK" | grep -q "res/mipmap-anydpi-v26/ic_launcher.xml"
           unzip -l "$APK" | grep -q "res/mipmap-anydpi-v26/ic_launcher_round.xml"
-          echo "Verified packaged adaptive launcher icon resources."
+          if unzip -l "$APK" | grep -Eiq 'espeak|sherpa'; then
+            echo "Unexpected eSpeak/sherpa file found in APK."
+            unzip -l "$APK" | grep -Ei 'espeak|sherpa' || true
+            exit 1
+          fi
+          # Both Moonshine Voice and the Java ONNX Runtime AAR provide
+          # libonnxruntime.so. The APK must contain the official full ORT build,
+          # not Moonshine's reduced operator build, because Kitten needs the full
+          # operator set.
+          ORT_AAR="$RUNNER_TEMP/onnxruntime-android-1.23.2.aar"
+          curl -fL --retry 3 --retry-delay 2 \
+            https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/1.23.2/onnxruntime-android-1.23.2.aar \
+            -o "$ORT_AAR"
+          for ABI in arm64-v8a armeabi-v7a; do
+            unzip -p "$ORT_AAR" "jni/$ABI/libonnxruntime.so" > "$RUNNER_TEMP/official-$ABI-libonnxruntime.so"
+            unzip -p "$APK" "lib/$ABI/libonnxruntime.so" > "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so"
+            OFFICIAL_SIZE="$(stat -c%s "$RUNNER_TEMP/official-$ABI-libonnxruntime.so")"
+            APK_SIZE="$(stat -c%s "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so")"
+            echo "$ABI ORT sizes: official=$OFFICIAL_SIZE apk=$APK_SIZE"
+
+            # AGP strips native symbols while packaging, so a byte-for-byte compare
+            # is not stable. Moonshine's reduced ORT is only ~30% of the stock
+            # library; requiring >=70% of the official AAR cleanly distinguishes
+            # the stock operator set while allowing normal symbol stripping.
+            test $((APK_SIZE * 100)) -ge $((OFFICIAL_SIZE * 70))
+            strings "$RUNNER_TEMP/apk-$ABI-libonnxruntime.so" | grep -q 'VERS_1\.23\.2'
+            echo "Verified stock-sized ONNX Runtime 1.23.2 for $ABI."
+          done
+          rm -rf "$RUNNER_TEMP/mitsukotoba-apk-scan"
+          mkdir -p "$RUNNER_TEMP/mitsukotoba-apk-scan"
+          unzip -q "$APK" 'classes*.dex' -d "$RUNNER_TEMP/mitsukotoba-apk-scan"
+          if find "$RUNNER_TEMP/mitsukotoba-apk-scan" -type f -name 'classes*.dex' -print0 | \
+              xargs -0 strings | grep -Eiq 'espeak-ng-data|com/k2fsa/sherpa|sherpa-onnx'; then
+            echo "Unexpected eSpeak/sherpa reference found in DEX."
+            exit 1
+          fi
+          echo "Verified adaptive icons and no eSpeak/sherpa TTS payload."
           echo "apk=$APK" >> "$GITHUB_OUTPUT"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.18
+          name: Mitsukotoba-v1.9.19
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -140,7 +183,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.18"
+          TAG="mitsukotoba-v1.9.19"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -158,5 +201,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.18" \
-            --notes "Mitsukotoba v1.9.18 restores appearance settings for all 12 illustrated expression frames, adds visible face outlines on white backgrounds, and defaults to a white face with red accents. Existing saved color preferences are preserved."
+            --title "みつことば v1.9.19" \
+            --notes "Mitsukotoba v1.9.19 removes the Android eSpeak NG/sherpa Kitten TTS path. Kitten Nano FP32 now runs directly with ONNX Runtime Android and the same CMUDict-based non-GPL phonemizer used by Mitsukotoba Web."
