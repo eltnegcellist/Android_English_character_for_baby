@@ -119,7 +119,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.21-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.22-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -167,7 +167,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.21
+          name: Mitsukotoba-v1.9.22
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -183,7 +183,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.21"
+          TAG="mitsukotoba-v1.9.22"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -201,5 +201,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.21" \
-            --notes "Mitsukotoba v1.9.21 aligns Lite topic detection with the published Web version: polite conjugations, kana/kanji and phonetic topic matching, short childcare nouns, drinking without a specified object, and six-turn topic context. Settings now links to the topic logic, topic list, and example guide. Kitten's non-GPL ONNX Runtime path from v1.9.19 is retained."
+            --title "みつことば v1.9.22" \
+            --notes "Mitsukotoba v1.9.22 bundles the Lite topic guide directly in the Android app. Settings opens a native offline screen with topic logic, 21 topics, 45 checked examples, six-turn context, and troubleshooting. The Web-aligned detector, non-GPL TTS, and existing avatar behavior are retained."
