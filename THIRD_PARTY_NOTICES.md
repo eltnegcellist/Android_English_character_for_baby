@@ -24,9 +24,11 @@ English text
 
 The build no longer depends on `sherpa-onnx-static-1.13.8.aar`.
 
-The v1.9.19 stable release and the v1.9.20 continuation passed source, DEX,
-and APK checks for known eSpeak/sherpa TTS payloads. This means "GPL-free" for
-the audited TTS execution path; it does not mean the whole dependency graph is
+The v1.9.19 stable release and the v1.9.20 / v1.9.21 continuation releases
+passed source, DEX, and APK checks for known eSpeak/sherpa TTS payloads.
+v1.9.21 changes Lite topic detection and documentation links only; it does not
+add or replace any TTS/runtime dependency. This means "GPL-free" for the
+audited TTS execution path; it does not mean the whole dependency graph is
 permissive-only. Moonshine/ONNX Runtime provenance can include separately
 licensed material such as Eigen under MPL-2.0.
 
