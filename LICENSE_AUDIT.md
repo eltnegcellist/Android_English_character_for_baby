@@ -46,10 +46,11 @@ The built APK is also inspected for eSpeak/sherpa filenames and DEX strings.
 ## Stable-release verification
 
 v1.9.19 was promoted after Galaxy S25 device verification and successful
-main-branch CI. v1.9.20 and v1.9.21 retain the same non-GPL TTS architecture.
-v1.9.21 changes Lite topic detection and adds the topic-guide link; it does not
-change the Kitten, CMUDict, ONNX Runtime, Moonshine, OkHttp, or WorkManager
-dependency set.
+main-branch CI. v1.9.20, v1.9.21, and v1.9.22 retain the same non-GPL TTS
+architecture. v1.9.21 changes Lite topic detection and adds the topic-guide
+link. v1.9.22 bundles the topic guide inside the app for offline viewing.
+Neither changes the Kitten, CMUDict, ONNX Runtime, Moonshine, OkHttp, or
+WorkManager dependency set.
 
 Release CI verifies:
 
@@ -61,8 +62,8 @@ Release CI verifies:
 
 ## Conclusion
 
-For the stable v1.9.19+ / v1.9.20 / v1.9.21 line, no known eSpeak NG or
-sherpa TTS runtime dependency remains in the audited Android Kitten TTS
+For the stable v1.9.19+ / v1.9.20 / v1.9.21 / v1.9.22 line, no known eSpeak
+NG or sherpa TTS runtime dependency remains in the audited Android Kitten TTS
 execution path.
 
 This audit is technical rather than legal advice. The overall application is
