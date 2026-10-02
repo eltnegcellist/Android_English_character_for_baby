@@ -686,9 +686,49 @@ internal fun EmmaSettingsScreen(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("音声認識", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Lite・Full共通の、日本語の聞き取り設定です。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        MoonshineAsrModel.entries.forEach { asrOption ->
+                            if (asrModel == asrOption) {
+                                Button(
+                                    onClick = {},
+                                    enabled = enabled,
+                                    modifier = Modifier.weight(1f),
+                                ) { Text(asrOption.label) }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { onAsrModel(asrOption) },
+                                    enabled = enabled,
+                                    modifier = Modifier.weight(1f),
+                                ) { Text(asrOption.label) }
+                            }
+                        }
+                    }
+                    Text(
+                        if (asrModel == MoonshineAsrModel.SMALL) {
+                            "Small推奨。Tinyは軽さを優先したい場合に選べます。"
+                        } else {
+                            "Tiny（軽量）を使用中。精度を優先したい場合はSmallを選べます。"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Lite / Full", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Lite / Full から選べます。",
+                        "返答の作り方を選びます。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -706,47 +746,22 @@ internal fun EmmaSettingsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             ) { Text("みつことば ${option.label}に切り替える") }
                         }
-                        Text(
-                            option.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (option == ConversationEngineMode.LITE) {
-                            TextButton(onClick = { topicGuideOpen = true }) {
-                                Text("話題の判定方法・話題一覧を見る")
-                            }
+                    }
 
-                            Text("音声認識", style = MaterialTheme.typography.titleSmall)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                MoonshineAsrModel.entries.forEach { asrOption ->
-                                    if (asrModel == asrOption) {
-                                        Button(
-                                            onClick = {},
-                                            enabled = enabled,
-                                            modifier = Modifier.weight(1f),
-                                        ) { Text(asrOption.label) }
-                                    } else {
-                                        OutlinedButton(
-                                            onClick = { onAsrModel(asrOption) },
-                                            enabled = enabled,
-                                            modifier = Modifier.weight(1f),
-                                        ) { Text(asrOption.label) }
-                                    }
-                                }
-                            }
-                            Text(
-                                if (asrModel == MoonshineAsrModel.SMALL) {
-                                    "Small推奨。Tinyは軽さを優先したい場合に選べます。"
-                                } else {
-                                    "Tiny（軽量）を使用中。Fullでも同じ音声認識設定を使います。"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+                    Spacer(Modifier.height(4.dp))
+                    Text("LiteとFullの違い", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Lite：親の言葉から育児の話題を選び、用意された短い英語で返します。軽量で、「呼びかけ」を使えます。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        "Full：AIが親の言葉や会話の流れを踏まえ、その場で英語を考えます。「呼びかけ」と「会話」を使えます。初回に2GB超の追加データが必要です。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = { topicGuideOpen = true }) {
+                        Text("Liteの話題の判定方法・話題一覧を見る")
                     }
                 }
             }
@@ -814,16 +829,6 @@ internal fun EmmaSettingsScreen(
                 }
             }
 
-            Text(
-                when (engineMode) {
-                    ConversationEngineMode.LITE ->
-                        "LiteはMoonshine + LiteResponseEngine + Kitten / Kikiの軽量構成です。"
-                    ConversationEngineMode.FULL ->
-                        "Fullは同じMoonshineとKittenを使い、Gemmaだけを追加します。文字内容はMoonshineを優先し、元音声は非言語情報の補助として使います。"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             OutlinedButton(
                 onClick = onOpenTutorial,
                 enabled = enabled,
