@@ -300,6 +300,8 @@ Android v1.9.23はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### 開発資料
 
+- [shared/README.md](shared/README.md) — Web・Android共通の判定例とガイドの更新手順
+
 - [BRANCH_POLICY.md](BRANCH_POLICY.md) — 開発元・安定版タグ・過去の実験PRの扱い
 - [LICENSE_AUDIT.md](LICENSE_AUDIT.md) — 旧TTSから現行TTSへの移行と監査結果
 - [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) — 現行の第三者コンポーネント一覧
@@ -598,6 +600,8 @@ Mitsukotoba is an independently developed project. It does not claim to guarante
 Future functional changes should be released under a new version so that v1.9.23 remains reproducible as the stable Mitsukotoba reference point.
 
 ### Development Documents
+
+- [shared/README.md](shared/README.md) — shared Web/Android topic tests and guide update procedure
 
 - [BRANCH_POLICY.md](BRANCH_POLICY.md) — source of truth, release tags, and historical experimental PRs
 - [LICENSE_AUDIT.md](LICENSE_AUDIT.md) — TTS migration and dependency audit

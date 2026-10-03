@@ -1,0 +1,9 @@
+{
+  "repository": "eltnegcellist/Web_EmmaLocal_English_for_babies",
+  "commit": "9b30b7536bd7f0a5e5bcae4bf4acdc93758cb643",
+  "sha256": {
+    "shared/lite-topic-contract.json": "bc74706a452ca33d2076283a07c1cd4280d00a3b623b906c2fc6e0f6a36f4f00",
+    "scripts/generate-lite-topic-contract.py": "4d9aa7ef2ac9021afee452186f9b19f7f083f9d1861eae6153320f5f11c80735",
+    "scripts/test-lite-topic-contract.py": "a4d7a062aaddcff8733dc0e3751e958d4753940ea8200128adcf54bf01f3f977"
+  }
+}
