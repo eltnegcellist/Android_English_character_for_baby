@@ -1,6 +1,6 @@
 # Third-party components
 
-Updated: 2026-10-02
+Updated: 2026-10-03
 
 Mitsukotoba Android downloads or uses third-party software, models, and data.
 Each component remains subject to its own license. See also `LICENSE_AUDIT.md`.
@@ -24,12 +24,14 @@ English text
 
 The build no longer depends on `sherpa-onnx-static-1.13.8.aar`.
 
-The v1.9.19 stable release and the v1.9.20 / v1.9.21 / v1.9.22 / v1.9.23
+The v1.9.19 stable release and the v1.9.20 / v1.9.21 / v1.9.22 / v1.9.23 / v1.9.24
 continuation releases passed source, DEX, and APK checks for known
 eSpeak/sherpa TTS payloads. v1.9.21 changed Lite topic detection and
 documentation links. v1.9.22 bundled the topic guide inside the app for
 offline viewing. v1.9.23 only reorganizes Settings so shared speech
-recognition appears above Lite/Full selection and descriptions. None of these
+recognition appears above Lite/Full selection and descriptions. v1.9.24
+adds shared topic-test data and generates the offline guide from that data.
+None of these
 releases adds or replaces any TTS/runtime dependency. This means "GPL-free"
 for the audited TTS execution path; it does not mean the whole dependency
 graph is permissive-only. Moonshine/ONNX Runtime provenance can include
