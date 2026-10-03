@@ -69,11 +69,15 @@ internal fun EmmaAvatar(
     var colorMode by remember {
         mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null)))
     }
+    var softPalette by remember {
+        mutableStateOf(EmmaSoftPalette.fromSaved(preferences.getString("emma_soft_palette", null)))
+    }
     var vividPalette by remember {
         mutableStateOf(EmmaVividPalette.fromSaved(preferences.getString("emma_vivid_palette", null)))
     }
     var colorMenuExpanded by remember { mutableStateOf(false) }
     var vividMenuExpanded by remember { mutableStateOf(false) }
+    var softMenuExpanded by remember { mutableStateOf(false) }
     val modeEnabled = state != EmmaVisualState.UNDERSTOOD &&
         state != EmmaVisualState.THINKING &&
         state != EmmaVisualState.SPEAKING
@@ -203,7 +207,7 @@ internal fun EmmaAvatar(
                 val radius = size.minDimension * 0.445f
                 val cy = baseCy + radius * (bob + nodAmount)
                 val renderState = displayedState
-                val palette = EmmaColors.palette(colorMode, vividPalette, colorHue)
+                val palette = EmmaColors.palette(colorMode, vividPalette, colorHue, softPalette)
 
                 val face = if (colorMode == EmmaColorMode.SOFT && renderState == EmmaVisualState.ERROR) {
                     Color(0xFFFFE8EC)
@@ -395,6 +399,20 @@ internal fun EmmaAvatar(
                 }
             }
 
+            if (colorMode == EmmaColorMode.SOFT) {
+                Box {
+                    OutlinedButton(onClick = { softMenuExpanded = true }, enabled = modeEnabled) { Text(softPalette.label) }
+                    DropdownMenu(expanded = softMenuExpanded, onDismissRequest = { softMenuExpanded = false }) {
+                        EmmaSoftPalette.entries.forEach { option ->
+                            DropdownMenuItem(text = { Text(option.label) }, onClick = {
+                                softPalette = option
+                                preferences.edit().putString("emma_soft_palette", option.savedValue).apply()
+                                softMenuExpanded = false
+                            })
+                        }
+                    }
+                }
+            }
             if (colorMode == EmmaColorMode.VIVID) {
                 Box {
                     OutlinedButton(onClick = { vividMenuExpanded = true }) {

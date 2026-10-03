@@ -126,3 +126,7 @@ notice/source-availability obligations remain applicable.
 Full optionally uses LiteRT-LM and a local Gemma model. The model is downloaded
 separately and is not committed to this repository. Their applicable licenses
 and notices remain independent from the Kitten TTS GPL-removal work.
+
+## v1.9.25 character colors
+
+v1.9.25 changes character palettes and palette selection only. It adds four selectable soft palettes and vivid accents on white faces and bodies, using the same colors as Web. It retains the existing TTS/runtime dependency set and APK provenance checks.

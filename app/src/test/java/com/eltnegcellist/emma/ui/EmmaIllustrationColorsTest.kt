@@ -39,8 +39,42 @@ class EmmaIllustrationColorsTest {
         }
     }
 
+    @Test fun allVividFacesAndBodiesStayWhite() {
+        for (vivid in EmmaVividPalette.entries) {
+            val palette = EmmaColors.palette(EmmaColorMode.VIVID, vivid, 0f)
+            val result = paths(recolorEmmaFace(source(), palette))
+            assertEquals(Color.White, palette.face)
+            assertEquals(Color.White, (result[0].fill as SolidColor).value)
+            assertEquals(palette.accent, (result[1].fill as SolidColor).value)
+            assertEquals(geometry, result[0].pathData)
+        }
+    }
+
+    @Test fun softSelectionsRoundTripAndProduceFourDifferentAccents() {
+        val accents = EmmaSoftPalette.entries.map { soft ->
+            assertEquals(soft, EmmaSoftPalette.fromSaved(soft.savedValue))
+            val palette = EmmaColors.palette(EmmaColorMode.SOFT, EmmaVividPalette.CORAL, 0f, soft)
+            val result = paths(recolorEmmaFace(source(), palette))
+            assertEquals(palette.face, (result[0].fill as SolidColor).value)
+            assertEquals(palette.accent, (result[1].fill as SolidColor).value)
+            palette.accent
+        }
+        assertEquals(4, accents.toSet().size)
+        assertEquals(EmmaSoftPalette.PEACH, EmmaSoftPalette.fromSaved(null))
+        assertEquals(EmmaSoftPalette.PEACH, EmmaSoftPalette.fromSaved("unknown"))
+    }
+
+    @Test fun legacyVividSettingsMigrateWithoutLosingTheirSelection() {
+        assertEquals(EmmaVividPalette.HONEY, EmmaVividPalette.fromSaved("sunshine"))
+        assertEquals(EmmaVividPalette.BLUE, EmmaVividPalette.fromSaved("ocean"))
+        assertEquals(EmmaVividPalette.CORAL, EmmaVividPalette.fromSaved("candy"))
+        assertEquals(EmmaVividPalette.BERRY, EmmaVividPalette.fromSaved("forest"))
+        assertEquals(EmmaVividPalette.CORAL, EmmaVividPalette.fromSaved(null))
+        EmmaVividPalette.entries.forEach { assertEquals(it, EmmaVividPalette.fromSaved(it.savedValue)) }
+    }
+
     @Test fun whiteFaceHasVisibleOutlineAndRedAccents() {
-        val palette = EmmaColors.palette(EmmaColorMode.MONO_RED, EmmaVividPalette.SUNSHINE, 0f)
+        val palette = EmmaColors.palette(EmmaColorMode.MONO_RED, EmmaVividPalette.HONEY, 0f)
         val result = paths(recolorEmmaFace(source(), palette))
         assertEquals(Color.White, (result[0].fill as SolidColor).value)
         assertEquals(palette.dark, (result[0].stroke as SolidColor).value)
@@ -50,8 +84,8 @@ class EmmaIllustrationColorsTest {
     }
 
     @Test fun timeShiftChangesFaceWithoutChangingArtwork() {
-        val first = paths(recolorEmmaFace(source(), EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.SUNSHINE, 0f)))
-        val next = paths(recolorEmmaFace(source(), EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.SUNSHINE, 120f)))
+        val first = paths(recolorEmmaFace(source(), EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.HONEY, 0f)))
+        val next = paths(recolorEmmaFace(source(), EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.HONEY, 120f)))
         assertTrue(first[0].fill != next[0].fill)
         assertEquals(first[0].pathData, next[0].pathData)
     }

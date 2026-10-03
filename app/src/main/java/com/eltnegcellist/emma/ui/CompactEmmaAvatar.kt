@@ -52,11 +52,17 @@ internal fun CompactEmmaAvatar(
     var colorMode by remember(preferences) {
         mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null)))
     }
+    var softPalette by remember {
+        mutableStateOf(EmmaSoftPalette.fromSaved(preferences.getString("emma_soft_palette", null)))
+    }
     var vividPalette by remember(preferences) {
         mutableStateOf(EmmaVividPalette.fromSaved(preferences.getString("emma_vivid_palette", null)))
     }
     DisposableEffect(preferences) {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                "emma_soft_palette", null -> softPalette = EmmaSoftPalette.fromSaved(preferences.getString("emma_soft_palette", null))
+            }
             when (key) {
                 "emma_color_mode", null -> colorMode = EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null))
             }
@@ -89,7 +95,7 @@ internal fun CompactEmmaAvatar(
         label = "face-color-shift",
     )
     // One-degree steps avoid rebuilding the vector on every animation tick.
-    val palette = EmmaColors.palette(colorMode, vividPalette, hue.toInt().toFloat())
+    val palette = EmmaColors.palette(colorMode, vividPalette, hue.toInt().toFloat(), softPalette)
 
     var blinkFrame by remember { mutableStateOf(BlinkFrame.OPEN) }
 

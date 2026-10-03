@@ -10,12 +10,12 @@ internal enum class EmmaColorMode(
     SOFT(
         savedValue = "soft",
         label = "やさしい色",
-        description = "やさしい淡い配色です。",
+        description = "明るくやさしい4種類の配色から選べます。",
     ),
     VIVID(
         savedValue = "vivid",
         label = "はっきり色",
-        description = "原色寄りの複数色で、顔のコントラストを強くします。",
+        description = "白い顔に、耳や頭の飾りの鮮やかな色が映える配色です。",
     ),
     MONO_RED(
         savedValue = "mono_red",
@@ -34,18 +34,32 @@ internal enum class EmmaColorMode(
     }
 }
 
-internal enum class EmmaVividPalette(
-    val savedValue: String,
-    val label: String,
-) {
-    SUNSHINE("sunshine", "サンシャイン"),
-    OCEAN("ocean", "オーシャン"),
-    CANDY("candy", "キャンディ"),
-    FOREST("forest", "フォレスト");
+internal enum class EmmaSoftPalette(val savedValue: String, val label: String) {
+    PEACH("peach", "ピーチ"),
+    MINT("mint", "ミント"),
+    SKY("sky", "そら"),
+    LAVENDER("lavender", "ラベンダー");
 
     companion object {
-        fun fromSaved(value: String?): EmmaVividPalette =
-            entries.firstOrNull { it.savedValue == value } ?: SUNSHINE
+        fun fromSaved(value: String?): EmmaSoftPalette =
+            entries.firstOrNull { it.savedValue == value } ?: PEACH
+    }
+}
+
+internal enum class EmmaVividPalette(val savedValue: String, val label: String) {
+    CORAL("coral", "コーラル"),
+    BLUE("blue", "ブルー"),
+    HONEY("honey", "はちみつ"),
+    BERRY("berry", "ベリー");
+
+    companion object {
+        fun fromSaved(value: String?): EmmaVividPalette = when (value) {
+            "sunshine" -> HONEY
+            "ocean" -> BLUE
+            "candy" -> CORAL
+            "forest" -> BERRY
+            else -> entries.firstOrNull { it.savedValue == value } ?: CORAL
+        }
     }
 }
 
@@ -59,15 +73,6 @@ internal data class EmmaPalette(
 )
 
 internal object EmmaColors {
-    private val soft = EmmaPalette(
-        face = Color(0xFFF0E7FF),
-        accent = Color(0xFF7653B8),
-        dark = Color(0xFF302940),
-        blush = Color(0xFFFF8FAA),
-        mouth = Color(0xFFAF4269),
-        tongue = Color(0xFFFFB0C2),
-    )
-
     private val monoRed = EmmaPalette(
         face = Color.White,
         accent = Color(0xFFE00000),
@@ -77,50 +82,85 @@ internal object EmmaColors {
         tongue = Color(0xFFE00000),
     )
 
-    fun palette(mode: EmmaColorMode, vivid: EmmaVividPalette, hue: Float): EmmaPalette = when (mode) {
-        EmmaColorMode.SOFT -> soft
+    fun palette(mode: EmmaColorMode, vivid: EmmaVividPalette, hue: Float, soft: EmmaSoftPalette = EmmaSoftPalette.PEACH): EmmaPalette = when (mode) {
+        EmmaColorMode.SOFT -> softPalette(soft)
         EmmaColorMode.MONO_RED -> monoRed
         EmmaColorMode.VIVID -> vividPalette(vivid)
         EmmaColorMode.COLOR_SHIFT -> shiftingPalette(hue)
     }
 
-    fun preview(mode: EmmaColorMode, vivid: EmmaVividPalette): EmmaPalette = when (mode) {
+    fun preview(mode: EmmaColorMode, vivid: EmmaVividPalette, soft: EmmaSoftPalette = EmmaSoftPalette.PEACH): EmmaPalette = when (mode) {
         EmmaColorMode.COLOR_SHIFT -> shiftingPalette(32f)
-        else -> palette(mode, vivid, 0f)
+        else -> palette(mode, vivid, 0f, soft)
     }
 
-    private fun vividPalette(vivid: EmmaVividPalette): EmmaPalette = when (vivid) {
-        EmmaVividPalette.SUNSHINE -> EmmaPalette(
-            face = Color(0xFFFFD600),
-            accent = Color(0xFF1E5BFF),
-            dark = Color(0xFF101010),
-            blush = Color(0xFFFF3B30),
-            mouth = Color(0xFF8F153B),
-            tongue = Color(0xFFFF8CA7),
+    private fun softPalette(value: EmmaSoftPalette): EmmaPalette = when (value) {
+        EmmaSoftPalette.PEACH -> EmmaPalette(
+            face = Color(0xFFFFEDE6),
+            accent = Color(0xFFF2A69C),
+            dark = Color(0xFF51443F),
+            blush = Color(0xFFF0A9AE),
+            mouth = Color(0xFF51443F),
+            tongue = Color(0xFFEBA0AA),
         )
-        EmmaVividPalette.OCEAN -> EmmaPalette(
-            face = Color(0xFF2D7FFF),
-            accent = Color(0xFFFFD600),
-            dark = Color(0xFF0B1733),
-            blush = Color(0xFFFF4081),
-            mouth = Color(0xFF7A1639),
-            tongue = Color(0xFFFF9AB5),
+        EmmaSoftPalette.MINT -> EmmaPalette(
+            face = Color(0xFFE5F5EE),
+            accent = Color(0xFF7BC6AE),
+            dark = Color(0xFF51443F),
+            blush = Color(0xFFF0A9AE),
+            mouth = Color(0xFF51443F),
+            tongue = Color(0xFFEBA0AA),
         )
-        EmmaVividPalette.CANDY -> EmmaPalette(
-            face = Color(0xFFFF4FA3),
-            accent = Color(0xFF00C853),
-            dark = Color(0xFF1E1020),
-            blush = Color(0xFFFFD600),
-            mouth = Color(0xFF8A1746),
-            tongue = Color(0xFFFFB0C5),
+        EmmaSoftPalette.SKY -> EmmaPalette(
+            face = Color(0xFFE8F2FE),
+            accent = Color(0xFF83B9E6),
+            dark = Color(0xFF51443F),
+            blush = Color(0xFFF0A9AE),
+            mouth = Color(0xFF51443F),
+            tongue = Color(0xFFEBA0AA),
         )
-        EmmaVividPalette.FOREST -> EmmaPalette(
-            face = Color(0xFF00C853),
-            accent = Color(0xFF7C4DFF),
-            dark = Color(0xFF102418),
-            blush = Color(0xFFFF3B30),
-            mouth = Color(0xFF76152F),
-            tongue = Color(0xFFFF9DAE),
+        EmmaSoftPalette.LAVENDER -> EmmaPalette(
+            face = Color(0xFFF2E9FF),
+            accent = Color(0xFFB49AE3),
+            dark = Color(0xFF51443F),
+            blush = Color(0xFFF0A9AE),
+            mouth = Color(0xFF51443F),
+            tongue = Color(0xFFEBA0AA),
+        )
+    }
+
+    private fun vividPalette(value: EmmaVividPalette): EmmaPalette = when (value) {
+        EmmaVividPalette.CORAL -> EmmaPalette(
+            face = Color(0xFFFFFFFF),
+            accent = Color(0xFFDF3E50),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
+        )
+        EmmaVividPalette.BLUE -> EmmaPalette(
+            face = Color(0xFFFFFFFF),
+            accent = Color(0xFF1474B2),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
+        )
+        EmmaVividPalette.HONEY -> EmmaPalette(
+            face = Color(0xFFFFFFFF),
+            accent = Color(0xFFD68C0A),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
+        )
+        EmmaVividPalette.BERRY -> EmmaPalette(
+            face = Color(0xFFFFFFFF),
+            accent = Color(0xFFA13D7C),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
         )
     }
 

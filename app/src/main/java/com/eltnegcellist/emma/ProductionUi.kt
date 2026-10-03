@@ -58,6 +58,7 @@ import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.ui.CompactEmmaAvatar
 import com.eltnegcellist.emma.ui.EmmaColorMode
+import com.eltnegcellist.emma.ui.EmmaSoftPalette
 import com.eltnegcellist.emma.ui.EmmaVividPalette
 import com.eltnegcellist.emma.ui.EmmaVisualState
 
@@ -1005,6 +1006,8 @@ private fun AppearanceSettings(enabled: Boolean) {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
     var colorMode by remember { mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null))) }
+    var softPalette by remember { mutableStateOf(EmmaSoftPalette.fromSaved(preferences.getString("emma_soft_palette", null))) }
+    var softExpanded by remember { mutableStateOf(false) }
     var vividPalette by remember { mutableStateOf(EmmaVividPalette.fromSaved(preferences.getString("emma_vivid_palette", null))) }
     var colorExpanded by remember { mutableStateOf(false) }
     var vividExpanded by remember { mutableStateOf(false) }
@@ -1028,7 +1031,23 @@ private fun AppearanceSettings(enabled: Boolean) {
                     }
                 }
             }
+            if (colorMode == EmmaColorMode.SOFT) {
+                Text("やさしい色の配色", style = MaterialTheme.typography.titleSmall)
+                Box {
+                    OutlinedButton(onClick = { softExpanded = true }, enabled = enabled) { Text(softPalette.label) }
+                    DropdownMenu(expanded = softExpanded, onDismissRequest = { softExpanded = false }) {
+                        EmmaSoftPalette.entries.forEach { option ->
+                            DropdownMenuItem(text = { Text(option.label) }, onClick = {
+                                softPalette = option
+                                preferences.edit().putString("emma_soft_palette", option.savedValue).apply()
+                                softExpanded = false
+                            })
+                        }
+                    }
+                }
+            }
             if (colorMode == EmmaColorMode.VIVID) {
+                Text("はっきり色の配色", style = MaterialTheme.typography.titleSmall)
                 Box {
                     OutlinedButton(onClick = { vividExpanded = true }, enabled = enabled) { Text(vividPalette.label) }
                     DropdownMenu(expanded = vividExpanded, onDismissRequest = { vividExpanded = false }) {
