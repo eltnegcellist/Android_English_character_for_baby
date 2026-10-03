@@ -11,7 +11,7 @@ internal data class HistoryEntry(val id: String, val sessionId: String, val crea
     val japaneseText: String, val englishText: String, val topic: String, val engine: String) {
     companion object {
         fun create(session: String, japanese: String, english: String, topic: String, engine: String) =
-            HistoryEntry(UUID.randomUUID().toString(), session, Instant.now().toString(), japanese, english, topic, engine)
+            HistoryEntry(UUID.randomUUID().toString(), session, java.time.format.DateTimeFormatterBuilder().appendInstant(3).toFormatter().format(Instant.now()), japanese, english, topic, engine)
     }
 }
 /** Text only; no microphone audio, generated audio, or cloud backup. */
