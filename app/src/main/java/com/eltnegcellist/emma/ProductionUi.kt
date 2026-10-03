@@ -8,6 +8,10 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,6 +89,7 @@ internal fun EmmaHomeScreen(
     onRequestParentFull: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenPlay: () -> Unit,
     onStartSession: () -> Unit,
     onStopSession: () -> Unit,
     onToggleAutoRespond: (Boolean) -> Unit,
@@ -127,9 +132,16 @@ internal fun EmmaHomeScreen(
         bottomBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 6.dp) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        OutlinedButton(onClick = onOpenPlay, enabled = modelReady && tutorialStep == null,
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            contentPadding = PaddingValues(12.dp), modifier = Modifier.sizeIn(minWidth = 88.dp, minHeight = 88.dp)) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) { Text("☝"); Text("押して聞く") }
+                        }
+                    }
                     if (recording) {
                         OutlinedButton(
                             onClick = onManualRespond,
@@ -144,14 +156,14 @@ internal fun EmmaHomeScreen(
                             onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
                             enabled = modelReady && !busy,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth().heightIn(min = 64.dp)
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                        ) { Text("3人で話す") }
+                        ) { Text("会話を始める") }
                     } else {
-                        OutlinedButton(
+                        Button(
                             onClick = onStopSession,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text("セッションを終了") }
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
+                        ) { Text("会話を止める") }
                     }
                 }
             }
@@ -417,7 +429,7 @@ private fun EmmaCoachMarkOverlay(
                         } else {
                             "${aiName}が自己紹介しています。声が終わるまでそのまま聞いてください。"
                         }
-                        1 -> "画面下で光っている「3人で話す」を実際に押してください。押すとマイクが始まり、会話を開始します。"
+                        1 -> "画面下で光っている「会話を始める」を実際に押してください。押すとマイクが始まり、会話を開始します。"
                         else -> "明るく表示されている「聞いています」を確認して、実際に赤ちゃんへ普段どおり日本語で話しかけてみてください。声を検知して${aiName}が返事を最後まで話し終えると、チュートリアルは自動で完了します。"
                     },
                     style = MaterialTheme.typography.bodyMedium,
@@ -555,6 +567,7 @@ private fun ConversationExchange(transcript: String, emmaText: String, aiName: S
 
 @Composable
 internal fun EmmaSettingsScreen(
+    featureSettings: @Composable () -> Unit,
     level: EnglishLevel,
     enabled: Boolean,
     previewing: Boolean,
@@ -685,6 +698,8 @@ internal fun EmmaSettingsScreen(
                     )
                 }
             }
+
+            featureSettings()
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
