@@ -43,6 +43,7 @@ internal class ConversationController(val context: Context) {
     val history = ConversationHistory(context)
     private val playbackHistory = PlaybackHistoryGate<HistoryEntry>()
     private var sessionId = ""
+    var uiVisible = false
     var onStopped: (() -> Unit)? = null
     var startRequested = false
         private set
@@ -244,7 +245,7 @@ internal class ConversationController(val context: Context) {
                     statusMessage = "Kitten TTS Nanoの生成または再生に失敗しました: $message"
                 }
             },
-            onAmplitude = { amplitude -> if (!disposed) mouthLevel = amplitude },
+            onAmplitude = { amplitude -> if (!disposed && uiVisible) mouthLevel = amplitude },
         )
     }
 

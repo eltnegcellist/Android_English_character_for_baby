@@ -710,7 +710,10 @@ private fun ProductionEmmaApp() {
 
     DisposableEffect(Unit) {
         val lifecycle = (context as ComponentActivity).lifecycle
+        runtime.uiVisible = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         val observer = LifecycleEventObserver { _, event ->
+            if(event == Lifecycle.Event.ON_START) runtime.uiVisible = true
+            if(event == Lifecycle.Event.ON_STOP) { runtime.uiVisible = false; mouthLevel = 0f }
             if (event == Lifecycle.Event.ON_STOP && (!runtime.continueScreenOff || !recording) && (recording || generating || pendingStartAfterPermission || status == ProductionEmmaStatus.SPEAKING || runtime.startRequested)) {
                 stopSession()
             }
@@ -719,6 +722,7 @@ private fun ProductionEmmaApp() {
 
         onDispose {
             disposed = true
+            runtime.uiVisible = false
             lifecycle.removeObserver(observer)
         }
     }
