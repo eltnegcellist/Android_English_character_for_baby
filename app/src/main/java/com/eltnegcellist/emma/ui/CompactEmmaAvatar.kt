@@ -97,7 +97,7 @@ internal fun CompactEmmaAvatar(
     val hue by transition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
-        animationSpec = infiniteRepeatable(tween(120_000, easing = LinearEasing)),
+        animationSpec = infiniteRepeatable(tween(EmmaColors.GRADIENT_CYCLE_MILLIS, easing = LinearEasing)),
         label = "face-color-shift",
     )
     // One-degree steps avoid rebuilding the vector on every animation tick.

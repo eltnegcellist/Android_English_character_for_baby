@@ -26,6 +26,12 @@ internal enum class EmmaColorMode(
         description = "濃い飾り色と、顔や体にも薄く色を付けた配色です。グラデーションでは顔と飾りの色がゆっくり変わります。",
     );
 
+    val gradientDescription: String get() = when (this) {
+        SOFT -> "グラデーション：ピーチ→ミント→そら→ラベンダー→ピーチの順に、顔と飾りの色が滑らかに変わり、60秒で一周します。"
+        VIVID -> "グラデーション：赤→はちみつ→ブルー→ベリー→赤の順に、耳や飾りの色が滑らかに変わり、60秒で一周します。顔と体は白いままです。"
+        FILLED -> "グラデーション：赤→はちみつ→ブルー→ベリー→赤の順に、顔・体と飾りの色が滑らかに変わり、60秒で一周します。"
+    }
+
     companion object {
         fun fromSaved(value: String?): EmmaColorMode =
             entries.firstOrNull { it.savedValue == value } ?: VIVID
@@ -77,6 +83,8 @@ internal data class EmmaPalette(
 )
 
 internal object EmmaColors {
+    const val GRADIENT_CYCLE_MILLIS = 60_000
+
     fun palette(mode: EmmaColorMode, vivid: EmmaVividPalette, hue: Float,
                 soft: EmmaSoftPalette = EmmaSoftPalette.PEACH,
                 filled: EmmaVividPalette = EmmaVividPalette.CORAL): EmmaPalette = when (mode) {
@@ -129,7 +137,7 @@ internal object EmmaColors {
         EmmaVividPalette.GRADIENT -> shiftingPalette(0f, EmmaColorMode.VIVID)
         EmmaVividPalette.CORAL -> EmmaPalette(
             face = Color(0xFFFFFFFF),
-            accent = Color(0xFFDF3E50),
+            accent = Color(0xFFF23B45),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),
@@ -137,7 +145,7 @@ internal object EmmaColors {
         )
         EmmaVividPalette.BLUE -> EmmaPalette(
             face = Color(0xFFFFFFFF),
-            accent = Color(0xFF1474B2),
+            accent = Color(0xFF1687EF),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),
@@ -145,7 +153,7 @@ internal object EmmaColors {
         )
         EmmaVividPalette.HONEY -> EmmaPalette(
             face = Color(0xFFFFFFFF),
-            accent = Color(0xFFD68C0A),
+            accent = Color(0xFFF5B400),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),
@@ -153,7 +161,7 @@ internal object EmmaColors {
         )
         EmmaVividPalette.BERRY -> EmmaPalette(
             face = Color(0xFFFFFFFF),
-            accent = Color(0xFFA13D7C),
+            accent = Color(0xFFD633AD),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),
@@ -165,7 +173,7 @@ internal object EmmaColors {
         EmmaVividPalette.GRADIENT -> shiftingPalette(0f, EmmaColorMode.FILLED)
         EmmaVividPalette.CORAL -> EmmaPalette(
             face = Color(0xFFFFD7DA),
-            accent = Color(0xFFC52038),
+            accent = Color(0xFFED1828),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),
@@ -173,7 +181,7 @@ internal object EmmaColors {
         )
         EmmaVividPalette.BLUE -> EmmaPalette(
             face = Color(0xFFD4EAFF),
-            accent = Color(0xFF085A96),
+            accent = Color(0xFF0672E6),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),
@@ -181,7 +189,7 @@ internal object EmmaColors {
         )
         EmmaVividPalette.HONEY -> EmmaPalette(
             face = Color(0xFFFFE5AF),
-            accent = Color(0xFFB66E00),
+            accent = Color(0xFFEFA300),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),
@@ -189,7 +197,7 @@ internal object EmmaColors {
         )
         EmmaVividPalette.BERRY -> EmmaPalette(
             face = Color(0xFFEED4E6),
-            accent = Color(0xFF81245F),
+            accent = Color(0xFFC916A0),
             dark = Color(0xFF3F302C),
             blush = Color(0xFFE99BA5),
             mouth = Color(0xFF3F302C),

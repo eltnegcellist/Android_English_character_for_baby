@@ -1088,6 +1088,7 @@ private fun AppearanceSettings(enabled: Boolean) {
                 }
             }
             Text(colorMode.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(colorMode.gradientDescription, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

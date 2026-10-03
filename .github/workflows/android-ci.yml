@@ -125,7 +125,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.27-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.28-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -173,7 +173,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.27
+          name: Mitsukotoba-v1.9.28
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -189,7 +189,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.27"
+          TAG="mitsukotoba-v1.9.28"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -207,5 +207,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.27" \
-            --notes "Mitsukotoba v1.9.27 adds Filled mode with deeper accents and tinted face/body. Soft, Vivid and Filled each offer four fixed colors plus Gradient, with independently saved selections. The former Color Shift mode migrates to Vivid Gradient. Web uses the same palettes and interpolation. Retains shared topic tests, offline help, and non-GPL Kitten TTS."
+            --title "みつことば v1.9.28" \
+            --notes "Mitsukotoba v1.9.28 brightens Vivid and Filled colors toward clear primary hues, adds mode-specific gradient explanations, and shortens every gradient cycle to 60 seconds. Soft, Vivid and Filled choices remain independently saved. Web uses the same palettes, explanations and cycle duration. Retains shared topic tests, offline help, and non-GPL Kitten TTS."

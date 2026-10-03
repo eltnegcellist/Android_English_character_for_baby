@@ -94,6 +94,8 @@ class EmmaIllustrationColorsTest {
     }
 
     @Test fun gradientsFollowTheirOwnModeAndLoopSeamlessly() {
+        assertEquals(60_000, EmmaColors.GRADIENT_CYCLE_MILLIS)
+        EmmaColorMode.entries.forEach { assertTrue(it.gradientDescription.contains("60秒で一周")) }
         val softOrder = listOf(EmmaSoftPalette.PEACH, EmmaSoftPalette.MINT, EmmaSoftPalette.SKY, EmmaSoftPalette.LAVENDER)
         val vividOrder = listOf(EmmaVividPalette.CORAL, EmmaVividPalette.HONEY, EmmaVividPalette.BLUE, EmmaVividPalette.BERRY)
         for (mode in EmmaColorMode.entries) {

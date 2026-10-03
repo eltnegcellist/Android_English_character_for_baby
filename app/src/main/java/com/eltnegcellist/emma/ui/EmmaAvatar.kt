@@ -143,7 +143,7 @@ internal fun EmmaAvatar(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 120_000, easing = LinearEasing),
+            animation = tween(durationMillis = EmmaColors.GRADIENT_CYCLE_MILLIS, easing = LinearEasing),
             repeatMode = RepeatMode.Restart,
         ),
         label = "time-color-shift",
@@ -463,6 +463,7 @@ internal fun EmmaAvatar(
             }
         }
         Text(colorMode.description, style = MaterialTheme.typography.bodySmall)
+        Text(colorMode.gradientDescription, style = MaterialTheme.typography.bodySmall)
 
     }
 }

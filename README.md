@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.27**
+**現在のAndroid安定版：v1.9.28**
 
-**versionCode：110**
+**versionCode：111**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.27
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.27/Mitsukotoba-v1.9.27-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.28
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.28/Mitsukotoba-v1.9.28-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.27は、濃い飾り色と薄く色付けした顔・体を組み合わせる「塗りつぶし」を追加した版です。色のモードは「やさしい色・はっきり色・塗りつぶし」の3つで、それぞれ4色とグラデーションを選べます。グラデーションは各モードの4配色の間を約2分で一周します。配色をモード別に保存し、旧カラーチェンジ設定は「はっきり色のグラデーション」へ引き継ぎます。初期色ははっきり色のコーラル（赤）です。共通の話題判定データも維持します。244件の発話例と24件の会話の流れを両版のテストで検証し、21種類の話題・45個の呼びかけ例と判定の説明を同じデータから生成します。Androidの説明はアプリ内に同梱され、オフラインでも読めます。CIで原本との一致と説明の更新漏れを確認し、日次CIでWebの最新データとのずれを検出します。設定の「音声認識 → Lite / Fullの選択 → 両版の簡単な説明」の配置と、v1.9.19以降の非GPL Kitten TTSを引き継ぎます。
+v1.9.28は、はっきり色と塗りつぶしの飾り色を明るく原色に近い色へ調整し、各モードのグラデーションの説明文を追加した版です。色のモードは「やさしい色・はっきり色・塗りつぶし」の3つで、それぞれ4色とグラデーションを選べます。グラデーションは各モードの4配色の間を60秒で一周します。配色をモード別に保存し、旧カラーチェンジ設定は「はっきり色のグラデーション」へ引き継ぎます。初期色ははっきり色のコーラル（赤）です。共通の話題判定データも維持します。244件の発話例と24件の会話の流れを両版のテストで検証し、21種類の話題・45個の呼びかけ例と判定の説明を同じデータから生成します。Androidの説明はアプリ内に同梱され、オフラインでも読めます。CIで原本との一致と説明の更新漏れを確認し、日次CIでWebの最新データとのずれを検出します。設定の「音声認識 → Lite / Fullの選択 → 両版の簡単な説明」の配置と、v1.9.19以降の非GPL Kitten TTSを引き継ぎます。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -282,7 +282,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
 | LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
-Android v1.9.27はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
+Android v1.9.28はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
@@ -292,11 +292,11 @@ Android v1.9.27はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### プロジェクト状況
 
-**v1.9.27を現在の安定基準版とします。**
+**v1.9.28を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.27を再現可能な安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.28を再現可能な安定基準版として保持します。
 
 ### 開発資料
 
@@ -326,15 +326,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.27**
+**Current stable Android release: v1.9.28**
 
-**versionCode: 110**
+**versionCode: 111**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.27
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.27/Mitsukotoba-v1.9.27-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.28
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.28/Mitsukotoba-v1.9.28-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.27 adds Filled mode with deeper accents and lightly tinted faces and bodies. Soft, Vivid, and Filled each offer four fixed palettes plus Gradient. Each gradient cycles through its own palettes in two minutes; choices are saved independently. The former Color Shift mode migrates to Vivid Gradient. Vivid Coral red remains the default. It retains the shared Web/Android topic contract. Both test suites check the same 244 utterances and 24 conversation sequences. The guide for 21 topics and 45 examples is generated from that contract and bundled in Android for offline use. CI verifies the pinned source and generated output; daily CI detects drift from the latest Web data. It retains the settings layout and non-GPL Kitten TTS from prior stable versions.
+v1.9.28 brightens Vivid and Filled accents toward clear primary hues and adds mode-specific gradient explanations. Soft, Vivid, and Filled each offer four fixed palettes plus Gradient. Each gradient cycles through its own palettes in 60 seconds; choices are saved independently. The former Color Shift mode migrates to Vivid Gradient. Vivid Coral red remains the default. It retains the shared Web/Android topic contract. Both test suites check the same 244 utterances and 24 conversation sequences. The guide for 21 topics and 45 examples is generated from that contract and bundled in Android for offline use. CI verifies the pinned source and generated output; daily CI detects drift from the latest Web data. It retains the settings layout and non-GPL Kitten TTS from prior stable versions.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -583,7 +583,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
 | LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
-Android v1.9.27 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
+Android v1.9.28 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -593,11 +593,11 @@ See:
 
 ### Project Status
 
-**v1.9.27 is the current stable baseline.**
+**v1.9.28 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.27 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.28 remains reproducible as the stable Mitsukotoba reference point.
 
 ### Development Documents
 

@@ -138,3 +138,7 @@ White/black/red is merged into vivid Coral red; color shift uses the same vivid 
 ## v1.9.27 character color update
 
 Adds Filled mode and per-mode Gradient selections. This update changes no dependencies, bundled models, or license declarations.
+
+## v1.9.28 character color update
+
+Brightens Vivid and Filled colors, adds gradient explanations, and uses a 60-second cycle. No dependencies, bundled models, or license declarations change.
