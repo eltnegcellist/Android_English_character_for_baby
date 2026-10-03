@@ -1,6 +1,9 @@
 package com.eltnegcellist.emma.ui
 
+import android.content.SharedPreferences
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import kotlin.math.roundToInt
 
 internal enum class EmmaColorMode(
     val savedValue: String,
@@ -17,20 +20,15 @@ internal enum class EmmaColorMode(
         label = "はっきり色",
         description = "白い顔に、耳や頭の飾りの鮮やかな色が映える配色です。",
     ),
-    MONO_RED(
-        savedValue = "mono_red",
-        label = "白黒＋赤",
-        description = "白い顔、黒い目と輪郭、赤いアクセントの固定配色です。",
-    ),
     COLOR_SHIFT(
         savedValue = "color_shift",
         label = "カラーチェンジ",
-        description = "会話状態とは無関係に、時間経過で配色がゆっくり変わります。",
+        description = "白い顔と体はそのまま、耳や飾りが赤・はちみつ・ブルー・ベリーへ滑らかに変わります。",
     );
 
     companion object {
         fun fromSaved(value: String?): EmmaColorMode =
-            entries.firstOrNull { it.savedValue == value } ?: MONO_RED
+            entries.firstOrNull { it.savedValue == value } ?: VIVID
     }
 }
 
@@ -47,18 +45,21 @@ internal enum class EmmaSoftPalette(val savedValue: String, val label: String) {
 }
 
 internal enum class EmmaVividPalette(val savedValue: String, val label: String) {
-    CORAL("coral", "コーラル"),
+    CORAL("coral", "コーラル（赤）"),
     BLUE("blue", "ブルー"),
     HONEY("honey", "はちみつ"),
     BERRY("berry", "ベリー");
 
     companion object {
-        fun fromSaved(value: String?): EmmaVividPalette = when (value) {
-            "sunshine" -> HONEY
-            "ocean" -> BLUE
-            "candy" -> CORAL
-            "forest" -> BERRY
-            else -> entries.firstOrNull { it.savedValue == value } ?: CORAL
+        fun fromSaved(value: String?, savedMode: String? = null): EmmaVividPalette {
+            if (savedMode == "mono_red") return CORAL
+            return when (value) {
+                "sunshine" -> HONEY
+                "ocean" -> BLUE
+                "candy" -> CORAL
+                "forest" -> BERRY
+                else -> entries.firstOrNull { it.savedValue == value } ?: CORAL
+            }
         }
     }
 }
@@ -73,18 +74,8 @@ internal data class EmmaPalette(
 )
 
 internal object EmmaColors {
-    private val monoRed = EmmaPalette(
-        face = Color.White,
-        accent = Color(0xFFE00000),
-        dark = Color(0xFF080808),
-        blush = Color(0xFFE00000),
-        mouth = Color(0xFF080808),
-        tongue = Color(0xFFE00000),
-    )
-
     fun palette(mode: EmmaColorMode, vivid: EmmaVividPalette, hue: Float, soft: EmmaSoftPalette = EmmaSoftPalette.PEACH): EmmaPalette = when (mode) {
         EmmaColorMode.SOFT -> softPalette(soft)
-        EmmaColorMode.MONO_RED -> monoRed
         EmmaColorMode.VIVID -> vividPalette(vivid)
         EmmaColorMode.COLOR_SHIFT -> shiftingPalette(hue)
     }
@@ -165,15 +156,28 @@ internal object EmmaColors {
     }
 
     private fun shiftingPalette(hue: Float): EmmaPalette {
-        val baseHue = ((hue % 360f) + 360f) % 360f
-        return EmmaPalette(
-            face = Color.hsl(baseHue, 0.88f, 0.67f),
-            accent = Color.hsl((baseHue + 155f) % 360f, 0.92f, 0.46f),
-            dark = Color(0xFF121019),
-            blush = Color.hsl((baseHue + 292f) % 360f, 0.95f, 0.58f),
-            mouth = Color(0xFF82173A),
-            tongue = Color(0xFFFF9FB7),
-        )
+        val order = listOf(EmmaVividPalette.CORAL, EmmaVividPalette.HONEY, EmmaVividPalette.BLUE, EmmaVividPalette.BERRY)
+        val position = (((hue % 360f) + 360f) % 360f) / 90f
+        val index = position.toInt()
+        val fraction = position - index
+        val from = vividPalette(order[index]).accent.toArgb()
+        val to = vividPalette(order[(index + 1) % order.size]).accent.toArgb()
+        // Match Web's rounded sRGB channel interpolation.
+        fun channel(shift: Int): Int {
+            val a = (from shr shift) and 255
+            val b = (to shr shift) and 255
+            return (a + (b - a) * fraction).roundToInt()
+        }
+        val accent = Color(channel(16), channel(8), channel(0))
+        return vividPalette(EmmaVividPalette.CORAL).copy(accent = accent)
     }
 }
 
+internal fun migrateLegacyEmmaColors(preferences: SharedPreferences) {
+    val savedMode = preferences.getString("emma_color_mode", null)
+    if (savedMode == "mono_red") {
+        val vivid = EmmaVividPalette.fromSaved(preferences.getString("emma_vivid_palette", null), savedMode)
+        preferences.edit().putString("emma_vivid_palette", vivid.savedValue)
+            .putString("emma_color_mode", EmmaColorMode.VIVID.savedValue).apply()
+    }
+}

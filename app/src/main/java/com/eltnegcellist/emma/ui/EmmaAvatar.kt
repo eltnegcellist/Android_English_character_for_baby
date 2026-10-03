@@ -62,7 +62,7 @@ internal fun EmmaAvatar(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
+    val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE).also(::migrateLegacyEmmaColors) }
     var audienceMode by remember {
         mutableStateOf(AudienceMode.fromSaved(preferences.getString("audience_mode", null)))
     }

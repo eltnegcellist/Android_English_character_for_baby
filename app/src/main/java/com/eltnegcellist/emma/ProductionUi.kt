@@ -58,6 +58,7 @@ import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.ui.CompactEmmaAvatar
 import com.eltnegcellist.emma.ui.EmmaColorMode
+import com.eltnegcellist.emma.ui.migrateLegacyEmmaColors
 import com.eltnegcellist.emma.ui.EmmaSoftPalette
 import com.eltnegcellist.emma.ui.EmmaVividPalette
 import com.eltnegcellist.emma.ui.EmmaVisualState
@@ -1004,7 +1005,7 @@ internal fun LiteModelInstallDialog(
 @Composable
 private fun AppearanceSettings(enabled: Boolean) {
     val context = LocalContext.current
-    val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
+    val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE).also(::migrateLegacyEmmaColors) }
     var colorMode by remember { mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null))) }
     var softPalette by remember { mutableStateOf(EmmaSoftPalette.fromSaved(preferences.getString("emma_soft_palette", null))) }
     var softExpanded by remember { mutableStateOf(false) }

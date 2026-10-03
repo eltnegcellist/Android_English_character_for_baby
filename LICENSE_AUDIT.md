@@ -77,3 +77,7 @@ separately licensed third-party material, including MPL-2.0 components.
 ## v1.9.25 character colors
 
 v1.9.25 changes character palettes and palette selection only. It adds four selectable soft palettes and vivid accents on white faces and bodies, using the same colors as Web. It retains the existing TTS/runtime dependency set and APK provenance checks.
+
+## v1.9.26 character color update
+
+White/black/red is merged into vivid Coral red; color shift uses the same vivid accents on a white face and body as Web. This update changes no dependencies, bundled models, or license declarations.

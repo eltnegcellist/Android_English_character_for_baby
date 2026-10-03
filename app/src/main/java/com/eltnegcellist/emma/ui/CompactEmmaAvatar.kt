@@ -48,7 +48,7 @@ internal fun CompactEmmaAvatar(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val preferences = remember(context) { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
+    val preferences = remember(context) { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE).also(::migrateLegacyEmmaColors) }
     var colorMode by remember(preferences) {
         mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null)))
     }

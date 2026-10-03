@@ -73,20 +73,40 @@ class EmmaIllustrationColorsTest {
         EmmaVividPalette.entries.forEach { assertEquals(it, EmmaVividPalette.fromSaved(it.savedValue)) }
     }
 
-    @Test fun whiteFaceHasVisibleOutlineAndRedAccents() {
-        val palette = EmmaColors.palette(EmmaColorMode.MONO_RED, EmmaVividPalette.HONEY, 0f)
+    @Test fun defaultAndRemovedModeUseVividCoral() {
+        assertEquals(3, EmmaColorMode.entries.size)
+        assertEquals(EmmaColorMode.VIVID, EmmaColorMode.fromSaved(null))
+        assertEquals(EmmaColorMode.VIVID, EmmaColorMode.fromSaved("unknown"))
+        assertEquals(EmmaColorMode.VIVID, EmmaColorMode.fromSaved("mono_red"))
+        assertEquals(EmmaVividPalette.CORAL, EmmaVividPalette.fromSaved("blue", "mono_red"))
+        val palette = EmmaColors.palette(EmmaColorMode.VIVID, EmmaVividPalette.CORAL, 0f)
         val result = paths(recolorEmmaFace(source(), palette))
         assertEquals(Color.White, (result[0].fill as SolidColor).value)
         assertEquals(palette.dark, (result[0].stroke as SolidColor).value)
         assertTrue(result[0].strokeAlpha >= 0.6f)
-        assertTrue(result[0].strokeLineWidth >= 8f)
-        assertEquals(palette.accent, (result[1].fill as SolidColor).value)
     }
 
-    @Test fun timeShiftChangesFaceWithoutChangingArtwork() {
+    @Test fun gradientMatchesVividStopsAndKeepsOtherPaintsFixed() {
+        val coral = EmmaColors.palette(EmmaColorMode.VIVID, EmmaVividPalette.CORAL, 0f)
+        for ((hue, vivid) in listOf(0f to EmmaVividPalette.CORAL, 90f to EmmaVividPalette.HONEY,
+            180f to EmmaVividPalette.BLUE, 270f to EmmaVividPalette.BERRY, 360f to EmmaVividPalette.CORAL,
+            -90f to EmmaVividPalette.BERRY)) {
+            assertEquals(EmmaColors.palette(EmmaColorMode.VIVID, vivid, 0f).accent,
+                EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, vivid, hue).accent)
+        }
+        assertEquals(Color(0xFFDB652D), EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.BLUE, 45f).accent)
+        for (step in 0 until 720) {
+            val palette = EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.BLUE, step / 2f)
+            assertEquals(coral, palette.copy(accent = coral.accent))
+        }
+        assertEquals(coral, EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.BLUE, 359.999f))
+    }
+
+    @Test fun timeShiftChangesAccentWithoutChangingWhiteFaceOrArtwork() {
         val first = paths(recolorEmmaFace(source(), EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.HONEY, 0f)))
         val next = paths(recolorEmmaFace(source(), EmmaColors.palette(EmmaColorMode.COLOR_SHIFT, EmmaVividPalette.HONEY, 120f)))
-        assertTrue(first[0].fill != next[0].fill)
+        assertEquals(first[0].fill, next[0].fill)
+        assertTrue(first[1].fill != next[1].fill)
         assertEquals(first[0].pathData, next[0].pathData)
     }
 }
