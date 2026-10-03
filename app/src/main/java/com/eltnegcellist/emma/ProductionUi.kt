@@ -1007,11 +1007,15 @@ private fun AppearanceSettings(enabled: Boolean) {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE).also(::migrateLegacyEmmaColors) }
     var colorMode by remember { mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null))) }
+    var filledPalette by remember {
+        mutableStateOf(EmmaVividPalette.fromSaved(preferences.getString("emma_filled_palette", null)))
+    }
     var softPalette by remember { mutableStateOf(EmmaSoftPalette.fromSaved(preferences.getString("emma_soft_palette", null))) }
     var softExpanded by remember { mutableStateOf(false) }
     var vividPalette by remember { mutableStateOf(EmmaVividPalette.fromSaved(preferences.getString("emma_vivid_palette", null))) }
     var colorExpanded by remember { mutableStateOf(false) }
     var vividExpanded by remember { mutableStateOf(false) }
+    var filledExpanded by remember { mutableStateOf(false) }
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1059,6 +1063,24 @@ private fun AppearanceSettings(enabled: Boolean) {
                                     vividPalette = option
                                     preferences.edit().putString("emma_vivid_palette", option.savedValue).apply()
                                     vividExpanded = false
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+            if (colorMode == EmmaColorMode.FILLED) {
+                Text("塗りつぶしの配色", style = MaterialTheme.typography.titleSmall)
+                Box {
+                    OutlinedButton(onClick = { filledExpanded = true }, enabled = enabled) { Text(filledPalette.label) }
+                    DropdownMenu(expanded = filledExpanded, onDismissRequest = { filledExpanded = false }) {
+                        EmmaVividPalette.entries.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option.label) },
+                                onClick = {
+                                    filledPalette = option
+                                    preferences.edit().putString("emma_filled_palette", option.savedValue).apply()
+                                    filledExpanded = false
                                 },
                             )
                         }

@@ -13,17 +13,17 @@ internal enum class EmmaColorMode(
     SOFT(
         savedValue = "soft",
         label = "やさしい色",
-        description = "明るくやさしい4種類の配色から選べます。",
+        description = "明るくやさしい配色です。グラデーションでは顔と飾りの色がゆっくり変わります。",
     ),
     VIVID(
         savedValue = "vivid",
         label = "はっきり色",
-        description = "白い顔に、耳や頭の飾りの鮮やかな色が映える配色です。",
+        description = "白い顔に、耳や頭の飾りの鮮やかな色が映える配色です。グラデーションでも白い部分はそのままです。",
     ),
-    COLOR_SHIFT(
-        savedValue = "color_shift",
-        label = "カラーチェンジ",
-        description = "白い顔と体はそのまま、耳や飾りが赤・はちみつ・ブルー・ベリーへ滑らかに変わります。",
+    FILLED(
+        savedValue = "filled",
+        label = "塗りつぶし",
+        description = "濃い飾り色と、顔や体にも薄く色を付けた配色です。グラデーションでは顔と飾りの色がゆっくり変わります。",
     );
 
     companion object {
@@ -36,7 +36,8 @@ internal enum class EmmaSoftPalette(val savedValue: String, val label: String) {
     PEACH("peach", "ピーチ"),
     MINT("mint", "ミント"),
     SKY("sky", "そら"),
-    LAVENDER("lavender", "ラベンダー");
+    LAVENDER("lavender", "ラベンダー"),
+    GRADIENT("gradient", "グラデーション");
 
     companion object {
         fun fromSaved(value: String?): EmmaSoftPalette =
@@ -48,11 +49,13 @@ internal enum class EmmaVividPalette(val savedValue: String, val label: String) 
     CORAL("coral", "コーラル（赤）"),
     BLUE("blue", "ブルー"),
     HONEY("honey", "はちみつ"),
-    BERRY("berry", "ベリー");
+    BERRY("berry", "ベリー"),
+    GRADIENT("gradient", "グラデーション");
 
     companion object {
         fun fromSaved(value: String?, savedMode: String? = null): EmmaVividPalette {
             if (savedMode == "mono_red") return CORAL
+            if (savedMode == "color_shift") return GRADIENT
             return when (value) {
                 "sunshine" -> HONEY
                 "ocean" -> BLUE
@@ -74,18 +77,20 @@ internal data class EmmaPalette(
 )
 
 internal object EmmaColors {
-    fun palette(mode: EmmaColorMode, vivid: EmmaVividPalette, hue: Float, soft: EmmaSoftPalette = EmmaSoftPalette.PEACH): EmmaPalette = when (mode) {
-        EmmaColorMode.SOFT -> softPalette(soft)
-        EmmaColorMode.VIVID -> vividPalette(vivid)
-        EmmaColorMode.COLOR_SHIFT -> shiftingPalette(hue)
+    fun palette(mode: EmmaColorMode, vivid: EmmaVividPalette, hue: Float,
+                soft: EmmaSoftPalette = EmmaSoftPalette.PEACH,
+                filled: EmmaVividPalette = EmmaVividPalette.CORAL): EmmaPalette = when (mode) {
+        EmmaColorMode.SOFT -> if (soft == EmmaSoftPalette.GRADIENT) shiftingPalette(hue, mode) else softPalette(soft)
+        EmmaColorMode.VIVID -> if (vivid == EmmaVividPalette.GRADIENT) shiftingPalette(hue, mode) else vividPalette(vivid)
+        EmmaColorMode.FILLED -> if (filled == EmmaVividPalette.GRADIENT) shiftingPalette(hue, mode) else filledPalette(filled)
     }
 
-    fun preview(mode: EmmaColorMode, vivid: EmmaVividPalette, soft: EmmaSoftPalette = EmmaSoftPalette.PEACH): EmmaPalette = when (mode) {
-        EmmaColorMode.COLOR_SHIFT -> shiftingPalette(32f)
-        else -> palette(mode, vivid, 0f, soft)
-    }
+    fun preview(mode: EmmaColorMode, vivid: EmmaVividPalette,
+                soft: EmmaSoftPalette = EmmaSoftPalette.PEACH,
+                filled: EmmaVividPalette = EmmaVividPalette.CORAL): EmmaPalette = palette(mode, vivid, 32f, soft, filled)
 
     private fun softPalette(value: EmmaSoftPalette): EmmaPalette = when (value) {
+        EmmaSoftPalette.GRADIENT -> shiftingPalette(0f, EmmaColorMode.SOFT)
         EmmaSoftPalette.PEACH -> EmmaPalette(
             face = Color(0xFFFFEDE6),
             accent = Color(0xFFF2A69C),
@@ -121,6 +126,7 @@ internal object EmmaColors {
     }
 
     private fun vividPalette(value: EmmaVividPalette): EmmaPalette = when (value) {
+        EmmaVividPalette.GRADIENT -> shiftingPalette(0f, EmmaColorMode.VIVID)
         EmmaVividPalette.CORAL -> EmmaPalette(
             face = Color(0xFFFFFFFF),
             accent = Color(0xFFDF3E50),
@@ -155,27 +161,72 @@ internal object EmmaColors {
         )
     }
 
-    private fun shiftingPalette(hue: Float): EmmaPalette {
-        val order = listOf(EmmaVividPalette.CORAL, EmmaVividPalette.HONEY, EmmaVividPalette.BLUE, EmmaVividPalette.BERRY)
+    private fun filledPalette(value: EmmaVividPalette): EmmaPalette = when (value) {
+        EmmaVividPalette.GRADIENT -> shiftingPalette(0f, EmmaColorMode.FILLED)
+        EmmaVividPalette.CORAL -> EmmaPalette(
+            face = Color(0xFFFFD7DA),
+            accent = Color(0xFFC52038),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
+        )
+        EmmaVividPalette.BLUE -> EmmaPalette(
+            face = Color(0xFFD4EAFF),
+            accent = Color(0xFF085A96),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
+        )
+        EmmaVividPalette.HONEY -> EmmaPalette(
+            face = Color(0xFFFFE5AF),
+            accent = Color(0xFFB66E00),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
+        )
+        EmmaVividPalette.BERRY -> EmmaPalette(
+            face = Color(0xFFEED4E6),
+            accent = Color(0xFF81245F),
+            dark = Color(0xFF3F302C),
+            blush = Color(0xFFE99BA5),
+            mouth = Color(0xFF3F302C),
+            tongue = Color(0xFFF1ABB8),
+        )
+    }
+
+    private fun shiftingPalette(hue: Float, mode: EmmaColorMode): EmmaPalette {
         val position = (((hue % 360f) + 360f) % 360f) / 90f
         val index = position.toInt()
         val fraction = position - index
-        val from = vividPalette(order[index]).accent.toArgb()
-        val to = vividPalette(order[(index + 1) % order.size]).accent.toArgb()
-        // Match Web's rounded sRGB channel interpolation.
-        fun channel(shift: Int): Int {
-            val a = (from shr shift) and 255
-            val b = (to shr shift) and 255
-            return (a + (b - a) * fraction).roundToInt()
+        val palettes = if (mode == EmmaColorMode.SOFT) {
+            listOf(EmmaSoftPalette.PEACH, EmmaSoftPalette.MINT, EmmaSoftPalette.SKY, EmmaSoftPalette.LAVENDER).map(::softPalette)
+        } else {
+            val order = listOf(EmmaVividPalette.CORAL, EmmaVividPalette.HONEY, EmmaVividPalette.BLUE, EmmaVividPalette.BERRY)
+            if (mode == EmmaColorMode.FILLED) order.map(::filledPalette) else order.map(::vividPalette)
         }
-        val accent = Color(channel(16), channel(8), channel(0))
-        return vividPalette(EmmaVividPalette.CORAL).copy(accent = accent)
+        val from = palettes[index]
+        val to = palettes[(index + 1) % palettes.size]
+        fun mix(a: Color, b: Color): Color {
+            val start = a.toArgb()
+            val end = b.toArgb()
+            fun channel(shift: Int): Int {
+                val x = (start shr shift) and 255
+                val y = (end shr shift) and 255
+                return (x + (y - x) * fraction).roundToInt()
+            }
+            return Color(channel(16), channel(8), channel(0))
+        }
+        return EmmaPalette(mix(from.face,to.face), mix(from.accent,to.accent), mix(from.dark,to.dark),
+            mix(from.blush,to.blush), mix(from.mouth,to.mouth), mix(from.tongue,to.tongue))
     }
 }
 
 internal fun migrateLegacyEmmaColors(preferences: SharedPreferences) {
     val savedMode = preferences.getString("emma_color_mode", null)
-    if (savedMode == "mono_red") {
+    if (savedMode == "mono_red" || savedMode == "color_shift") {
         val vivid = EmmaVividPalette.fromSaved(preferences.getString("emma_vivid_palette", null), savedMode)
         preferences.edit().putString("emma_vivid_palette", vivid.savedValue)
             .putString("emma_color_mode", EmmaColorMode.VIVID.savedValue).apply()

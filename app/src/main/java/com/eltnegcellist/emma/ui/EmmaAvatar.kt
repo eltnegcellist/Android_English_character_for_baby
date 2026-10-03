@@ -69,6 +69,9 @@ internal fun EmmaAvatar(
     var colorMode by remember {
         mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null)))
     }
+    var filledPalette by remember {
+        mutableStateOf(EmmaVividPalette.fromSaved(preferences.getString("emma_filled_palette", null)))
+    }
     var softPalette by remember {
         mutableStateOf(EmmaSoftPalette.fromSaved(preferences.getString("emma_soft_palette", null)))
     }
@@ -77,6 +80,7 @@ internal fun EmmaAvatar(
     }
     var colorMenuExpanded by remember { mutableStateOf(false) }
     var vividMenuExpanded by remember { mutableStateOf(false) }
+    var filledMenuExpanded by remember { mutableStateOf(false) }
     var softMenuExpanded by remember { mutableStateOf(false) }
     val modeEnabled = state != EmmaVisualState.UNDERSTOOD &&
         state != EmmaVisualState.THINKING &&
@@ -207,7 +211,7 @@ internal fun EmmaAvatar(
                 val radius = size.minDimension * 0.445f
                 val cy = baseCy + radius * (bob + nodAmount)
                 val renderState = displayedState
-                val palette = EmmaColors.palette(colorMode, vividPalette, colorHue, softPalette)
+                val palette = EmmaColors.palette(colorMode, vividPalette, colorHue, softPalette, filledPalette)
 
                 val face = if (colorMode == EmmaColorMode.SOFT && renderState == EmmaVisualState.ERROR) {
                     Color(0xFFFFE8EC)
@@ -429,6 +433,28 @@ internal fun EmmaAvatar(
                                     vividPalette = option
                                     preferences.edit().putString("emma_vivid_palette", option.savedValue).apply()
                                     vividMenuExpanded = false
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+            if (colorMode == EmmaColorMode.FILLED) {
+                Box {
+                    OutlinedButton(onClick = { filledMenuExpanded = true }) {
+                        Text(filledPalette.label)
+                    }
+                    DropdownMenu(
+                        expanded = filledMenuExpanded,
+                        onDismissRequest = { filledMenuExpanded = false },
+                    ) {
+                        EmmaVividPalette.entries.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option.label) },
+                                onClick = {
+                                    filledPalette = option
+                                    preferences.edit().putString("emma_filled_palette", option.savedValue).apply()
+                                    filledMenuExpanded = false
                                 },
                             )
                         }

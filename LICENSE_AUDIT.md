@@ -81,3 +81,7 @@ v1.9.25 changes character palettes and palette selection only. It adds four sele
 ## v1.9.26 character color update
 
 White/black/red is merged into vivid Coral red; color shift uses the same vivid accents on a white face and body as Web. This update changes no dependencies, bundled models, or license declarations.
+
+## v1.9.27 character color update
+
+Adds Filled mode and per-mode Gradient selections. This update changes no dependencies, bundled models, or license declarations.
