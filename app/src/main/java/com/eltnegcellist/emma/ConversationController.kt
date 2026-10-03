@@ -1,30 +1,12 @@
 package com.eltnegcellist.emma
 
-import android.app.ActivityManager
-import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.media.AudioManager
-import android.net.Uri
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.WindowManager
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
@@ -35,15 +17,9 @@ import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
-import com.eltnegcellist.emma.model.ModelPreparationKind
-import com.eltnegcellist.emma.model.ModelPreparationManager
-import com.eltnegcellist.emma.model.ModelPreparationStatus
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
-import com.eltnegcellist.emma.ui.EmmaTheme
-import com.eltnegcellist.emma.ui.EmmaVisualState
-import kotlinx.coroutines.delay
 
 private const val NONVERBAL_RESPONSE_COOLDOWN_MS = 15_000L
 private const val BABY_VOCAL_CONTEXT = "赤ちゃんが声を出している"
@@ -289,7 +265,7 @@ internal class ConversationController(val context: Context) {
         runCatching { recorder.start() }
             .onSuccess {
                 recording = true
-                lite.resetConversationContext()
+                EmmaWorkQueue.execute { lite.resetConversationContext() }
                 status = ProductionEmmaStatus.LISTENING
                 statusMessage = if (autoRespond) {
                     "普通に話しかけてください。必要なら「ここで返事して」で区切れます。"

@@ -2,6 +2,8 @@ package com.eltnegcellist.emma
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +26,7 @@ internal fun loadPlayTopics(runtime: ConversationController): List<PlayTopic> {
 internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> Unit) {
     var screenOff by runtime.continueScreenOffState
     var history by runtime.historyEnabledState
+    val historyError by runtime.history.errorState
     val prefs = runtime.context.getSharedPreferences("emma_speech", 0)
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -37,12 +40,14 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
                 Switch(history, { history = it; prefs.edit().putBoolean("history_enabled",it).apply() })
             }
             Text("再生が始まった応答の日本語・英語を最大1,000件保存します。録音は保存しません。オフにしても以前の履歴は残ります。", style=MaterialTheme.typography.bodySmall)
+            if(historyError!=null) Text(historyError!!,color=MaterialTheme.colorScheme.error)
             OutlinedButton(onHistory, Modifier.fillMaxWidth()) { Text("会話履歴を見る・聞く") }
         }
     }
 }
 @Composable
 internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) {
+    val historyError by runtime.history.errorState
     var entries by remember { mutableStateOf(emptyList<HistoryEntry>()) }
     var remove by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf(false) }
@@ -58,6 +63,7 @@ internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) 
         TextButton({exit()}) {Text("← 戻る")}; Text("会話履歴",Modifier.weight(1f)); TextButton({remove=null;confirm=true},enabled=entries.isNotEmpty()) {Text("全件削除")}
     }}) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement=Arrangement.spacedBy(12.dp)) {
+            if(historyError!=null) item { Text(historyError!!,color=MaterialTheme.colorScheme.error) }
             if(entries.isEmpty()) item { Text("履歴はまだありません。会話の音声が再生を始めると、ここに残ります。") }
             items(entries,key={it.id}) { entry -> Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
                 Text(entry.createdAt,style=MaterialTheme.typography.bodySmall)
@@ -96,7 +102,7 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
                 runtime.replay(phrase)
             }
         },enabled=ready,modifier=Modifier.fillMaxSize().padding(padding).padding(16.dp),shape=MaterialTheme.shapes.extraLarge) {
-            Column(horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(24.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(24.dp)) {
                 com.eltnegcellist.emma.ui.CompactEmmaAvatar(state=if(status==ProductionEmmaStatus.SPEAKING) com.eltnegcellist.emma.ui.EmmaVisualState.SPEAKING else com.eltnegcellist.emma.ui.EmmaVisualState.IDLE, mouthLevel=runtime.mouthLevel, modifier=Modifier.fillMaxWidth().heightIn(max=240.dp))
                 Text(selected!!.label,style=MaterialTheme.typography.headlineSmall)
                 Text(if(status==ProductionEmmaStatus.SPEAKING) "一緒に聞こう" else "押して聞く",style=MaterialTheme.typography.headlineMedium)
