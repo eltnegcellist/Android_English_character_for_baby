@@ -18,6 +18,8 @@ import java.lang.ref.WeakReference
 import java.util.ArrayDeque
 
 class GemmaEmmaClient(context: Context) {
+    var lastTopic: String = "general"
+        private set
     private val appContext = context.applicationContext
     private val lock = Any()
     private val moonshine = MoonshineJapaneseAsr(appContext)
@@ -168,6 +170,7 @@ class GemmaEmmaClient(context: Context) {
             }
 
             val topicContext = topicTracker.observe(transcript)
+            lastTopic = topicContext.currentExplicitTopic ?: topicContext.carriedTopic ?: "general"
             val topicContextBlock = topicContext.toPromptBlock()
 
             val historyText = if (conversationHistory.isEmpty()) {

@@ -8,6 +8,8 @@ import com.eltnegcellist.emma.tts.DiagnosticStore
 class LiteEmmaClient(
     context: Context,
 ) {
+    var lastTopic: String = "general"
+        private set
     private val appContext = context.applicationContext
     private val preferences = appContext.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
     private val asr = MoonshineJapaneseAsr(appContext)
@@ -44,6 +46,7 @@ class LiteEmmaClient(
             preferences.getBoolean("use_chan_suffix", true),
         )
         val selected = responses.respond(transcript, spokenName)
+        lastTopic = selected.scene
         val adjusted = fitLevel(selected.english, level)
 
         DiagnosticStore.mark(

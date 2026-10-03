@@ -21,6 +21,7 @@ class KittenSpeaker(
     private val context: Context,
     private val onDone: (Long, Long, Long) -> Unit,
     private val onError: (String) -> Unit,
+    private val onStarted: () -> Unit = {},
     private val onAmplitude: (Float) -> Unit = {},
 ) {
     private val main = Handler(Looper.getMainLooper())
@@ -30,6 +31,24 @@ class KittenSpeaker(
     @Volatile private var track: AudioTrack? = null
     @Volatile private var closed = false
     private var engine: Engine? = null
+    private val cache = object : LinkedHashMap<String, ShortArray>(16, .75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ShortArray>?) = size > 24
+    }
+    fun prepare(texts: List<String>, onReady: (Boolean) -> Unit = {}) {
+        if (closed || !KittenModelStore.isInstalled(context)) { main.post { onReady(false) }; return }
+        worker.execute {
+            var success = true
+            texts.forEach { text ->
+                if (!closed && !cache.containsKey(text.trim())) runCatching {
+                    val active = engine ?: Engine(context).also { engine = it }
+                    val generated = active.generate(text.trim())
+                    require(generated.isNotEmpty() && generated.all(Float::isFinite))
+                    cache[text.trim()] = toPcm16(generated)
+                }.onFailure { success = false }
+            }
+            main.post { if (!closed) onReady(success) }
+        }
+    }
 
     fun speak(text: String): Boolean {
         if (closed || text.isBlank() || !KittenModelStore.isInstalled(context)) return false
@@ -54,13 +73,11 @@ class KittenSpeaker(
                 }
 
                 val generationStarted = System.nanoTime()
-                val generated = active.generate(text.trim())
-                val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
-                require(generated.isNotEmpty() && generated.all(Float::isFinite)) {
-                    "Kitten TTS Nano returned invalid audio."
+                val pcm = cache[text.trim()] ?: active.generate(text.trim()).let { generated ->
+                    require(generated.isNotEmpty() && generated.all(Float::isFinite)) { "Kitten TTS Nano returned invalid audio." }
+                    toPcm16(generated).also { cache[text.trim()] = it }
                 }
-
-                val pcm = toPcm16(generated)
+                val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
                 val firstAudioMs = play(id, pcm, SAMPLE_RATE, started)
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
 
@@ -117,6 +134,7 @@ class KittenSpeaker(
         worker.execute {
             engine?.close()
             engine = null
+            cache.clear()
         }
     }
 
@@ -127,6 +145,7 @@ class KittenSpeaker(
         worker.execute {
             engine?.close()
             engine = null
+            cache.clear()
         }
         worker.shutdown()
         main.removeCallbacksAndMessages(null)
@@ -177,7 +196,8 @@ class KittenSpeaker(
                 val written = player.write(pcm, offset, count, AudioTrack.WRITE_BLOCKING)
                 check(written > 0) { "音声出力エラー: " + written }
                 if (firstAudioMs == 0L) {
-                    firstAudioMs = (System.nanoTime() - started) / 1_000_000L
+                    firstAudioMs = max(1L, (System.nanoTime() - started) / 1_000_000L)
+                    main.post { if (!closed && requestId == id) onStarted() }
                 }
                 val amplitude = chunkAmplitude(pcm, offset, written)
                 main.post {
