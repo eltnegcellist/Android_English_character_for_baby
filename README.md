@@ -298,6 +298,12 @@ Android v1.9.23はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 今後の機能変更は新しいバージョンとして公開し、v1.9.23を再現可能な安定基準版として保持します。
 
+### 開発資料
+
+- [BRANCH_POLICY.md](BRANCH_POLICY.md) — 開発元・安定版タグ・過去の実験PRの扱い
+- [LICENSE_AUDIT.md](LICENSE_AUDIT.md) — 旧TTSから現行TTSへの移行と監査結果
+- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) — 現行の第三者コンポーネント一覧
+
 ### ライセンス
 
 みつことば本体のソースコードについては、現時点で独自の利用ライセンスを設定していません。第三者コンポーネントには、それぞれのライセンスが適用されます。
@@ -305,8 +311,6 @@ Android v1.9.23はv1.9.19で導入した非GPL TTS経路を維持しており、
 第三者ライセンスの一覧と監査結果は、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) と [LICENSE_AUDIT.md](LICENSE_AUDIT.md) を参照してください。
 
 ---
-
-# Mitsukotoba---
 
 # Mitsukotoba — English Time Made Together by Parent, Baby, and AI
 
@@ -592,6 +596,12 @@ See:
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
 Future functional changes should be released under a new version so that v1.9.23 remains reproducible as the stable Mitsukotoba reference point.
+
+### Development Documents
+
+- [BRANCH_POLICY.md](BRANCH_POLICY.md) — source of truth, release tags, and historical experimental PRs
+- [LICENSE_AUDIT.md](LICENSE_AUDIT.md) — TTS migration and dependency audit
+- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) — current third-party components
 
 ### License
 
