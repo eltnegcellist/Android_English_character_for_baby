@@ -30,23 +30,25 @@ class KittenSpeaker(
     @Volatile private var requestId: String? = null
     @Volatile private var track: AudioTrack? = null
     @Volatile private var closed = false
+    @Volatile private var warmGeneration = 0L
     private var engine: Engine? = null
     private val cache = object : LinkedHashMap<String, ShortArray>(16, .75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ShortArray>?) = size > 24
     }
     fun prepare(texts: List<String>, onReady: (Boolean) -> Unit = {}) {
         if (closed || !KittenModelStore.isInstalled(context)) { main.post { onReady(false) }; return }
+        val generation = ++warmGeneration
         worker.execute {
             var success = true
             texts.forEach { text ->
-                if (!closed && !cache.containsKey(text.trim())) runCatching {
+                if (!closed && generation == warmGeneration && !cache.containsKey(text.trim())) runCatching {
                     val active = engine ?: Engine(context).also { engine = it }
                     val generated = active.generate(text.trim())
                     require(generated.isNotEmpty() && generated.all(Float::isFinite))
                     cache[text.trim()] = toPcm16(generated)
                 }.onFailure { success = false }
             }
-            main.post { if (!closed) onReady(success) }
+            main.post { if (!closed && generation == warmGeneration) onReady(success) }
         }
     }
 
@@ -118,6 +120,7 @@ class KittenSpeaker(
     }
 
     fun stop() {
+        warmGeneration++
         requestId = null
         main.post { onAmplitude(0f) }
         track?.runCatching {

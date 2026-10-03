@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.Arrangement
@@ -155,13 +156,13 @@ internal fun EmmaHomeScreen(
                             onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
                             enabled = modelReady && !busy,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth().heightIn(min = 64.dp)
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                         ) { Text("会話を始める") }
                     } else {
                         Button(
                             onClick = onStopSession,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
                         ) { Text("会話を止める") }
                     }
                 }

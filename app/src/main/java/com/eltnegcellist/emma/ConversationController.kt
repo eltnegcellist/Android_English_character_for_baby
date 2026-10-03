@@ -401,7 +401,7 @@ internal class ConversationController(val context: Context) {
                         if (infantVocalEvent) "${resolvedAiName}が赤ちゃんに話しかけています。" else "${resolvedAiName}が話しています。"
                     voiceError = null
                     playbackHistory.offer(HistoryEntry.create(sessionId, latestTranscript, spokenEnglish,
-                        if (requestedMode == ConversationEngineMode.LITE) lite.lastTopic else gemma.lastTopic, requestedMode.savedValue))
+                        if (requestedMode == ConversationEngineMode.LITE) lite.lastTopic else gemma.lastTopic, requestedMode.savedValue.lowercase()))
                     if (!speakEmma(spokenEnglish)) {
                         playbackHistory.cancel()
                         recorder.resumeBuffering(clearExisting = true)
