@@ -448,11 +448,11 @@ internal class ConversationController(val context: Context) {
     fun applyContinueScreenOff(enabled: Boolean) {
         preferences.edit().putBoolean("continue_screen_off", enabled).apply()
         continueScreenOff = enabled
-        if (enabled && recording && !conversationServiceActiveState.value) {
+        if (enabled && recording && !conversationServiceActiveState.value && !startRequested) {
             startRequested = true
             runCatching { context.startForegroundService(Intent(context, ConversationService::class.java)) }
                 .onFailure { stopSession(); status = ProductionEmmaStatus.ERROR; statusMessage = "画面オフ会話を開始できません: ${it.message}" }
-        } else if (!enabled && conversationServiceActiveState.value) {
+        } else if (!enabled && (conversationServiceActiveState.value || startRequested)) {
             stopSession()
         }
     }

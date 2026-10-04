@@ -25,7 +25,10 @@ class ConversationService : Service() {
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == "STOP") { finishConversation(); return START_NOT_STICKY }
-        if (!runtime.startRequested) { ending=true; stopSelf(); return START_NOT_STICKY }
+        if (!runtime.startRequested) {
+            if (!runtime.conversationServiceActiveState.value) { ending=true; stopSelf() }
+            return START_NOT_STICKY
+        }
         ending=false
         try {
             val notification = buildNotification()
@@ -64,7 +67,8 @@ class ConversationService : Service() {
     }
     private fun updateNotification() {
         if (!ending && runtime.conversationServiceActiveState.value) {
-            getSystemService(NotificationManager::class.java).notify(21, buildNotification())
+            val manager = getSystemService(NotificationManager::class.java)
+            if (manager.areNotificationsEnabled()) manager.notify(21, buildNotification())
         }
     }
     private fun finishConversation() {
