@@ -49,6 +49,17 @@ import kotlinx.coroutines.delay
 private const val NONVERBAL_RESPONSE_COOLDOWN_MS = 15_000L
 private const val BABY_VOCAL_CONTEXT = "赤ちゃんが声を出している"
 
+internal fun shouldRequestConversationNotificationPermission(
+    sdkInt: Int,
+    continueScreenOff: Boolean,
+    permissionGranted: Boolean,
+    startPromptHandled: Boolean,
+): Boolean =
+    continueScreenOff &&
+        sdkInt >= 33 &&
+        !permissionGranted &&
+        !startPromptHandled
+
 class ProductionMainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -622,11 +633,14 @@ private fun ProductionEmmaApp() {
     }
 
     fun continueStartAfterMicPermission() {
-        val shouldAskForNotification =
-            runtime.continueScreenOff &&
-                Build.VERSION.SDK_INT >= 33 &&
-                context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED &&
-                !preferences.getBoolean("conversation_notification_start_prompt_v2", false)
+        val shouldAskForNotification = shouldRequestConversationNotificationPermission(
+            sdkInt = Build.VERSION.SDK_INT,
+            continueScreenOff = runtime.continueScreenOff,
+            permissionGranted =
+                Build.VERSION.SDK_INT < 33 ||
+                    context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED,
+            startPromptHandled = preferences.getBoolean("conversation_notification_start_prompt_v2", false),
+        )
         if (shouldAskForNotification) {
             pendingStartAfterNotificationPermission = true
             preferences.edit()
