@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +52,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.eltnegcellist.emma.ai.AudienceMode
@@ -132,16 +132,9 @@ internal fun EmmaHomeScreen(
         bottomBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 6.dp) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 14.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        OutlinedButton(onClick = onOpenPlay, enabled = modelReady && tutorialStep == null,
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            contentPadding = PaddingValues(12.dp), modifier = Modifier.sizeIn(minWidth = 88.dp, minHeight = 88.dp)) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) { Text("☝"); Text("押して聞く") }
-                        }
-                    }
                     if (recording) {
                         OutlinedButton(
                             onClick = onManualRespond,
@@ -151,19 +144,36 @@ internal fun EmmaHomeScreen(
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                         ) { Text("ここで返事して") }
                     }
-                    if (!recording) {
-                        Button(
-                            onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
-                            enabled = modelReady && !busy,
-                            modifier = Modifier
-                                .fillMaxWidth().heightIn(min = 64.dp)
-                                .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                        ) { Text("会話を始める") }
-                    } else {
-                        Button(
-                            onClick = onStopSession,
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
-                        ) { Text("会話を止める") }
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        OutlinedButton(
+                            onClick = onOpenPlay,
+                            enabled = modelReady && tutorialStep == null,
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                            modifier = Modifier.weight(0.28f).heightIn(min = 64.dp),
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("☝")
+                                Text("押して聞く", style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center)
+                            }
+                        }
+                        if (!recording) {
+                            Button(
+                                onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
+                                enabled = modelReady && !busy,
+                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp)
+                                    .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
+                            ) { Text("会話を始める", textAlign = TextAlign.Center) }
+                        } else {
+                            Button(
+                                onClick = onStopSession,
+                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp),
+                            ) { Text("会話を止める", textAlign = TextAlign.Center) }
+                        }
                     }
                 }
             }
