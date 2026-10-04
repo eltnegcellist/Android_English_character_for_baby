@@ -36,7 +36,7 @@ internal class ConversationController(val context: Context) {
     private val initialEngineMode = preferences.getString("conversation_engine_mode", null)?.let { ConversationEngineMode.fromSaved(it) } ?: if (GemmaModelStore.hasUsableModel(context)) ConversationEngineMode.FULL else ConversationEngineMode.LITE
     private val initialAsrModel = if (preferences.getBoolean("asr_model_manual", false)) MoonshineAsrModel.fromSaved(preferences.getString("asr_model", null)) else MoonshineAsrModel.SMALL
     private val onboardingOpen = !preferences.getBoolean("onboarding_completed_v4", false)
-    val continueScreenOffState = mutableStateOf(preferences.getBoolean("continue_screen_off", true))
+    val continueScreenOffState = mutableStateOf(preferences.getBoolean("continue_screen_off", false))
     var continueScreenOff by continueScreenOffState
     val historyEnabledState = mutableStateOf(preferences.getBoolean("history_enabled", true))
     var historyEnabled by historyEnabledState
