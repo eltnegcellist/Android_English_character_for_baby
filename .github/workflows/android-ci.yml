@@ -28,6 +28,7 @@ jobs:
           python3 scripts/sync-lite-topic-contract.py --check
           python3 scripts/generate-lite-topic-contract.py --target android --check
           python3 scripts/test-lite-topic-contract.py
+          python3 scripts/verify-play-topics.py
 
       - name: Set up Java 17
         uses: actions/setup-java@v5

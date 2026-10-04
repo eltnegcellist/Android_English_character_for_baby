@@ -613,3 +613,6 @@ No license for the Mitsukotoba application source code has been granted yet. Thi
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [LICENSE_AUDIT.md](LICENSE_AUDIT.md) for the third-party license inventory and audit status.
 
+
+
+追加機能の作業ブランチ仕様・新しい検証範囲は[FEATURES.md](FEATURES.md)に記載します。

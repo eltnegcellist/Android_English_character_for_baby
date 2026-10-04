@@ -6,8 +6,13 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +38,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +56,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.eltnegcellist.emma.ai.AudienceMode
@@ -85,6 +93,7 @@ internal fun EmmaHomeScreen(
     onRequestParentFull: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenPlay: () -> Unit,
     onStartSession: () -> Unit,
     onStopSession: () -> Unit,
     onToggleAutoRespond: (Boolean) -> Unit,
@@ -98,8 +107,16 @@ internal fun EmmaHomeScreen(
     var tutorialAvatarBounds by remember { mutableStateOf<Rect?>(null) }
     var tutorialActionBounds by remember { mutableStateOf<Rect?>(null) }
     var tutorialStatusBounds by remember { mutableStateOf<Rect?>(null) }
+    var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
+    val statusRequester = remember { BringIntoViewRequester() }
+    LaunchedEffect(tutorialStep, recording) {
+        if (tutorialStep == 2) {
+            withFrameNanos { }
+            statusRequester.bringIntoView()
+        }
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { overlayOrigin = it.boundsInRoot().topLeft }) {
         Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -127,7 +144,7 @@ internal fun EmmaHomeScreen(
         bottomBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 6.dp) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (recording) {
@@ -139,19 +156,36 @@ internal fun EmmaHomeScreen(
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                         ) { Text("ここで返事して") }
                     }
-                    if (!recording) {
-                        Button(
-                            onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
-                            enabled = modelReady && !busy,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                        ) { Text("3人で話す") }
-                    } else {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         OutlinedButton(
-                            onClick = onStopSession,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text("セッションを終了") }
+                            onClick = onOpenPlay,
+                            enabled = modelReady && tutorialStep == null,
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                            modifier = Modifier.weight(0.28f).heightIn(min = 64.dp),
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("☝")
+                                Text("押して聞く", style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center)
+                            }
+                        }
+                        if (!recording) {
+                            Button(
+                                onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
+                                enabled = modelReady && !busy,
+                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp)
+                                    .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
+                            ) { Text("会話を始める", textAlign = TextAlign.Center) }
+                        } else {
+                            Button(
+                                onClick = onStopSession,
+                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp),
+                            ) { Text("会話を止める", textAlign = TextAlign.Center) }
+                        }
                     }
                 }
             }
@@ -244,10 +278,10 @@ internal fun EmmaHomeScreen(
             }
 
             Column(
-                modifier = Modifier.onGloballyPositioned { tutorialStatusBounds = it.boundsInRoot() },
+                modifier = Modifier.bringIntoViewRequester(statusRequester),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.onGloballyPositioned { tutorialStatusBounds = it.boundsInRoot() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Surface(
                         color = statusColor(visualState),
                         shape = MaterialTheme.shapes.extraSmall,
@@ -308,7 +342,7 @@ internal fun EmmaHomeScreen(
                     0 -> tutorialAvatarBounds
                     1 -> tutorialActionBounds
                     else -> tutorialStatusBounds
-                },
+                }?.translate(-overlayOrigin),
                 onNext = onTutorialNext,
                 onFinish = onTutorialFinish,
             )
@@ -340,7 +374,7 @@ private fun EmmaCoachMarkOverlay(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val dim = Color.Black.copy(alpha = 0.68f)
             val pad = 10.dp.toPx()
-            val target = targetBounds?.let {
+            val target = targetBounds?.takeIf { it.width > 0f && it.height > 0f && it.top < size.height && it.bottom > 0f }?.let {
                 Rect(
                     left = (it.left - pad).coerceAtLeast(0f),
                     top = (it.top - pad).coerceAtLeast(0f),
@@ -417,7 +451,7 @@ private fun EmmaCoachMarkOverlay(
                         } else {
                             "${aiName}が自己紹介しています。声が終わるまでそのまま聞いてください。"
                         }
-                        1 -> "画面下で光っている「3人で話す」を実際に押してください。押すとマイクが始まり、会話を開始します。"
+                        1 -> "画面下で光っている「会話を始める」を実際に押してください。押すとマイクが始まり、会話を開始します。"
                         else -> "明るく表示されている「聞いています」を確認して、実際に赤ちゃんへ普段どおり日本語で話しかけてみてください。声を検知して${aiName}が返事を最後まで話し終えると、チュートリアルは自動で完了します。"
                     },
                     style = MaterialTheme.typography.bodyMedium,
@@ -555,6 +589,7 @@ private fun ConversationExchange(transcript: String, emmaText: String, aiName: S
 
 @Composable
 internal fun EmmaSettingsScreen(
+    featureSettings: @Composable () -> Unit,
     level: EnglishLevel,
     enabled: Boolean,
     previewing: Boolean,
@@ -685,6 +720,8 @@ internal fun EmmaSettingsScreen(
                     )
                 }
             }
+
+            featureSettings()
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

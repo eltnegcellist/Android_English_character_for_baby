@@ -66,7 +66,7 @@ class ProductionMainActivity : ComponentActivity() {
     }
 }
 
-private enum class ProductionEmmaStatus {
+internal enum class ProductionEmmaStatus {
     IDLE,
     MODEL_IMPORTING,
     MODEL_LOADING,
@@ -81,6 +81,7 @@ private enum class ProductionEmmaStatus {
 @Composable
 private fun ProductionEmmaApp() {
     val context = LocalContext.current
+    val runtime = remember { ConversationRuntime.get(context) }
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
     remember {
         preferences.edit()
@@ -88,7 +89,7 @@ private fun ProductionEmmaApp() {
             .apply()
         true
     }
-    var englishLevel by remember { mutableStateOf(EnglishLevel.fromSaved(preferences.getString("level", null))) }
+    var englishLevel by runtime.englishLevelState
     val initialEngineMode = remember {
         val saved = preferences.getString("conversation_engine_mode", null)
         when {
@@ -101,7 +102,7 @@ private fun ProductionEmmaApp() {
                 .apply()
         }
     }
-    var engineMode by remember { mutableStateOf(initialEngineMode) }
+    var engineMode by runtime.engineModeState
     var onboardingMode by remember { mutableStateOf(initialEngineMode) }
     var startWithTiny by remember {
         mutableStateOf(preferences.getBoolean("first_run_start_tiny", false))
@@ -116,64 +117,46 @@ private fun ProductionEmmaApp() {
             MoonshineAsrModel.SMALL
         }
     }
-    var asrModel by remember { mutableStateOf(initialAsrModel) }
-    var latestTranscript by remember { mutableStateOf("") }
-    var autoRespond by remember { mutableStateOf(preferences.getBoolean("auto_respond", true)) }
+    var asrModel by runtime.asrModelState
+    var latestTranscript by runtime.latestTranscriptState
+    var autoRespond by runtime.autoRespondState
     var keepScreenOn by remember { mutableStateOf(preferences.getBoolean("keep_screen_on", true)) }
-    var aiName by remember {
-        mutableStateOf(preferences.getString("ai_character_name", AiCharacterName.DEFAULT).orEmpty())
-    }
+    var aiName by runtime.aiNameState
     val resolvedAiName = AiCharacterName.resolve(aiName)
+    var featureScreen by remember { mutableStateOf<String?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
     var aboutOpen by remember { mutableStateOf(false) }
     var parentFullPromptOpen by remember { mutableStateOf(false) }
     var onboardingOpen by remember {
         mutableStateOf(!preferences.getBoolean("onboarding_completed_v4", false))
     }
-    var tutorialStep by remember {
-        mutableStateOf<Int?>(
-            if (!onboardingOpen && !preferences.getBoolean("tutorial_completed_v1", false)) 0 else null,
-        )
-    }
+    var tutorialStep by runtime.tutorialStepState
     var firstRunBusy by remember { mutableStateOf(false) }
     var firstRunReady by remember { mutableStateOf(false) }
     var firstRunPhase by remember { mutableStateOf("") }
     var firstRunProgressPercent by remember { mutableStateOf<Int?>(null) }
     var firstRunError by remember { mutableStateOf<String?>(null) }
-    var mouthLevel by remember { mutableStateOf(0f) }
+    var mouthLevel by runtime.mouthLevelState
 
-    val mainHandler = remember { Handler(Looper.getMainLooper()) }
-    val session = remember { SessionGate() }
+    val mainHandler = runtime.mainHandler
+    val session = runtime.session
     var disposed by remember { mutableStateOf(false) }
-    var generating by remember { mutableStateOf(false) }
-    var voiceError by remember { mutableStateOf<String?>(null) }
-    val recorder = remember { AudioRingRecorder() }
-    val gemma = remember { GemmaEmmaClient(context) }
-    val lite = remember { LiteEmmaClient(context) }
-    val modelFile = remember { GemmaModelStore.modelFile(context) }
+    var generating by runtime.generatingState
+    var voiceError by runtime.voiceErrorState
+    val recorder = runtime.recorder
+    val gemma = runtime.gemma
+    val lite = runtime.lite
+    val modelFile = runtime.modelFile
 
-    var status by remember { mutableStateOf(ProductionEmmaStatus.IDLE) }
-    var statusMessage by remember {
-        mutableStateOf("みつことばを準備しています。")
-    }
-    var latestEmmaText by remember { mutableStateOf("") }
-    var recording by remember { mutableStateOf(false) }
-    var autoStartPending by remember { mutableStateOf(!onboardingOpen && tutorialStep == null) }
-    var pendingStartAfterPermission by remember { mutableStateOf(false) }
-    var modelPresent by remember {
-        mutableStateOf(
-            when (initialEngineMode) {
-                ConversationEngineMode.LITE ->
-                    MoonshineModelStore.isInstalled(context, initialAsrModel) && KittenModelStore.isInstalled(context)
-                ConversationEngineMode.FULL ->
-                    MoonshineModelStore.isInstalled(context, initialAsrModel) &&
-                        KittenModelStore.isInstalled(context) &&
-                        GemmaModelStore.hasUsableModel(context)
-            },
-        )
-    }
-    var modelReady by remember { mutableStateOf(false) }
-    var kittenInstalled by remember { mutableStateOf(KittenModelStore.isInstalled(context)) }
+    var status by runtime.statusState
+    var statusMessage by runtime.statusMessageState
+    var latestEmmaText by runtime.latestEmmaTextState
+    var recording by runtime.recordingState
+    var autoStartPending by runtime.autoStartPendingState
+    var pendingStartAfterPermission by runtime.pendingStartAfterPermissionState
+    var modelPresent by runtime.modelPresentState
+    var modelReady by runtime.modelReadyState
+    var kittenInstalled by runtime.kittenInstalledState
     var fullSetupOpen by remember {
         mutableStateOf(
             initialEngineMode == ConversationEngineMode.FULL &&
@@ -192,17 +175,17 @@ private fun ProductionEmmaApp() {
     var liteSetupDialogOpen by remember { mutableStateOf(false) }
     var liteSetupPhase by remember { mutableStateOf("") }
     var liteSetupProgressPercent by remember { mutableStateOf<Int?>(null) }
-    var lastSpeechMillis by remember { mutableStateOf<Long?>(null) }
-    var lastTtsGenerationMillis by remember { mutableStateOf<Long?>(null) }
-    var lastTtsTotalMillis by remember { mutableStateOf<Long?>(null) }
-    var lastEndpointToTtsRequestMillis by remember { mutableStateOf<Long?>(null) }
-    var lastEndpointToFirstAudioMillis by remember { mutableStateOf<Long?>(null) }
-    var endpointStartedNanos by remember { mutableStateOf<Long?>(null) }
-    var ttsRequestedAfterEndpointMillis by remember { mutableStateOf<Long?>(null) }
-    var lastNonverbalResponseAtMillis by remember { mutableStateOf(0L) }
-    var screenIntroductionPlayed by remember { mutableStateOf(false) }
-    var screenIntroductionPlaying by remember { mutableStateOf(false) }
-    var tutorialUserSpoke by remember { mutableStateOf(false) }
+    var lastSpeechMillis by runtime.lastSpeechMillisState
+    var lastTtsGenerationMillis by runtime.lastTtsGenerationMillisState
+    var lastTtsTotalMillis by runtime.lastTtsTotalMillisState
+    var lastEndpointToTtsRequestMillis by runtime.lastEndpointToTtsRequestMillisState
+    var lastEndpointToFirstAudioMillis by runtime.lastEndpointToFirstAudioMillisState
+    var endpointStartedNanos by runtime.endpointStartedNanosState
+    var ttsRequestedAfterEndpointMillis by runtime.ttsRequestedAfterEndpointMillisState
+    var lastNonverbalResponseAtMillis by runtime.lastNonverbalResponseAtMillisState
+    var screenIntroductionPlayed by runtime.screenIntroductionPlayedState
+    var screenIntroductionPlaying by runtime.screenIntroductionPlayingState
+    var tutorialUserSpoke by runtime.tutorialUserSpokeState
     var lastHandledPreparationAtMillis by remember { mutableStateOf(0L) }
 
     DisposableEffect(recording, keepScreenOn) {
@@ -245,81 +228,9 @@ private fun ProductionEmmaApp() {
         }
     }
 
-    val kitten = remember {
-        KittenSpeaker(
-            context = context,
-            onDone = { firstAudioMillis, generationMillis, totalMillis ->
-                if (!disposed) {
-                    mouthLevel = 0f
-                    lastSpeechMillis = firstAudioMillis
-                    lastTtsGenerationMillis = generationMillis
-                    lastTtsTotalMillis = totalMillis
-                    val queued = ttsRequestedAfterEndpointMillis
-                    lastEndpointToTtsRequestMillis = queued
-                    lastEndpointToFirstAudioMillis = queued?.plus(firstAudioMillis)
-                    if (queued != null) {
-                        DiagnosticStore.mark(
-                            context,
-                            "emma_response_latency",
-                            "endpointToTtsRequestMs=$queued kittenToFirstAudioMs=$firstAudioMillis endpointToFirstAudioMs=${queued + firstAudioMillis} kittenTotalMs=$totalMillis",
-                        )
-                    }
-                    endpointStartedNanos = null
-                    ttsRequestedAfterEndpointMillis = null
-                    if (screenIntroductionPlaying) {
-                        screenIntroductionPlaying = false
-                        screenIntroductionPlayed = true
-                        status = ProductionEmmaStatus.IDLE
-                        statusMessage = "自己紹介が終わりました。"
-                    } else {
-                        if (recording) recorder.resumeBuffering(clearExisting = true)
-                        status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE
-                        statusMessage = if (recording) {
-                            if (autoRespond) "普通に話しかけてください。" else "話したところで「ここで返事して」を押してください。"
-                        } else {
-                            "試聴を終了しました。"
-                        }
+    val kitten = runtime.kitten
 
-                        if (tutorialStep == 2 && tutorialUserSpoke) {
-                            preferences.edit().putBoolean("tutorial_completed_v1", true).apply()
-                            tutorialStep = null
-                            tutorialUserSpoke = false
-                            autoStartPending = false
-                            statusMessage = if (recording) {
-                                "チュートリアル完了。続けて話しかけてください。"
-                            } else {
-                                "チュートリアルが完了しました。"
-                            }
-                        }
-                    }
-                }
-            },
-            onError = { message ->
-                if (!disposed) {
-                    mouthLevel = 0f
-                    voiceError = message
-                    if (screenIntroductionPlaying) {
-                        screenIntroductionPlaying = false
-                        screenIntroductionPlayed = true
-                    }
-                    if (recording) recorder.resumeBuffering(clearExisting = true)
-                    status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Kitten TTS Nanoの生成または再生に失敗しました: $message"
-                }
-            },
-            onAmplitude = { amplitude -> if (!disposed) mouthLevel = amplitude },
-        )
-    }
-
-    fun speakEmma(text: String): Boolean {
-        lastSpeechMillis = null
-        lastTtsGenerationMillis = null
-        lastTtsTotalMillis = null
-        ttsRequestedAfterEndpointMillis = endpointStartedNanos?.let { started ->
-            (System.nanoTime() - started) / 1_000_000L
-        }
-        return kittenInstalled && kitten.speak(text)
-    }
+    fun speakEmma(text: String) = runtime.speakEmma(text)
 
     fun modeModelsPresent(
         mode: ConversationEngineMode,
@@ -689,25 +600,9 @@ private fun ProductionEmmaApp() {
         )
     }
 
-    fun beginRecording() {
-        session.start()
-        runCatching { recorder.start() }
-            .onSuccess {
-                recording = true
-                lite.resetConversationContext()
-                status = ProductionEmmaStatus.LISTENING
-                statusMessage = if (autoRespond) {
-                    "普通に話しかけてください。必要なら「ここで返事して」で区切れます。"
-                } else {
-                    "話したところで「ここで返事して」を押してください。"
-                }
-            }
-            .onFailure {
-                session.stop()
-                status = ProductionEmmaStatus.ERROR
-                statusMessage = it.message ?: "録音を開始できませんでした。"
-            }
-    }
+    // Notification permission controls visibility, not the ability to run an FGS.
+    // Keep microphone permission mandatory and preserve the user's notification choice.
+    fun beginRecording() = runtime.requestStart()
 
     val micPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -744,153 +639,9 @@ private fun ProductionEmmaApp() {
         beginRecording()
     }
 
-    fun stopSession() {
-        session.stop()
-        pendingStartAfterPermission = false
-        kitten.stop()
-        recorder.stop()
-        recording = false
-        generating = false
-        mouthLevel = 0f
-        endpointStartedNanos = null
-        ttsRequestedAfterEndpointMillis = null
-        status = ProductionEmmaStatus.IDLE
-        statusMessage = "セッションを終了しました。"
-    }
+    fun stopSession() = runtime.stopSession()
 
-    fun askEmma(automatic: Boolean = false) {
-        if (!recording || generating || status == ProductionEmmaStatus.THINKING || status == ProductionEmmaStatus.SPEAKING) return
-        val activeReady = when (engineMode) {
-            ConversationEngineMode.LITE -> lite.isReady()
-            ConversationEngineMode.FULL -> gemma.isReady()
-        }
-        if (!modelReady || !activeReady) {
-            status = ProductionEmmaStatus.ERROR
-            statusMessage = "みつことばがまだ準備できていません。"
-            return
-        }
-
-        val minimumSeconds = if (automatic) 0.45 else 0.8
-        if (recorder.secondsAvailable() < minimumSeconds) {
-            if (!automatic) {
-                status = ProductionEmmaStatus.LISTENING
-                statusMessage = "もう少し話してください。"
-            }
-            return
-        }
-
-        if (endpointStartedNanos == null) endpointStartedNanos = System.nanoTime()
-        val ticket = session.ticket()
-        val requestedLevel = englishLevel
-        latestTranscript = ""
-        latestEmmaText = ""
-        generating = true
-        recorder.pauseBuffering()
-        val wav = recorder.snapshotWav(maxSeconds = 30, consume = true)
-        status = ProductionEmmaStatus.THINKING
-        statusMessage = "返事を考えています…"
-
-        DiagnosticStore.mark(
-            context,
-            "emma_turn_processing_started",
-            "mode=${engineMode.label} automatic=$automatic wavBytes=${wav.size}",
-        )
-
-        val requestedMode = engineMode
-        EmmaWorkQueue.execute {
-            val result = when (requestedMode) {
-                ConversationEngineMode.LITE ->
-                    lite.createEnglishIsland(wav, requestedLevel) { transcript ->
-                        mainHandler.post {
-                            if (!disposed && session.accepts(ticket)) {
-                                latestTranscript = transcript
-                                statusMessage = "返答を選んでいます…"
-                            }
-                        }
-                    }
-                ConversationEngineMode.FULL ->
-                    gemma.createEnglishIsland(wav, requestedLevel) { transcript ->
-                        mainHandler.post {
-                            if (!disposed && session.accepts(ticket)) {
-                                val clearSpeech = transcript.replace("[不明]", "").trim()
-                                latestTranscript = if (clearSpeech.isEmpty()) {
-                                    "ことばではない声を聞きました"
-                                } else {
-                                    transcript.replace("[不明]", "…")
-                                }
-                                statusMessage = "返事を考えています…"
-                            }
-                        }
-                    }
-            }
-
-            mainHandler.post {
-                if (disposed) return@post
-                generating = false
-                if (!session.accepts(ticket)) return@post
-
-                result.onSuccess { english ->
-                    val nowMillis = System.currentTimeMillis()
-                    val infantVocalEvent =
-                        latestTranscript.trim().trimEnd('。') == BABY_VOCAL_CONTEXT
-
-                    if (
-                        infantVocalEvent &&
-                        nowMillis - lastNonverbalResponseAtMillis < NONVERBAL_RESPONSE_COOLDOWN_MS
-                    ) {
-                        recorder.resumeBuffering(clearExisting = true)
-                        endpointStartedNanos = null
-                        ttsRequestedAfterEndpointMillis = null
-                        latestEmmaText = ""
-                        status = ProductionEmmaStatus.LISTENING
-                        statusMessage = "赤ちゃんの声を聞いています。"
-                        DiagnosticStore.mark(
-                            context,
-                            "nonverbal_baby_response_suppressed",
-                            "cooldownMs=$NONVERBAL_RESPONSE_COOLDOWN_MS",
-                        )
-                        return@onSuccess
-                    }
-                    if (infantVocalEvent) lastNonverbalResponseAtMillis = nowMillis
-
-                    val spokenEnglish = AiCharacterName.stripLeadingSpeakerLabel(english, resolvedAiName)
-                    latestEmmaText = spokenEnglish
-                    status = ProductionEmmaStatus.SPEAKING
-                    statusMessage =
-                        if (infantVocalEvent) "${resolvedAiName}が赤ちゃんに話しかけています。" else "${resolvedAiName}が話しています。"
-                    voiceError = null
-                    if (!speakEmma(spokenEnglish)) {
-                        recorder.resumeBuffering(clearExisting = true)
-                        endpointStartedNanos = null
-                        ttsRequestedAfterEndpointMillis = null
-                        status = ProductionEmmaStatus.ERROR
-                        statusMessage = voiceError ?: "音声を再生できませんでした。"
-                    }
-                }.onFailure { error ->
-                    endpointStartedNanos = null
-                    ttsRequestedAfterEndpointMillis = null
-                    val noMeaningfulSpeech =
-                        error.message?.contains("聞き取れませんでした") == true
-
-                    recorder.resumeBuffering(clearExisting = true)
-                    if (noMeaningfulSpeech) {
-                        latestEmmaText = ""
-                        status = ProductionEmmaStatus.LISTENING
-                        statusMessage = "意味のあることばを待っています。"
-                        DiagnosticStore.mark(
-                            context,
-                            "meaningless_turn_suppressed",
-                            "automatic=$automatic message=${error.message ?: ""}",
-                        )
-                    } else {
-                        status = ProductionEmmaStatus.ERROR
-                        statusMessage =
-                            "みつことばの生成に失敗しました: ${error.message ?: error.javaClass.simpleName}"
-                    }
-                }
-            }
-        }
-    }
+    fun askEmma(automatic: Boolean = false) = runtime.askEmma(automatic)
 
     LaunchedEffect(Unit) {
         if (onboardingOpen) {
@@ -905,7 +656,7 @@ private fun ProductionEmmaApp() {
             )
         ) {
             fullSetupOpen = true
-        } else if (modelPresent) {
+        } else if (modelPresent && !modelReady) {
             loadModel()
         } else if (!modelPresent) {
             settingsOpen = true
@@ -952,71 +703,27 @@ private fun ProductionEmmaApp() {
 
     DisposableEffect(Unit) {
         val lifecycle = (context as ComponentActivity).lifecycle
+        runtime.uiVisible = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP && (recording || generating || pendingStartAfterPermission || status == ProductionEmmaStatus.SPEAKING)) {
+            if(event == Lifecycle.Event.ON_START) runtime.uiVisible = true
+            if(event == Lifecycle.Event.ON_STOP) { runtime.uiVisible = false; mouthLevel = 0f; runtime.dismissInterruptedTutorial() }
+            if (event == Lifecycle.Event.ON_STOP && (!runtime.continueScreenOff || !recording) && (recording || generating || pendingStartAfterPermission || status == ProductionEmmaStatus.SPEAKING || runtime.startRequested)) {
                 stopSession()
             }
         }
         lifecycle.addObserver(observer)
 
-        recorder.onVoiceActivity = { event ->
-            val ticket = session.ticket()
-            mainHandler.post {
-                if (disposed || !recording || !session.accepts(ticket)) return@post
-                when (event) {
-                    VoiceActivityEvent.SpeechStarted -> {
-                        if (tutorialStep == 2) tutorialUserSpoke = true
-                        if (!generating && status != ProductionEmmaStatus.SPEAKING) {
-                            status = ProductionEmmaStatus.ENDPOINT_WAIT
-                            statusMessage = "聞いています…"
-                        }
-                    }
-                    is VoiceActivityEvent.Endpoint -> {
-                        DiagnosticStore.mark(
-                            context,
-                            "auto_endpoint",
-                            "speechMs=${event.speechMillis} silenceMs=${event.silenceMillis} autoRespond=$autoRespond",
-                        )
-                        if ((autoRespond || tutorialStep == 2) && !generating && status != ProductionEmmaStatus.SPEAKING) {
-                            endpointStartedNanos = System.nanoTime()
-                            status = ProductionEmmaStatus.UNDERSTOOD
-                            statusMessage = "聞きました。"
-                            mainHandler.postDelayed({
-                                if (!disposed && recording && session.accepts(ticket)) askEmma(automatic = true)
-                            }, 140L)
-                        } else if (!generating && status != ProductionEmmaStatus.SPEAKING) {
-                            status = ProductionEmmaStatus.LISTENING
-                            statusMessage = "聞き取りました。「ここで返事して」で返します。"
-                        }
-                    }
-                }
-            }
-        }
-
-        recorder.onError = { message ->
-            val ticket = session.ticket()
-            mainHandler.post {
-                if (!disposed && session.accepts(ticket)) {
-                    stopSession()
-                    status = ProductionEmmaStatus.ERROR
-                    statusMessage = message
-                }
-            }
-        }
         onDispose {
             disposed = true
+            runtime.uiVisible = false
             lifecycle.removeObserver(observer)
-            session.stop()
-            recorder.onVoiceActivity = null
-            recorder.onError = null
-            recorder.stop()
-            kitten.shutdown()
-            mainHandler.removeCallbacksAndMessages(null)
-            EmmaWorkQueue.execute {
-                gemma.close()
-                lite.close()
-            }
         }
+    }
+
+    if (featureScreen != null) {
+        if (featureScreen == "history") HistoryScreen(runtime) { featureScreen = null }
+        else PlayScreen(runtime) { featureScreen = null }
+        return
     }
 
     val blockingModelPreparation = firstRunBusy || liteSetupBusy
@@ -1138,6 +845,7 @@ private fun ProductionEmmaApp() {
         )
     } else if (settingsOpen) {
         EmmaSettingsScreen(
+            featureSettings = { FeatureSettings(runtime) { stopSession(); autoStartPending=false; featureScreen="history" } },
             level = englishLevel,
             enabled = !busy && !recording,
             previewing = !recording && status == ProductionEmmaStatus.SPEAKING,
@@ -1267,6 +975,7 @@ private fun ProductionEmmaApp() {
                 }
                 settingsOpen = true
             },
+            onOpenPlay = { stopSession(); autoStartPending=false; featureScreen="play" },
             onStartSession = ::startSession,
             onStopSession = ::stopSession,
             onToggleAutoRespond = {
