@@ -73,7 +73,7 @@ private fun ConversationNotificationSettings(runtime: ConversationController, of
     fun notificationsVisible(): Boolean = manager.areNotificationsEnabled() &&
         manager.getNotificationChannel("conversation")?.importance != NotificationManager.IMPORTANCE_NONE
     var allowed by remember { mutableStateOf(notificationsVisible()) }
-    var controls by remember { mutableStateOf(prefs.getBoolean("conversation_notification_controls", prefs.getBoolean("conversation_notification_permission_requested", false))) }
+    var controls by remember { mutableStateOf(allowed && prefs.getBoolean("conversation_notification_controls", prefs.getBoolean("conversation_notification_permission_requested", false))) }
     var awaitingSettings by remember { mutableStateOf(false) }
     val serviceActive by runtime.conversationServiceActiveState
     fun saveControls(value: Boolean) {
@@ -107,12 +107,14 @@ private fun ConversationNotificationSettings(runtime: ConversationController, of
             if (event == Lifecycle.Event.ON_RESUME) {
                 allowed = notificationsVisible()
                 if (awaitingSettings) { awaitingSettings=false; saveControls(allowed) }
+                else if (!allowed && controls) saveControls(false)
                 runtime.onNotificationChanged?.invoke()
             }
         }
         lifecycle?.addObserver(observer)
         onDispose { lifecycle?.removeObserver(observer) }
     }
+    LaunchedEffect(Unit) { saveControls(controls) }
     LaunchedEffect(offerNotifications, controls, allowed) {
         if (offerNotifications && controls && allowed) onOfferHandled()
     }
@@ -128,7 +130,7 @@ private fun ConversationNotificationSettings(runtime: ConversationController, of
         Switch(controls, { if (it) enableControls() else saveControls(false) })
     }
     Text(when {
-        !controls -> "停止ボタンの表示：オフ"
+        !controls -> if (allowed) "停止ボタンの表示：オフ" else "停止ボタンの表示：オフ（Androidの通知許可なし）"
         !allowed -> "Androidで通知が許可されていないため、表示できません。"
         !serviceActive -> "待機中：バックグラウンド会話を始めると通知に停止ボタンを表示します。"
         else -> "会話中：通知に停止ボタンを表示しています。"
