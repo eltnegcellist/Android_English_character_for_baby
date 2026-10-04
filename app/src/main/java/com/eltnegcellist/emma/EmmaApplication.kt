@@ -1,6 +1,8 @@
 package com.eltnegcellist.emma
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import com.eltnegcellist.emma.tts.DiagnosticStore
 
@@ -16,6 +18,16 @@ class EmmaApplication : Application() {
             .edit()
             .putBoolean("kokoro_only", false)
             .commit()
+        getSystemService(NotificationManager::class.java).createNotificationChannel(
+            NotificationChannel(
+                "conversation",
+                "画面オフ会話",
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = "みつことばの画面オフ会話を表示します。"
+                setShowBadge(false)
+            },
+        )
         DiagnosticStore.mark(
             this,
             "integration_mode",
