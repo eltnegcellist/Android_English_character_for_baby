@@ -89,3 +89,8 @@ Adds Filled mode and per-mode Gradient selections. This update changes no depend
 ## v1.9.28 character color update
 
 Brightens Vivid and Filled colors, adds gradient explanations, and uses a 60-second cycle. No dependencies, bundled models, or license declarations change.
+
+
+## v1.9.29 interaction features
+
+Adds optional screen-off conversation, on-device text history, Tap to Listen, and tutorial/notification behavior changes. No TTS dependencies, bundled models, or license declarations change. The existing eSpeak/sherpa rejection and APK provenance checks remain in CI.
