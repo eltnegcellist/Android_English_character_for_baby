@@ -600,16 +600,9 @@ private fun ProductionEmmaApp() {
         )
     }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (!disposed && granted && pendingStartAfterPermission) { pendingStartAfterPermission=false; runtime.requestStart() }
-        else { pendingStartAfterPermission=false; status=ProductionEmmaStatus.ERROR; statusMessage="画面オフ会話には通知を許可してください。設定で画面オフ会話をオフにすると、画面内で会話できます。" }
-    }
-    fun beginRecording() {
-        if (runtime.continueScreenOff && android.os.Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            pendingStartAfterPermission=true
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else runtime.requestStart()
-    }
+    // Notification permission controls visibility, not the ability to run an FGS.
+    // Keep microphone permission mandatory and preserve the user's notification choice.
+    fun beginRecording() = runtime.requestStart()
 
     val micPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
