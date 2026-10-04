@@ -109,7 +109,7 @@ internal fun EmmaHomeScreen(
     var tutorialStatusBounds by remember { mutableStateOf<Rect?>(null) }
     var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
     val statusRequester = remember { BringIntoViewRequester() }
-    LaunchedEffect(tutorialStep) {
+    LaunchedEffect(tutorialStep, recording) {
         if (tutorialStep == 2) {
             withFrameNanos { }
             statusRequester.bringIntoView()
