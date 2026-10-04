@@ -6,6 +6,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -36,6 +38,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -103,8 +107,16 @@ internal fun EmmaHomeScreen(
     var tutorialAvatarBounds by remember { mutableStateOf<Rect?>(null) }
     var tutorialActionBounds by remember { mutableStateOf<Rect?>(null) }
     var tutorialStatusBounds by remember { mutableStateOf<Rect?>(null) }
+    var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
+    val statusRequester = remember { BringIntoViewRequester() }
+    LaunchedEffect(tutorialStep) {
+        if (tutorialStep == 2) {
+            withFrameNanos { }
+            statusRequester.bringIntoView()
+        }
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { overlayOrigin = it.boundsInRoot().topLeft }) {
         Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -266,10 +278,10 @@ internal fun EmmaHomeScreen(
             }
 
             Column(
-                modifier = Modifier.onGloballyPositioned { tutorialStatusBounds = it.boundsInRoot() },
+                modifier = Modifier.bringIntoViewRequester(statusRequester),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.onGloballyPositioned { tutorialStatusBounds = it.boundsInRoot() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Surface(
                         color = statusColor(visualState),
                         shape = MaterialTheme.shapes.extraSmall,
@@ -330,7 +342,7 @@ internal fun EmmaHomeScreen(
                     0 -> tutorialAvatarBounds
                     1 -> tutorialActionBounds
                     else -> tutorialStatusBounds
-                },
+                }?.translate(-overlayOrigin),
                 onNext = onTutorialNext,
                 onFinish = onTutorialFinish,
             )
@@ -362,7 +374,7 @@ private fun EmmaCoachMarkOverlay(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val dim = Color.Black.copy(alpha = 0.68f)
             val pad = 10.dp.toPx()
-            val target = targetBounds?.let {
+            val target = targetBounds?.takeIf { it.width > 0f && it.height > 0f && it.top < size.height && it.bottom > 0f }?.let {
                 Rect(
                     left = (it.left - pad).coerceAtLeast(0f),
                     top = (it.top - pad).coerceAtLeast(0f),

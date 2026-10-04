@@ -79,7 +79,7 @@ internal class ConversationController(val context: Context) {
     var aiName by aiNameState
 
     val tutorialStepState = mutableStateOf<Int?>(
-            if (!onboardingOpen && !preferences.getBoolean("tutorial_completed_v1", false)) 0 else null,
+            if (!onboardingOpen && !preferences.getBoolean("tutorial_completed_v1", false) && !preferences.getBoolean("tutorial_dismissed_v1", false)) 0 else null,
         )
     var tutorialStep by tutorialStepState
 
@@ -434,6 +434,31 @@ internal class ConversationController(val context: Context) {
                 }
             }
         }
+    }
+    var onNotificationChanged: (() -> Unit)? = null
+    val conversationServiceActiveState = mutableStateOf(false)
+    fun dismissInterruptedTutorial() {
+        if (tutorialStep == null) return
+        tutorialStep = null
+        tutorialUserSpoke = false
+        autoStartPending = false
+        preferences.edit().putBoolean("tutorial_dismissed_v1", true).apply()
+        stopSession()
+    }
+    fun applyContinueScreenOff(enabled: Boolean) {
+        preferences.edit().putBoolean("continue_screen_off", enabled).apply()
+        continueScreenOff = enabled
+        if (enabled && recording && !conversationServiceActiveState.value) {
+            startRequested = true
+            runCatching { context.startForegroundService(Intent(context, ConversationService::class.java)) }
+                .onFailure { stopSession(); status = ProductionEmmaStatus.ERROR; statusMessage = "画面オフ会話を開始できません: ${it.message}" }
+        } else if (!enabled && conversationServiceActiveState.value) {
+            stopSession()
+        }
+    }
+    fun attachConversationService() {
+        startRequested = false
+        releaseAudio()
     }
     fun requestStart() {
         if (recording || startRequested || !modelReady) return

@@ -18,6 +18,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -49,10 +51,10 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("画面を閉じても会話を続ける", Modifier.weight(1f))
-                Switch(screenOff, { screenOff = it; prefs.edit().putBoolean("continue_screen_off",it).apply(); if (it) offerNotifications=true })
+                Switch(screenOff, { runtime.applyContinueScreenOff(it); if (it) offerNotifications=true })
             }
             Text("初期設定はオフです。オンにすると、開始した会話だけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。アプリの「会話を止める」で終了できます。", style=MaterialTheme.typography.bodySmall)
-            ConversationNotificationSettings(offerNotifications, { offerNotifications=false })
+            ConversationNotificationSettings(runtime, offerNotifications, { offerNotifications=false })
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("端末内に会話履歴を残す", Modifier.weight(1f))
                 Switch(history, { history = it; prefs.edit().putBoolean("history_enabled",it).apply() })
@@ -64,51 +66,75 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
     }
 }
 @Composable
-private fun ConversationNotificationSettings(offerNotifications: Boolean, onOfferHandled: () -> Unit) {
+private fun ConversationNotificationSettings(runtime: ConversationController, offerNotifications: Boolean, onOfferHandled: () -> Unit) {
     val context = LocalContext.current
     val manager = remember(context) { context.getSystemService(NotificationManager::class.java) }
     val prefs = remember(context) { context.getSharedPreferences("emma_speech", 0) }
     fun notificationsVisible(): Boolean = manager.areNotificationsEnabled() &&
         manager.getNotificationChannel("conversation")?.importance != NotificationManager.IMPORTANCE_NONE
-    var enabled by remember { mutableStateOf(notificationsVisible()) }
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        enabled = notificationsVisible()
+    var allowed by remember { mutableStateOf(notificationsVisible()) }
+    var controls by remember { mutableStateOf(prefs.getBoolean("conversation_notification_controls", prefs.getBoolean("conversation_notification_permission_requested", false))) }
+    var awaitingSettings by remember { mutableStateOf(false) }
+    val serviceActive by runtime.conversationServiceActiveState
+    fun saveControls(value: Boolean) {
+        controls = value
+        prefs.edit().putBoolean("conversation_notification_controls", value).apply()
+        runtime.onNotificationChanged?.invoke()
     }
-    DisposableEffect(context) {
-        val lifecycle = (context as? ComponentActivity)?.lifecycle
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) enabled = notificationsVisible()
-        }
-        lifecycle?.addObserver(observer)
-        onDispose { lifecycle?.removeObserver(observer) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        allowed = notificationsVisible()
+        saveControls(granted && allowed)
     }
-    fun enableNotifications() {
+    fun openSettings() {
+        context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+    }
+    fun enableControls() {
+        allowed = notificationsVisible()
+        if (allowed) { saveControls(true); return }
         val permissionNeeded = Build.VERSION.SDK_INT >= 33 &&
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         if (permissionNeeded && !prefs.getBoolean("conversation_notification_permission_requested", false)) {
             prefs.edit().putBoolean("conversation_notification_permission_requested", true).apply()
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+            awaitingSettings = true
+            openSettings()
         }
     }
-    LaunchedEffect(offerNotifications, enabled) {
-        if (offerNotifications && enabled) onOfferHandled()
+    DisposableEffect(context) {
+        val lifecycle = (context as? ComponentActivity)?.lifecycle
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                allowed = notificationsVisible()
+                if (awaitingSettings) { awaitingSettings=false; saveControls(allowed) }
+                runtime.onNotificationChanged?.invoke()
+            }
+        }
+        lifecycle?.addObserver(observer)
+        onDispose { lifecycle?.removeObserver(observer) }
     }
-    if (offerNotifications && !enabled) AlertDialog(
+    LaunchedEffect(offerNotifications, controls, allowed) {
+        if (offerNotifications && controls && allowed) onOfferHandled()
+    }
+    if (offerNotifications && (!controls || !allowed)) AlertDialog(
         onDismissRequest=onOfferHandled,
         title={Text("通知から会話を停止できるようにしますか？")},
-        text={Text("「はい」を選ぶと通知の許可または通知設定へ進みます。通知に表示される「会話を止める」で、バックグラウンドの会話も終了できます。通知を使わなくても会話は続けられます。")},
-        confirmButton={TextButton({onOfferHandled(); enableNotifications()}) {Text("はい")}},
+        text={Text("「はい」を選ぶと、必要な場合に通知の許可を求めます。開始した会話の通知に「会話を止める」を表示します。通知を使わなくても会話は続けられます。")},
+        confirmButton={TextButton({onOfferHandled(); enableControls()}) {Text("はい")}},
         dismissButton={TextButton(onOfferHandled) {Text("いいえ")}},
     )
-    Text("会話中の通知（任意）", style=MaterialTheme.typography.titleSmall)
-    Text("現在：${if (enabled) "オン" else "オフ"}", style=MaterialTheme.typography.bodySmall)
-    Text("通知には「会話を止める」を表示します。通知の表示は、下のボタンからいつでも変更できます。通知を表示しない場合はアプリ内で停止できます。Androidの動作中アプリの表示は残ります。", style=MaterialTheme.typography.bodySmall)
-    OutlinedButton(onClick={ enableNotifications() }, modifier=Modifier.fillMaxWidth()) {
-        Text(if (enabled) "通知の設定を変更" else "通知をオンにする")
+    Row(verticalAlignment=Alignment.CenterVertically) {
+        Text("通知から会話を止める", Modifier.weight(1f))
+        Switch(controls, { if (it) enableControls() else saveControls(false) })
     }
+    Text(when {
+        !controls -> "停止ボタンの表示：オフ"
+        !allowed -> "Androidで通知が許可されていないため、表示できません。"
+        !serviceActive -> "待機中：バックグラウンド会話を始めると通知に停止ボタンを表示します。"
+        else -> "会話中：通知に停止ボタンを表示しています。"
+    }, style=MaterialTheme.typography.bodySmall)
+    Text("この設定はアプリ内でオン・オフできます。オフの場合はアプリ内で会話を止めてください。Androidが要求する動作中の通知・表示は残ることがあります。", style=MaterialTheme.typography.bodySmall)
+    if (!allowed) TextButton({openSettings()}) { Text("Androidの通知許可を確認") }
 }
 
 @Composable
@@ -159,46 +185,37 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
     val allTopics = remember(topics) { PlayTopic("all", "すべての話題", topics.flatMap { it.phrases }.distinct()) }
     var selected by remember { mutableStateOf(allTopics) }
     var choosingTopic by remember { mutableStateOf(false) }
-    var preparationAttempt by remember { mutableIntStateOf(0) }
-    var ready by remember { mutableStateOf(false) }
     var previous by remember { mutableStateOf<String?>(null) }
     var status by runtime.statusState
     var text by runtime.latestEmmaTextState
     var exitConfirm by remember { mutableStateOf(false) }
     fun exit() { runtime.stopSession(); onExit() }
-    DisposableEffect(selected.id, preparationAttempt) {
-        var active = true
-        ready = false
-        text = "声を準備しています…"
-        runtime.kitten.prepare(selected.phrases) { ok ->
-            if (active) {
-                ready = ok
-                text = if (ok) "押すと短い英語が流れます" else "準備に失敗しました。話題を選び直してください。"
-            }
-        }
-        onDispose { active = false }
-    }
-    BackHandler { if (choosingTopic) { choosingTopic=false; preparationAttempt++ } else exitConfirm=true }
+    LaunchedEffect(Unit) { text="押すと短い英語が流れます" }
+    BackHandler { if (choosingTopic) choosingTopic=false else exitConfirm=true }
     if(exitConfirm) AlertDialog(onDismissRequest={exitConfirm=false},title={Text("おとなの方へ")},text={Text("遊びを終えてメイン画面に戻りますか？会話は自動で始まりません。")},
         confirmButton={TextButton({exit()}){Text("遊びを終える")}},dismissButton={TextButton({exitConfirm=false}){Text("遊びを続ける")}})
     Scaffold(topBar={Row(Modifier.fillMaxWidth().statusBarsPadding().padding(12.dp), verticalAlignment=Alignment.CenterVertically) {
         TextButton({exitConfirm=true}){Text("おとな用・戻る")}; Text("押して聞く",Modifier.weight(1f))
-        TextButton({runtime.stopSession(); if (choosingTopic) preparationAttempt++; choosingTopic=!choosingTopic}){Text(if(choosingTopic) "遊びに戻る" else "話題を変更")}
+        TextButton({runtime.stopSession(); choosingTopic=!choosingTopic}){Text(if(choosingTopic) "遊びに戻る" else "話題を変更")}
     }}) { padding ->
         if(choosingTopic) LazyColumn(Modifier.fillMaxSize().padding(padding).padding(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
             item { Text("親子で一緒に聞いて、まねして、交互に押して遊びましょう。押すのは赤ちゃんでも、おとなでもかまいません。マイクは使いません。学習効果が実証された機能ではありません。") }
             items(listOf(allTopics) + topics, key={it.id}) { topic ->
-                Button({selected=topic; previous=null; preparationAttempt++; choosingTopic=false},Modifier.fillMaxWidth().heightIn(min=64.dp)) {Text(topic.label)}
+                Button({selected=topic; previous=null; choosingTopic=false; text="押すと短い英語が流れます"},Modifier.fillMaxWidth().heightIn(min=64.dp)) {Text(topic.label)}
             }
-        } else Button(onClick={
+        } else OutlinedButton(onClick={
             val topic=selected
-            if(ready && status!=ProductionEmmaStatus.SPEAKING) {
+            if(runtime.modelReady && status!=ProductionEmmaStatus.SPEAKING) {
                 val phrase=nextPlayPhrase(topic.phrases,previous); previous=phrase
                 runtime.replay(phrase)
             }
-        },enabled=ready,modifier=Modifier.fillMaxSize().padding(padding).padding(16.dp),shape=MaterialTheme.shapes.extraLarge) {
+        },enabled=runtime.modelReady,modifier=Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            colors=ButtonDefaults.outlinedButtonColors(containerColor=Color.White, contentColor=Color(0xFF342F32)),
+            border=BorderStroke(2.dp,Color(0xFFDED6DE)), contentPadding=PaddingValues(16.dp), shape=MaterialTheme.shapes.extraLarge) {
             Column(Modifier.verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(24.dp)) {
-                com.eltnegcellist.emma.ui.CompactEmmaAvatar(state=if(status==ProductionEmmaStatus.SPEAKING) com.eltnegcellist.emma.ui.EmmaVisualState.SPEAKING else com.eltnegcellist.emma.ui.EmmaVisualState.IDLE, mouthLevel=runtime.mouthLevel, modifier=Modifier.fillMaxWidth().heightIn(max=240.dp))
+                Box(Modifier.sizeIn(maxWidth=260.dp).fillMaxWidth().padding(8.dp)) {
+                    com.eltnegcellist.emma.ui.CompactEmmaAvatar(state=if(status==ProductionEmmaStatus.SPEAKING) com.eltnegcellist.emma.ui.EmmaVisualState.SPEAKING else com.eltnegcellist.emma.ui.EmmaVisualState.IDLE, mouthLevel=runtime.mouthLevel, modifier=Modifier.fillMaxWidth())
+                }
                 Text(selected.label,style=MaterialTheme.typography.headlineSmall)
                 Text(if(status==ProductionEmmaStatus.SPEAKING) "一緒に聞こう" else "押して聞く",style=MaterialTheme.typography.headlineMedium)
                 Text(text,style=MaterialTheme.typography.titleLarge)
