@@ -126,7 +126,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.28-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.29-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -174,7 +174,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.28
+          name: Mitsukotoba-v1.9.29
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -190,7 +190,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.28"
+          TAG="mitsukotoba-v1.9.29"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -208,5 +208,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.28" \
-            --notes "Mitsukotoba v1.9.28 brightens Vivid and Filled colors toward clear primary hues, adds mode-specific gradient explanations, and shortens every gradient cycle to 60 seconds. Soft, Vivid and Filled choices remain independently saved. Web uses the same palettes, explanations and cycle duration. Retains shared topic tests, offline help, and non-GPL Kitten TTS."
+            --title "みつことば v1.9.29" \
+            --notes "Mitsukotoba v1.9.29 adds optional screen-off conversation, on-device conversation history, and the parent-and-baby Tap to Listen play mode. It also fixes tutorial interruption and notification controls while retaining the v1.9.28 color palettes, 60-second gradients, shared topic tests, offline help, and non-GPL Kitten TTS."
