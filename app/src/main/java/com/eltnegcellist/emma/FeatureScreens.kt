@@ -38,7 +38,7 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
                 Text("画面を閉じても会話を続ける", Modifier.weight(1f))
                 Switch(screenOff, { screenOff = it; prefs.edit().putBoolean("continue_screen_off",it).apply() })
             }
-            Text("開始した会話だけを継続します。通知の許可は不要です。アプリの「会話を止める」で終了できます。通知をオンにしている場合は通知からも停止できます。Androidの動作中アプリの表示は残ります。", style=MaterialTheme.typography.bodySmall)
+            Text("初期設定はオフです。オンにすると、開始した会話だけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。通知の許可は不要です。アプリの「会話を止める」で終了できます。通知をオンにしている場合は通知からも停止できます。Androidの動作中アプリの表示は残ります。", style=MaterialTheme.typography.bodySmall)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("端末内に会話履歴を残す", Modifier.weight(1f))
                 Switch(history, { history = it; prefs.edit().putBoolean("history_enabled",it).apply() })
