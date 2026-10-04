@@ -101,8 +101,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 111
-        versionName = "1.9.28"
+        versionCode = 112
+        versionName = "1.9.29"
 
         // Emma is distributed for physical Android devices.
         // Keep both 64-bit and legacy 32-bit ARM, but omit x86/x86_64 emulator/PC ABIs.
