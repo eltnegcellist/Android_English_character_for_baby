@@ -618,7 +618,7 @@ private fun ProductionEmmaApp() {
             .putBoolean("conversation_notification_controls", granted)
             .apply()
         runtime.onNotificationChanged?.invoke()
-        continueStartAfterMicPermission()
+        beginRecording()
     }
 
     fun continueStartAfterMicPermission() {
@@ -671,7 +671,7 @@ private fun ProductionEmmaApp() {
             micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             return
         }
-        beginRecording()
+        continueStartAfterMicPermission()
     }
 
     fun stopSession() = runtime.stopSession()
