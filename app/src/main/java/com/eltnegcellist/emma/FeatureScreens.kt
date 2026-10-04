@@ -1,5 +1,17 @@
 package com.eltnegcellist.emma
 
+import android.Manifest
+import android.app.NotificationManager
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -32,13 +44,15 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
     var history by runtime.historyEnabledState
     val historyError by runtime.history.errorState
     val prefs = runtime.context.getSharedPreferences("emma_speech", 0)
+    var offerNotifications by remember { mutableStateOf(false) }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("画面を閉じても会話を続ける", Modifier.weight(1f))
-                Switch(screenOff, { screenOff = it; prefs.edit().putBoolean("continue_screen_off",it).apply() })
+                Switch(screenOff, { screenOff = it; prefs.edit().putBoolean("continue_screen_off",it).apply(); if (it) offerNotifications=true })
             }
-            Text("初期設定はオフです。オンにすると、開始した会話だけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。通知の許可は不要です。アプリの「会話を止める」で終了できます。通知をオンにしている場合は通知からも停止できます。Androidの動作中アプリの表示は残ります。", style=MaterialTheme.typography.bodySmall)
+            Text("初期設定はオフです。オンにすると、開始した会話だけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。アプリの「会話を止める」で終了できます。", style=MaterialTheme.typography.bodySmall)
+            ConversationNotificationSettings(offerNotifications, { offerNotifications=false })
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("端末内に会話履歴を残す", Modifier.weight(1f))
                 Switch(history, { history = it; prefs.edit().putBoolean("history_enabled",it).apply() })
@@ -49,6 +63,54 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
         }
     }
 }
+@Composable
+private fun ConversationNotificationSettings(offerNotifications: Boolean, onOfferHandled: () -> Unit) {
+    val context = LocalContext.current
+    val manager = remember(context) { context.getSystemService(NotificationManager::class.java) }
+    val prefs = remember(context) { context.getSharedPreferences("emma_speech", 0) }
+    fun notificationsVisible(): Boolean = manager.areNotificationsEnabled() &&
+        manager.getNotificationChannel("conversation")?.importance != NotificationManager.IMPORTANCE_NONE
+    var enabled by remember { mutableStateOf(notificationsVisible()) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        enabled = notificationsVisible()
+    }
+    DisposableEffect(context) {
+        val lifecycle = (context as? ComponentActivity)?.lifecycle
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) enabled = notificationsVisible()
+        }
+        lifecycle?.addObserver(observer)
+        onDispose { lifecycle?.removeObserver(observer) }
+    }
+    fun enableNotifications() {
+        val permissionNeeded = Build.VERSION.SDK_INT >= 33 &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        if (permissionNeeded && !prefs.getBoolean("conversation_notification_permission_requested", false)) {
+            prefs.edit().putBoolean("conversation_notification_permission_requested", true).apply()
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+        }
+    }
+    LaunchedEffect(offerNotifications, enabled) {
+        if (offerNotifications && enabled) onOfferHandled()
+    }
+    if (offerNotifications && !enabled) AlertDialog(
+        onDismissRequest=onOfferHandled,
+        title={Text("通知から会話を停止できるようにしますか？")},
+        text={Text("「はい」を選ぶと通知の許可または通知設定へ進みます。通知に表示される「会話を止める」で、バックグラウンドの会話も終了できます。通知を使わなくても会話は続けられます。")},
+        confirmButton={TextButton({onOfferHandled(); enableNotifications()}) {Text("はい")}},
+        dismissButton={TextButton(onOfferHandled) {Text("いいえ")}},
+    )
+    Text("会話中の通知（任意）", style=MaterialTheme.typography.titleSmall)
+    Text("現在：${if (enabled) "オン" else "オフ"}", style=MaterialTheme.typography.bodySmall)
+    Text("通知には「会話を止める」を表示します。通知の表示は、下のボタンからいつでも変更できます。通知を表示しない場合はアプリ内で停止できます。Androidの動作中アプリの表示は残ります。", style=MaterialTheme.typography.bodySmall)
+    OutlinedButton(onClick={ enableNotifications() }, modifier=Modifier.fillMaxWidth()) {
+        Text(if (enabled) "通知の設定を変更" else "通知をオンにする")
+    }
+}
+
 @Composable
 internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) {
     val historyError by runtime.history.errorState
