@@ -122,7 +122,7 @@ internal fun FirstRunOnboardingScreen(
                 }
             }
 
-            Text("初期設定では会話履歴を端末内に残し、開始した会話は画面を閉じても続けます。録音は保存しません。どちらも設定でオフにできます。", style = MaterialTheme.typography.bodySmall)
+            Text("初期設定では会話履歴を端末内に残します。録音は保存しません。画面を閉じると会話は停止します。画面を閉じても続けたい場合は設定でオンにできます。履歴の保存も設定で変更できます。", style = MaterialTheme.typography.bodySmall)
 
             Button(
                 onClick = onOpenAbout,
