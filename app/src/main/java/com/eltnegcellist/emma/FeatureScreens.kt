@@ -13,6 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.json.JSONObject
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 internal data class PlayTopic(val id: String, val label: String, val phrases: List<String>)
 internal fun loadPlayTopics(runtime: ConversationController): List<PlayTopic> {
@@ -52,6 +56,12 @@ internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) 
     var remove by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf(false) }
     var speaking by runtime.statusState
+    val zone = ZoneId.systemDefault()
+    val dateFormat = DateTimeFormatter.ofPattern("yyyy年M月d日（E）", Locale.JAPAN)
+    val timeFormat = DateTimeFormatter.ofPattern("HH:mm", Locale.JAPAN)
+    val grouped = entries.groupBy { entry ->
+        runCatching { dateFormat.format(Instant.parse(entry.createdAt).atZone(zone)) }.getOrDefault("日付不明")
+    }
     fun refresh() = runtime.history.list { entries = it }
     fun exit() { runtime.stopSession(); onExit() }
     BackHandler { exit() }
@@ -65,38 +75,61 @@ internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) 
         LazyColumn(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement=Arrangement.spacedBy(12.dp)) {
             if(historyError!=null) item { Text(historyError!!,color=MaterialTheme.colorScheme.error) }
             if(entries.isEmpty()) item { Text("履歴はまだありません。会話の音声が再生を始めると、ここに残ります。") }
-            items(entries,key={it.id}) { entry -> Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
-                Text(entry.createdAt,style=MaterialTheme.typography.bodySmall)
-                Text(entry.japaneseText); Text(entry.englishText,style=MaterialTheme.typography.titleMedium)
-                Row { Button({runtime.replay(entry.englishText)},enabled=speaking!=ProductionEmmaStatus.SPEAKING) { Text("もう一度聞く") }
-                    TextButton({runtime.stopSession()}) {Text("停止")}; TextButton({remove=entry.id;confirm=true}) {Text("削除")}
-                }
-            } } }
+            grouped.forEach { (date, dayEntries) ->
+                item(key="date-$date") { Text(date, style=MaterialTheme.typography.titleMedium) }
+                items(dayEntries,key={it.id}) { entry -> Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
+                    Text(runCatching { timeFormat.format(Instant.parse(entry.createdAt).atZone(zone)) }.getOrDefault(entry.createdAt),style=MaterialTheme.typography.bodySmall)
+                    Text("聞き取った言葉", style=MaterialTheme.typography.labelSmall)
+                    Text(entry.japaneseText)
+                    Text("再生した英語", style=MaterialTheme.typography.labelSmall)
+                    Text(entry.englishText,style=MaterialTheme.typography.titleMedium)
+                    Row { Button({runtime.replay(entry.englishText)},enabled=speaking!=ProductionEmmaStatus.SPEAKING) { Text("もう一度聞く") }
+                        TextButton({runtime.stopSession()}) {Text("停止")}; TextButton({remove=entry.id;confirm=true}) {Text("削除")}
+                    }
+                } } }
+            }
         }
     }
 }
 @Composable
 internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
     val topics = remember { loadPlayTopics(runtime) }
-    var selected by remember { mutableStateOf<PlayTopic?>(null) }
+    val allTopics = remember(topics) { PlayTopic("all", "すべての話題", topics.flatMap { it.phrases }.distinct()) }
+    var selected by remember { mutableStateOf(allTopics) }
+    var choosingTopic by remember { mutableStateOf(false) }
+    var preparationAttempt by remember { mutableIntStateOf(0) }
     var ready by remember { mutableStateOf(false) }
     var previous by remember { mutableStateOf<String?>(null) }
     var status by runtime.statusState
     var text by runtime.latestEmmaTextState
     var exitConfirm by remember { mutableStateOf(false) }
     fun exit() { runtime.stopSession(); onExit() }
-    BackHandler { exitConfirm=true }
+    DisposableEffect(selected.id, preparationAttempt) {
+        var active = true
+        ready = false
+        text = "声を準備しています…"
+        runtime.kitten.prepare(selected.phrases) { ok ->
+            if (active) {
+                ready = ok
+                text = if (ok) "押すと短い英語が流れます" else "準備に失敗しました。話題を選び直してください。"
+            }
+        }
+        onDispose { active = false }
+    }
+    BackHandler { if (choosingTopic) { choosingTopic=false; preparationAttempt++ } else exitConfirm=true }
     if(exitConfirm) AlertDialog(onDismissRequest={exitConfirm=false},title={Text("おとなの方へ")},text={Text("遊びを終えてメイン画面に戻りますか？会話は自動で始まりません。")},
         confirmButton={TextButton({exit()}){Text("遊びを終える")}},dismissButton={TextButton({exitConfirm=false}){Text("遊びを続ける")}})
     Scaffold(topBar={Row(Modifier.fillMaxWidth().statusBarsPadding().padding(12.dp), verticalAlignment=Alignment.CenterVertically) {
         TextButton({exitConfirm=true}){Text("おとな用・戻る")}; Text("押して聞く",Modifier.weight(1f))
-        if(selected!=null) TextButton({runtime.stopSession();selected=null;previous=null}){Text("話題を選ぶ")}
+        TextButton({runtime.stopSession(); if (choosingTopic) preparationAttempt++; choosingTopic=!choosingTopic}){Text(if(choosingTopic) "遊びに戻る" else "話題を変更")}
     }}) { padding ->
-        if(selected==null) LazyColumn(Modifier.fillMaxSize().padding(padding).padding(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+        if(choosingTopic) LazyColumn(Modifier.fillMaxSize().padding(padding).padding(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
             item { Text("親子で一緒に聞いて、まねして、交互に押して遊びましょう。押すのは赤ちゃんでも、おとなでもかまいません。マイクは使いません。学習効果が実証された機能ではありません。") }
-            items(topics) { topic -> Button({selected=topic; previous=null; ready=false; text="声を準備しています…";runtime.kitten.prepare(topic.phrases) { ok -> if (selected?.id == topic.id) { ready=ok; text=if(ok) "押すと短い英語が流れます" else "準備に失敗しました。話題を選び直してください。" } }},Modifier.fillMaxWidth().heightIn(min=64.dp)) {Text(topic.label)} }
+            items(listOf(allTopics) + topics, key={it.id}) { topic ->
+                Button({selected=topic; previous=null; preparationAttempt++; choosingTopic=false},Modifier.fillMaxWidth().heightIn(min=64.dp)) {Text(topic.label)}
+            }
         } else Button(onClick={
-            val topic=selected!!
+            val topic=selected
             if(ready && status!=ProductionEmmaStatus.SPEAKING) {
                 val phrase=nextPlayPhrase(topic.phrases,previous); previous=phrase
                 runtime.replay(phrase)
@@ -104,10 +137,10 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
         },enabled=ready,modifier=Modifier.fillMaxSize().padding(padding).padding(16.dp),shape=MaterialTheme.shapes.extraLarge) {
             Column(Modifier.verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(24.dp)) {
                 com.eltnegcellist.emma.ui.CompactEmmaAvatar(state=if(status==ProductionEmmaStatus.SPEAKING) com.eltnegcellist.emma.ui.EmmaVisualState.SPEAKING else com.eltnegcellist.emma.ui.EmmaVisualState.IDLE, mouthLevel=runtime.mouthLevel, modifier=Modifier.fillMaxWidth().heightIn(max=240.dp))
-                Text(selected!!.label,style=MaterialTheme.typography.headlineSmall)
+                Text(selected.label,style=MaterialTheme.typography.headlineSmall)
                 Text(if(status==ProductionEmmaStatus.SPEAKING) "一緒に聞こう" else "押して聞く",style=MaterialTheme.typography.headlineMedium)
                 Text(text,style=MaterialTheme.typography.titleLarge)
-                Text("一緒にまねする・交互に押す",style=MaterialTheme.typography.bodyLarge)
+                Text("親子で一緒に聞く・まねする・交互に押す",style=MaterialTheme.typography.bodyLarge)
             }
         }
     }
