@@ -94,3 +94,8 @@ Brightens Vivid and Filled colors, adds gradient explanations, and uses a 60-sec
 ## v1.9.29 interaction features
 
 Adds optional screen-off conversation, on-device text history, Tap to Listen, and tutorial/notification behavior changes. No TTS dependencies, bundled models, or license declarations change. The existing eSpeak/sherpa rejection and APK provenance checks remain in CI.
+
+
+## v1.9.30 tutorial and notification fixes
+
+Adjusts tutorial scrolling/highlighting and screen-off conversation notification setup/permission flow. No TTS dependencies, bundled models, or license declarations change. Existing eSpeak/sherpa rejection and APK provenance checks remain in CI.

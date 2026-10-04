@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -109,10 +110,18 @@ internal fun EmmaHomeScreen(
     var tutorialStatusBounds by remember { mutableStateOf<Rect?>(null) }
     var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
     val statusRequester = remember { BringIntoViewRequester() }
+    val homeScrollState = rememberScrollState()
+    val density = LocalDensity.current
     LaunchedEffect(tutorialStep, recording) {
-        if (tutorialStep == 2) {
+        if (tutorialStep == 2 && recording) {
             withFrameNanos { }
             statusRequester.bringIntoView()
+            withFrameNanos { }
+            val bottomBarClearance = with(density) { 180.dp.roundToPx() }
+            homeScrollState.scrollTo(
+                (homeScrollState.value + bottomBarClearance).coerceAtMost(homeScrollState.maxValue),
+            )
+            withFrameNanos { }
         }
     }
 
@@ -194,7 +203,7 @@ internal fun EmmaHomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(homeScrollState)
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp, vertical = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

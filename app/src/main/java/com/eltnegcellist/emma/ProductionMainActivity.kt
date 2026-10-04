@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -47,6 +48,17 @@ import kotlinx.coroutines.delay
 
 private const val NONVERBAL_RESPONSE_COOLDOWN_MS = 15_000L
 private const val BABY_VOCAL_CONTEXT = "赤ちゃんが声を出している"
+
+internal fun shouldRequestConversationNotificationPermission(
+    sdkInt: Int,
+    continueScreenOff: Boolean,
+    permissionGranted: Boolean,
+    startPromptHandled: Boolean,
+): Boolean =
+    continueScreenOff &&
+        sdkInt >= 33 &&
+        !permissionGranted &&
+        !startPromptHandled
 
 class ProductionMainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -154,6 +166,7 @@ private fun ProductionEmmaApp() {
     var recording by runtime.recordingState
     var autoStartPending by runtime.autoStartPendingState
     var pendingStartAfterPermission by runtime.pendingStartAfterPermissionState
+    var pendingStartAfterNotificationPermission by remember { mutableStateOf(false) }
     var modelPresent by runtime.modelPresentState
     var modelReady by runtime.modelReadyState
     var kittenInstalled by runtime.kittenInstalledState
@@ -601,8 +614,44 @@ private fun ProductionEmmaApp() {
     }
 
     // Notification permission controls visibility, not the ability to run an FGS.
-    // Keep microphone permission mandatory and preserve the user's notification choice.
+    // Keep microphone permission mandatory, but ask for notification visibility at
+    // the first actual screen-off conversation start. A denial never blocks audio.
     fun beginRecording() = runtime.requestStart()
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (disposed || !pendingStartAfterNotificationPermission) return@rememberLauncherForActivityResult
+        pendingStartAfterNotificationPermission = false
+        preferences.edit()
+            .putBoolean("conversation_notification_permission_requested", true)
+            .putBoolean("conversation_notification_start_prompt_v2", true)
+            .putBoolean("conversation_notification_controls", granted)
+            .apply()
+        runtime.onNotificationChanged?.invoke()
+        beginRecording()
+    }
+
+    fun continueStartAfterMicPermission() {
+        val shouldAskForNotification = shouldRequestConversationNotificationPermission(
+            sdkInt = Build.VERSION.SDK_INT,
+            continueScreenOff = runtime.continueScreenOff,
+            permissionGranted =
+                Build.VERSION.SDK_INT < 33 ||
+                    context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED,
+            startPromptHandled = preferences.getBoolean("conversation_notification_start_prompt_v2", false),
+        )
+        if (shouldAskForNotification) {
+            pendingStartAfterNotificationPermission = true
+            preferences.edit()
+                .putBoolean("conversation_notification_permission_requested", true)
+                .putBoolean("conversation_notification_start_prompt_v2", true)
+                .apply()
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            beginRecording()
+        }
+    }
 
     val micPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -610,7 +659,7 @@ private fun ProductionEmmaApp() {
         if (disposed) return@rememberLauncherForActivityResult
         if (granted && pendingStartAfterPermission) {
             pendingStartAfterPermission = false
-            beginRecording()
+            continueStartAfterMicPermission()
         } else if (!granted) {
             pendingStartAfterPermission = false
             status = ProductionEmmaStatus.ERROR
@@ -636,7 +685,7 @@ private fun ProductionEmmaApp() {
             micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             return
         }
-        beginRecording()
+        continueStartAfterMicPermission()
     }
 
     fun stopSession() = runtime.stopSession()
