@@ -705,24 +705,28 @@ internal fun EmmaSettingsScreen(
             AppearanceSettings(enabled = enabled)
 
             Card(modifier = Modifier.fillMaxWidth()) {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Android版の動作", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            "みつことば利用中は画面をスリープさせない",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Text("画面表示", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "みつことばを使っている間の画面の消灯を設定します。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("画面をスリープさせない", Modifier.weight(1f))
+                        Switch(
+                            checked = keepScreenOn,
+                            onCheckedChange = onKeepScreenOn,
+                            enabled = enabled,
                         )
                     }
-                    Switch(
-                        checked = keepScreenOn,
-                        onCheckedChange = onKeepScreenOn,
-                        enabled = enabled,
-                    )
                 }
             }
 
