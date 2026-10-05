@@ -126,7 +126,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.30-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.31-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -174,7 +174,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.30
+          name: Mitsukotoba-v1.9.31
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -190,7 +190,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.30"
+          TAG="mitsukotoba-v1.9.31"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -208,5 +208,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.30" \
+            --title "みつことば v1.9.31" \
             --notes "Mitsukotoba v1.9.30 fixes the tutorial step-3 spotlight so the listening status is kept above the fixed bottom controls, creates the screen-off conversation notification channel at app startup, and requests notification visibility on the first actual screen-off conversation start without making permission mandatory. It retains v1.9.29 history and Tap to Listen, shared topic tests, and the non-GPL Kitten TTS path."
