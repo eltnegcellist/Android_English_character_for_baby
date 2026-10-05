@@ -74,6 +74,9 @@ internal fun tutorialStartButtonEnabled(
     tutorialStep: Int?,
 ): Boolean = modelReady && (!busy || tutorialStep == 1)
 
+internal fun tutorialHighlightsAction(tutorialStep: Int?): Boolean =
+    tutorialStep != null && tutorialStep != 0
+
 @Composable
 internal fun EmmaHomeScreen(
     visualState: EmmaVisualState,
@@ -333,10 +336,9 @@ internal fun EmmaHomeScreen(
                 step = tutorialStep,
                 aiName = aiName,
                 introReady = tutorialIntroReady,
-                targetBounds = when (tutorialStep) {
-                    0 -> tutorialAvatarBounds
-                    else -> tutorialActionBounds
-                }?.translate(-overlayOrigin),
+                targetBounds = (
+                    if (tutorialHighlightsAction(tutorialStep)) tutorialActionBounds else tutorialAvatarBounds
+                )?.translate(-overlayOrigin),
                 onNext = onTutorialNext,
                 onFinish = onTutorialFinish,
             )
