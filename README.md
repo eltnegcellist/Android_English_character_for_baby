@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.30**
+**現在のAndroid安定版：v1.9.31**
 
-**versionCode：113**
+**versionCode：114**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.30
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.30/Mitsukotoba-v1.9.30-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.31
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.31/Mitsukotoba-v1.9.31-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.30は、v1.9.29の画面オフ会話・端末内履歴・「押して聞く」を維持しつつ、実機で確認された2点を修正した版です。チュートリアル3/3では「聞いています」の状態表示が固定下部バーに隠れないよう、録音開始後に表示位置を上へ補正してからハイライトします。また画面オフ会話の通知チャンネルをアプリ起動時に作成し、Android 13以降では実際に画面オフ会話を初めて開始する時に通知許可を確認します。許可しなくても会話自体は開始できます。
+v1.9.31は、v1.9.30のチュートリアル3/3・通知修正を維持しつつ、実機でまれに発生したチュートリアル2/3の「会話を始める」が押せない問題を修正した版です。自己紹介TTSのSPEAKING/busy状態が一瞬残っても、モデル準備済みなら2/3の開始ボタンを押せるようにし、押した時点で残っているチュートリアル音声を停止してからマイクセッションを開始します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -282,7 +282,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
 | LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
-Android v1.9.30はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
+Android v1.9.31はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
@@ -292,11 +292,11 @@ Android v1.9.30はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### プロジェクト状況
 
-**v1.9.30を現在の安定基準版とします。**
+**v1.9.31を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.30を再現可能な安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.31を再現可能な安定基準版として保持します。
 
 ### 開発資料
 
@@ -326,15 +326,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.30**
+**Current stable Android release: v1.9.31**
 
-**versionCode: 113**
+**versionCode: 114**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.30
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.30/Mitsukotoba-v1.9.30-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.31
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.31/Mitsukotoba-v1.9.31-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.30 retains the v1.9.29 screen-off conversation, on-device history, and Tap to Listen features while fixing two device-reported issues. Tutorial step 3 now keeps the actual Listening status above the fixed bottom controls before highlighting it. The app also creates the screen-off conversation notification channel at startup and asks for notification visibility on the first actual screen-off conversation start on Android 13+, without making notification permission mandatory.
+v1.9.31 retains the v1.9.30 tutorial step-3 and notification fixes while fixing an intermittent tutorial step-2 issue where Start Conversation could remain disabled. Once the model is ready, step 2 remains actionable even if a stale tutorial SPEAKING/busy state survives briefly, and any leftover tutorial speech is stopped before the microphone session starts.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -583,7 +583,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
 | LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
-Android v1.9.30 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
+Android v1.9.31 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -593,11 +593,11 @@ See:
 
 ### Project Status
 
-**v1.9.30 is the current stable baseline.**
+**v1.9.31 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.30 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.31 remains reproducible as the stable Mitsukotoba reference point.
 
 ### Development Documents
 
