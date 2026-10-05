@@ -18,7 +18,7 @@
 - APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.34/Mitsukotoba-v1.9.34-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.34は、「押して聞く」の1回あたりの文数を選べるようにした版です。標準は1文で、110フレーズのまとまりを文ごとに分け、短い一言も含めて1回に1つだけ再生します。設定で「3文」を選ぶと、v1.9.33までの短い文をまとめて流す形式に戻せます。1文モードは長文を強制せず、短い自然な英語もそのまま使います。22話題・110フレーズの語彙拡張、v1.9.32のチュートリアル修正、通知修正は維持します。
+v1.9.34は、「押して聞く」の1回あたりの文数を選べるようにした版です。標準は1文で、110フレーズのまとまりを文ごとに分けた重複なし167種類の1文候補から、短い一言も含めて1回に1つだけ再生します。設定で「3文」を選ぶと、v1.9.33までの短い文をまとめて流す形式に戻せます。1文モードは長文を強制せず、短い自然な英語もそのまま使います。22話題・110フレーズの語彙拡張、v1.9.32のチュートリアル修正、通知修正は維持します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -334,7 +334,7 @@ Research on infant foreign-language learning suggests that passive audio or vide
 - Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.34/Mitsukotoba-v1.9.34-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.34 makes Tap to Listen play one sentence per tap by default. It splits the existing 22-topic / 110-phrase bundles into individual sentence candidates, including very short natural phrases, while Settings can switch back to the previous bundled 3-sentence style. The vocabulary expansion and existing tutorial/notification fixes are retained.
+v1.9.34 makes Tap to Listen play one sentence per tap by default. It splits the existing 22-topic / 110-phrase bundles into 167 unique individual sentence candidates, including very short natural phrases, while Settings can switch back to the previous bundled 3-sentence style. The vocabulary expansion and existing tutorial/notification fixes are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
