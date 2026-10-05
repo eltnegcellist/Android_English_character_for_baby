@@ -72,6 +72,12 @@ import com.eltnegcellist.emma.ui.EmmaSoftPalette
 import com.eltnegcellist.emma.ui.EmmaVividPalette
 import com.eltnegcellist.emma.ui.EmmaVisualState
 
+internal fun tutorialStartButtonEnabled(
+    modelReady: Boolean,
+    busy: Boolean,
+    tutorialStep: Int?,
+): Boolean = modelReady && (!busy || tutorialStep == 1)
+
 @Composable
 internal fun EmmaHomeScreen(
     visualState: EmmaVisualState,
@@ -185,7 +191,7 @@ internal fun EmmaHomeScreen(
                         if (!recording) {
                             Button(
                                 onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
-                                enabled = modelReady && !busy,
+                                enabled = tutorialStartButtonEnabled(modelReady, busy, tutorialStep),
                                 modifier = Modifier.weight(0.72f).heightIn(min = 64.dp)
                                     .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                             ) { Text("会話を始める", textAlign = TextAlign.Center) }
