@@ -104,3 +104,8 @@ Adjusts tutorial scrolling/highlighting and screen-off conversation notification
 ## v1.9.31 tutorial start-button fix
 
 Changes only tutorial state handling and button enablement. No TTS dependencies, bundled models, or license declarations change. Existing eSpeak/sherpa rejection and APK provenance checks remain in CI.
+
+
+## v1.9.32 tutorial step-3 target
+
+Changes only tutorial highlighting and explanatory copy. No TTS dependencies, bundled models, or license declarations change. Existing eSpeak/sherpa rejection and APK provenance checks remain in CI.

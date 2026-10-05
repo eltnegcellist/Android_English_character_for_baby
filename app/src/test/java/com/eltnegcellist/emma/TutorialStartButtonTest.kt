@@ -14,4 +14,12 @@ class TutorialStartButtonTest {
         assertFalse(tutorialStartButtonEnabled(modelReady = true, busy = true, tutorialStep = 0))
         assertFalse(tutorialStartButtonEnabled(modelReady = true, busy = true, tutorialStep = 2))
     }
+    @Test
+    fun tutorialStepsTwoAndThreeHighlightAnAction() {
+        assertFalse(tutorialHighlightsAction(null))
+        assertFalse(tutorialHighlightsAction(0))
+        assertTrue(tutorialHighlightsAction(1))
+        assertTrue(tutorialHighlightsAction(2))
+    }
+
 }
