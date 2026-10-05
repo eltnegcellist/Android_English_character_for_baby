@@ -126,7 +126,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.37-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.38-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -174,7 +174,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.37
+          name: Mitsukotoba-v1.9.38
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -190,7 +190,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.37"
+          TAG="mitsukotoba-v1.9.38"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -208,5 +208,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.37" \
-            --notes "Mitsukotoba v1.9.37 refines Tap to Listen layout. Multi-line English is centered across the card, and the 1-sentence / 3-sentence selector is moved outside the tappable play card to the right-aligned row directly above it. v1.9.36 speaking tint, lip-sync, saved sentence-count setting, and v1.9.35 Back-navigation fixes are retained."
+            --title "みつことば v1.9.38" \
+            --notes "Mitsukotoba v1.9.38 reorganizes Settings into separate meaning-based cards. Display sleep prevention, background conversation/notification controls, and conversation history are separated and each card starts with a concise explanation. The duplicate Tap to Listen sentence-count setting is removed from Settings because it is now controlled directly on the Tap to Listen screen. v1.9.37 play layout and earlier fixes are retained."
