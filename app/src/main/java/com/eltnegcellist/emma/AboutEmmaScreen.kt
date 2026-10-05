@@ -1,5 +1,6 @@
 package com.eltnegcellist.emma
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ internal fun AboutEmmaScreen(
     onBack: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
+    BackHandler { onBack() }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
