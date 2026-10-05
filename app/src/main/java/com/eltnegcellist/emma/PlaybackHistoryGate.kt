@@ -12,4 +12,18 @@ internal class PlaybackHistoryGate<T> {
     }
 }
 internal fun nextPlayPhrase(phrases: List<String>, previous: String?, random: kotlin.random.Random = kotlin.random.Random.Default): String =
-    phrases.filter { it != previous }.random(random)
+    phrases.filter { it != previous }.ifEmpty { phrases }.random(random)
+
+internal fun playSingleSentenceCandidates(phrases: List<String>): List<String> =
+    phrases
+        .flatMap { phrase ->
+            Regex("""[^.!?]+[.!?]+|[^.!?]+$""")
+                .findAll(phrase)
+                .map { it.value.trim() }
+                .filter { it.isNotBlank() }
+                .toList()
+        }
+        .distinct()
+
+internal fun playPhrasesForSentenceCount(phrases: List<String>, sentenceCount: Int): List<String> =
+    if (sentenceCount == 3) phrases else playSingleSentenceCandidates(phrases)
