@@ -124,3 +124,8 @@ Adds only local UI preference handling and phrase splitting for the existing bun
 ## v1.9.35 subpage Back navigation
 
 Adds only Android UI navigation handling for Settings and About screens. No TTS dependencies, bundled models, or license declarations change.
+
+
+## v1.9.37 Tap to Listen layout refinement
+
+Changes only Compose layout/alignment for the existing play screen. No TTS dependencies, bundled models, or third-party license declarations change.
