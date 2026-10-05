@@ -6,8 +6,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -39,7 +37,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +52,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -113,23 +109,8 @@ internal fun EmmaHomeScreen(
 ) {
     var tutorialAvatarBounds by remember { mutableStateOf<Rect?>(null) }
     var tutorialActionBounds by remember { mutableStateOf<Rect?>(null) }
-    var tutorialStatusBounds by remember { mutableStateOf<Rect?>(null) }
     var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
-    val statusRequester = remember { BringIntoViewRequester() }
     val homeScrollState = rememberScrollState()
-    val density = LocalDensity.current
-    LaunchedEffect(tutorialStep, recording) {
-        if (tutorialStep == 2 && recording) {
-            withFrameNanos { }
-            statusRequester.bringIntoView()
-            withFrameNanos { }
-            val bottomBarClearance = with(density) { 180.dp.roundToPx() }
-            homeScrollState.scrollTo(
-                (homeScrollState.value + bottomBarClearance).coerceAtMost(homeScrollState.maxValue),
-            )
-            withFrameNanos { }
-        }
-    }
 
     Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { overlayOrigin = it.boundsInRoot().topLeft }) {
         Scaffold(
@@ -293,10 +274,9 @@ internal fun EmmaHomeScreen(
             }
 
             Column(
-                modifier = Modifier.bringIntoViewRequester(statusRequester),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(modifier = Modifier.onGloballyPositioned { tutorialStatusBounds = it.boundsInRoot() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Surface(
                         color = statusColor(visualState),
                         shape = MaterialTheme.shapes.extraSmall,
@@ -355,8 +335,7 @@ internal fun EmmaHomeScreen(
                 introReady = tutorialIntroReady,
                 targetBounds = when (tutorialStep) {
                     0 -> tutorialAvatarBounds
-                    1 -> tutorialActionBounds
-                    else -> tutorialStatusBounds
+                    else -> tutorialActionBounds
                 }?.translate(-overlayOrigin),
                 onNext = onTutorialNext,
                 onFinish = onTutorialFinish,
@@ -467,7 +446,7 @@ private fun EmmaCoachMarkOverlay(
                             "${aiName}が自己紹介しています。声が終わるまでそのまま聞いてください。"
                         }
                         1 -> "画面下で光っている「会話を始める」を実際に押してください。押すとマイクが始まり、会話を開始します。"
-                        else -> "明るく表示されている「聞いています」を確認して、実際に赤ちゃんへ普段どおり日本語で話しかけてみてください。声を検知して${aiName}が返事を最後まで話し終えると、チュートリアルは自動で完了します。"
+                        else -> "赤ちゃんへ普段どおり日本語で話しかけてみてください。話し終わったら、必要に応じて明るく表示されている「ここで返事して」を押すと、その時点までの言葉をもとに${aiName}が返事します。「自動で返事」がオンの場合は、押さなくても話し終わりを検出して自動で返事します。"
                     },
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -482,7 +461,7 @@ private fun EmmaCoachMarkOverlay(
                         Button(onClick = onNext, enabled = introReady) { Text("次へ") }
                     } else if (step == 2) {
                         Text(
-                            "話しかけてみてください…",
+                            "↓ 必要なら「ここで返事して」を押す",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                         )
