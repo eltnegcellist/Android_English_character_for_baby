@@ -119,3 +119,8 @@ Expands only the bundled short English phrase data used by Tap to Listen, reusin
 ## v1.9.34 Tap to Listen sentence-count setting
 
 Adds only local UI preference handling and phrase splitting for the existing bundled English play data. No TTS dependencies, models, or third-party license declarations change.
+
+
+## v1.9.35 subpage Back navigation
+
+Adds only Android UI navigation handling for Settings and About screens. No TTS dependencies, bundled models, or license declarations change.
