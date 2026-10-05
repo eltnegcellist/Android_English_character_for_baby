@@ -46,6 +46,7 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
     var history by runtime.historyEnabledState
     val historyError by runtime.history.errorState
     val prefs = runtime.context.getSharedPreferences("emma_speech", 0)
+    var playSentenceCount by remember { mutableIntStateOf(if (prefs.getInt("play_sentence_count", 1) == 3) 3 else 1) }
     var offerNotifications by remember { mutableStateOf(false) }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -62,6 +63,31 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
             Text("再生が始まった応答の日本語・英語を最大1,000件保存します。録音は保存しません。オフにしても以前の履歴は残ります。", style=MaterialTheme.typography.bodySmall)
             if(historyError!=null) Text(historyError!!,color=MaterialTheme.colorScheme.error)
             OutlinedButton(onHistory, Modifier.fillMaxWidth()) { Text("会話履歴を見る・聞く") }
+            HorizontalDivider()
+            Text("押して聞く", style = MaterialTheme.typography.titleSmall)
+            Text("1回に流す文の数", style = MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = playSentenceCount == 1,
+                    onClick = {
+                        playSentenceCount = 1
+                        prefs.edit().putInt("play_sentence_count", 1).apply()
+                    },
+                    label = { Text("1文（標準）") },
+                )
+                FilterChip(
+                    selected = playSentenceCount == 3,
+                    onClick = {
+                        playSentenceCount = 3
+                        prefs.edit().putInt("play_sentence_count", 3).apply()
+                    },
+                    label = { Text("3文") },
+                )
+            }
+            Text(
+                "1文では短い一言も含めて1つだけ再生します。3文では、これまでのように短い文をまとめて再生します。",
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
@@ -185,6 +211,10 @@ internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) 
 internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
     val topics = remember { loadPlayTopics(runtime) }
     val allTopics = remember(topics) { PlayTopic("all", "すべての話題", topics.flatMap { it.phrases }.distinct()) }
+    val playSentenceCount = remember(runtime.context) {
+        val prefs = runtime.context.getSharedPreferences("emma_speech", 0)
+        if (prefs.getInt("play_sentence_count", 1) == 3) 3 else 1
+    }
     var selected by remember { mutableStateOf(allTopics) }
     var choosingTopic by remember { mutableStateOf(false) }
     var previous by remember { mutableStateOf<String?>(null) }
@@ -208,7 +238,8 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
         } else OutlinedButton(onClick={
             val topic=selected
             if(runtime.modelReady && status!=ProductionEmmaStatus.SPEAKING) {
-                val phrase=nextPlayPhrase(topic.phrases,previous); previous=phrase
+                val candidates = playPhrasesForSentenceCount(topic.phrases, playSentenceCount)
+                val phrase=nextPlayPhrase(candidates,previous); previous=phrase
                 runtime.replay(phrase)
             }
         },enabled=runtime.modelReady,modifier=Modifier.fillMaxSize().padding(padding).padding(16.dp),
@@ -219,6 +250,7 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
                     com.eltnegcellist.emma.ui.CompactEmmaAvatar(state=if(status==ProductionEmmaStatus.SPEAKING) com.eltnegcellist.emma.ui.EmmaVisualState.SPEAKING else com.eltnegcellist.emma.ui.EmmaVisualState.IDLE, mouthLevel=runtime.mouthLevel, modifier=Modifier.fillMaxWidth())
                 }
                 Text(selected.label,style=MaterialTheme.typography.headlineSmall)
+                Text(if (playSentenceCount == 1) "1回に1文" else "1回に3文", style=MaterialTheme.typography.labelLarge)
                 Text(if(status==ProductionEmmaStatus.SPEAKING) "一緒に聞こう" else "押して聞く",style=MaterialTheme.typography.headlineMedium)
                 Text(text,style=MaterialTheme.typography.titleLarge)
                 Text("親子で一緒に聞く・まねする・交互に押す",style=MaterialTheme.typography.bodyLarge)

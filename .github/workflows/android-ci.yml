@@ -126,7 +126,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.33-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.34-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -174,7 +174,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.33
+          name: Mitsukotoba-v1.9.34
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -190,7 +190,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.33"
+          TAG="mitsukotoba-v1.9.34"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -208,5 +208,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.33" \
-            --notes "Mitsukotoba v1.9.33 expands Tap to Listen from 6 topics / 24 entries to 22 topics / 110 short phrases using the existing Lite childcare vocabulary plus the existing greeting topic. Phrases stay short, name-template-free, and shared with the Web edition. It retains the v1.9.32 tutorial fixes and v1.9.30 notification behavior."
+            --title "みつことば v1.9.34" \
+            --notes "Mitsukotoba v1.9.34 makes Tap to Listen play one sentence per tap by default, while keeping the previous bundled multi-sentence style as an optional 3-sentence setting. One-sentence mode includes very short natural phrases as well as longer single sentences. The 22-topic / 110-phrase vocabulary from v1.9.33 is retained."

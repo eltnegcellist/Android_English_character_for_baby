@@ -114,3 +114,8 @@ Changes only tutorial highlighting and explanatory copy. No TTS dependencies, bu
 ## v1.9.33 Tap to Listen vocabulary expansion
 
 Expands only the bundled short English phrase data used by Tap to Listen, reusing curated Lite vocabulary. No TTS dependencies, bundled models, or license declarations change. Existing eSpeak/sherpa rejection and APK provenance checks remain in CI.
+
+
+## v1.9.34 Tap to Listen sentence-count setting
+
+Adds only local UI preference handling and phrase splitting for the existing bundled English play data. No TTS dependencies, models, or third-party license declarations change.

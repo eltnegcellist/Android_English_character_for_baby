@@ -30,4 +30,24 @@ class PlaybackHistoryGateTest {
         val random=kotlin.random.Random(17)
         repeat(100) { val next=nextPlayPhrase(phrases,previous,random);assertNotEquals(previous,next);assertTrue(next in phrases);previous=next }
     }
+
+    @Test fun playOneSentenceModeSplitsBundlesWithoutForcingLongerText() {
+        val bundles = listOf(
+            "Bath time! Splash, splash! Here we go!",
+            "Warm bath! Nice and easy.",
+            "Hi there!",
+        )
+        val singles = playSingleSentenceCandidates(bundles)
+        assertEquals(
+            listOf("Bath time!", "Splash, splash!", "Here we go!", "Warm bath!", "Nice and easy.", "Hi there!"),
+            singles,
+        )
+        assertEquals(singles, playPhrasesForSentenceCount(bundles, 1))
+        assertEquals(bundles, playPhrasesForSentenceCount(bundles, 3))
+        assertTrue(singles.any { it.split(Regex("\\s+")).size <= 2 })
+    }
+
+    @Test fun playWithOnlyOneCandidateCanRepeatSafely() {
+        assertEquals("Hello!", nextPlayPhrase(listOf("Hello!"), "Hello!", kotlin.random.Random(1)))
+    }
 }
