@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.35**
+**現在のAndroid安定版：v1.9.37**
 
-**versionCode：118**
+**versionCode：120**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.35
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.35/Mitsukotoba-v1.9.35-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.37
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.37/Mitsukotoba-v1.9.37-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.35は、設定画面や「みつことばが英語学習に使える理由」などのサブ画面でAndroidの戻る操作を行った際、アプリが終了せず元の画面へ戻るよう修正した版です。設定内で確認ダイアログや話題ガイドが開いている場合は、まずそれらを閉じます。v1.9.34の「押して聞く」1文/3文設定など既存機能は維持します。
+v1.9.37は、「押して聞く」の表示を整えた版です。英語が2行以上になってもカード内で中央揃えになるようにし、「1回 1文｜3文」の切替はタップするカードの外、カード直上の右側へ移動しました。v1.9.36の発話中の薄いテーマ色・口パク・文数設定の即時保存と、v1.9.35の戻る操作修正は維持します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -326,15 +326,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.35**
+**Current stable Android release: v1.9.37**
 
-**versionCode: 118**
+**versionCode: 120**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.35
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.35/Mitsukotoba-v1.9.35-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.37
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.37/Mitsukotoba-v1.9.37-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.35 fixes Android system Back navigation on Settings and the About / learning-reason screen so Back returns to the previous app screen instead of exiting the Activity. Open settings dialogs are closed first. The v1.9.34 Tap to Listen sentence-count behavior is retained.
+v1.9.37 refines Tap to Listen layout. Multi-line English is centered, and the 1-sentence / 3-sentence selector is moved outside the tappable play card to a right-aligned row directly above it. The v1.9.36 speaking tint, lip sync, saved sentence-count setting, and v1.9.35 Back-navigation fixes are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
