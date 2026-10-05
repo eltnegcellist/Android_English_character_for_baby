@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.37**
+**現在のAndroid安定版：v1.9.38**
 
-**versionCode：120**
+**versionCode：121**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.37
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.37/Mitsukotoba-v1.9.37-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.38
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.38/Mitsukotoba-v1.9.38-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.37は、「押して聞く」の表示を整えた版です。英語が2行以上になってもカード内で中央揃えになるようにし、「1回 1文｜3文」の切替はタップするカードの外、カード直上の右側へ移動しました。v1.9.36の発話中の薄いテーマ色・口パク・文数設定の即時保存と、v1.9.35の戻る操作修正は維持します。
+v1.9.38は、設定画面を意味ごとのカードに整理した版です。「画面表示」「画面オフ中の会話」「会話履歴」をそれぞれ分け、画面オフ会話と通知停止だけは関連設定として同じカードにまとめました。各カードの冒頭に短い説明を追加し、「押して聞く」の1文／3文設定は押して聞く画面側にあるため設定画面から削除しました。v1.9.37までの表示・戻る操作修正は維持します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -326,15 +326,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.37**
+**Current stable Android release: v1.9.38**
 
-**versionCode: 120**
+**versionCode: 121**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.37
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.37/Mitsukotoba-v1.9.37-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.38
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.38/Mitsukotoba-v1.9.38-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.37 refines Tap to Listen layout. Multi-line English is centered, and the 1-sentence / 3-sentence selector is moved outside the tappable play card to a right-aligned row directly above it. The v1.9.36 speaking tint, lip sync, saved sentence-count setting, and v1.9.35 Back-navigation fixes are retained.
+v1.9.38 reorganizes Settings into separate meaning-based cards for display behavior, background conversation/notification controls, and conversation history. Each card starts with a concise explanation, and the duplicate Tap to Listen sentence-count option is removed from Settings because it is already available on the Tap to Listen screen. Earlier layout and Back-navigation fixes are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 

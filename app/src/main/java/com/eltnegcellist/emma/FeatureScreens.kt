@@ -48,48 +48,46 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
     var history by runtime.historyEnabledState
     val historyError by runtime.history.errorState
     val prefs = runtime.context.getSharedPreferences("emma_speech", 0)
-    var playSentenceCount by remember { mutableIntStateOf(if (prefs.getInt("play_sentence_count", 1) == 3) 3 else 1) }
     var offerNotifications by remember { mutableStateOf(false) }
+
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("画面オフ中の会話", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "画面を閉じた後も会話を続けるか、通知から停止できるようにするかを設定します。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("画面を閉じても会話を続ける", Modifier.weight(1f))
                 Switch(screenOff, { runtime.applyContinueScreenOff(it); if (it) offerNotifications=true })
             }
-            Text("初期設定はオフです。オンにすると、開始した会話だけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。アプリの「会話を止める」で終了できます。", style=MaterialTheme.typography.bodySmall)
+            Text(
+                "初期設定はオフです。オンにすると、開始した会話だけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。アプリの「会話を止める」で終了できます。",
+                style = MaterialTheme.typography.bodySmall,
+            )
             ConversationNotificationSettings(runtime, offerNotifications, { offerNotifications=false })
+        }
+    }
+
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("会話履歴", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "再生した会話を端末内に保存し、あとから見たり聞いたりするための設定です。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("端末内に会話履歴を残す", Modifier.weight(1f))
                 Switch(history, { history = it; prefs.edit().putBoolean("history_enabled",it).apply() })
             }
-            Text("再生が始まった応答の日本語・英語を最大1,000件保存します。録音は保存しません。オフにしても以前の履歴は残ります。", style=MaterialTheme.typography.bodySmall)
-            if(historyError!=null) Text(historyError!!,color=MaterialTheme.colorScheme.error)
-            OutlinedButton(onHistory, Modifier.fillMaxWidth()) { Text("会話履歴を見る・聞く") }
-            HorizontalDivider()
-            Text("押して聞く", style = MaterialTheme.typography.titleSmall)
-            Text("1回に流す文の数", style = MaterialTheme.typography.bodyMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
-                    selected = playSentenceCount == 1,
-                    onClick = {
-                        playSentenceCount = 1
-                        prefs.edit().putInt("play_sentence_count", 1).apply()
-                    },
-                    label = { Text("1文（標準）") },
-                )
-                FilterChip(
-                    selected = playSentenceCount == 3,
-                    onClick = {
-                        playSentenceCount = 3
-                        prefs.edit().putInt("play_sentence_count", 3).apply()
-                    },
-                    label = { Text("3文") },
-                )
-            }
             Text(
-                "1文では短い一言も含めて1つだけ再生します。3文では、これまでのように短い文をまとめて再生します。",
+                "再生が始まった応答の日本語・英語を最大1,000件保存します。録音は保存しません。オフにしても以前の履歴は残ります。",
                 style = MaterialTheme.typography.bodySmall,
             )
+            if(historyError!=null) Text(historyError!!,color=MaterialTheme.colorScheme.error)
+            OutlinedButton(onHistory, Modifier.fillMaxWidth()) { Text("会話履歴を見る・聞く") }
         }
     }
 }

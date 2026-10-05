@@ -129,3 +129,8 @@ Adds only Android UI navigation handling for Settings and About screens. No TTS 
 ## v1.9.37 Tap to Listen layout refinement
 
 Changes only Compose layout/alignment for the existing play screen. No TTS dependencies, bundled models, or third-party license declarations change.
+
+
+## v1.9.38 Settings card organization
+
+Changes only Compose Settings layout and removes a duplicate UI control for Tap to Listen sentence count. No TTS dependencies, bundled models, or third-party license declarations change.
