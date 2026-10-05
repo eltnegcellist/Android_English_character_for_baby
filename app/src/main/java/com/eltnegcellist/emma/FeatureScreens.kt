@@ -26,6 +26,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.json.JSONObject
 import java.time.Instant
@@ -241,33 +242,16 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
             items(listOf(allTopics) + topics, key={it.id}) { topic ->
                 Button({selected=topic; previous=null; choosingTopic=false; text="押すと短い英語が流れます"},Modifier.fillMaxWidth().heightIn(min=64.dp)) {Text(topic.label)}
             }
-        } else Box(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
-            OutlinedButton(onClick={
-                val topic=selected
-                if(runtime.modelReady && status!=ProductionEmmaStatus.SPEAKING) {
-                    val candidates = playPhrasesForSentenceCount(topic.phrases, playSentenceCount)
-                    val phrase=nextPlayPhrase(candidates,previous); previous=phrase
-                    runtime.replay(phrase)
-                }
-            },enabled=runtime.modelReady,modifier=Modifier.fillMaxSize(),
-                colors=ButtonDefaults.outlinedButtonColors(containerColor=playContainerColor, contentColor=Color(0xFF342F32)),
-                border=BorderStroke(2.dp,Color(0xFFDED6DE)), contentPadding=PaddingValues(16.dp), shape=MaterialTheme.shapes.extraLarge) {
-                Column(Modifier.verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(24.dp)) {
-                    Box(Modifier.sizeIn(maxWidth=260.dp).fillMaxWidth().padding(8.dp)) {
-                        com.eltnegcellist.emma.ui.CompactEmmaAvatar(state=if(isSpeaking) com.eltnegcellist.emma.ui.EmmaVisualState.SPEAKING else com.eltnegcellist.emma.ui.EmmaVisualState.IDLE, mouthLevel=runtime.mouthLevel, modifier=Modifier.fillMaxWidth())
-                    }
-                    Text(selected.label,style=MaterialTheme.typography.headlineSmall)
-                    Text(if(isSpeaking) "一緒に聞こう" else "押して聞く",style=MaterialTheme.typography.headlineMedium)
-                    Text(text,style=MaterialTheme.typography.titleLarge)
-                    Text("親子で一緒に聞く・まねする・交互に押す",style=MaterialTheme.typography.bodyLarge)
-                }
-            }
+        } else Column(
+            modifier=Modifier.fillMaxSize().padding(padding).padding(horizontal=16.dp, vertical=8.dp),
+        ) {
             Row(
-                modifier=Modifier.align(Alignment.TopEnd).padding(top=12.dp,end=12.dp),
-                horizontalArrangement=Arrangement.spacedBy(6.dp),
+                modifier=Modifier.fillMaxWidth().padding(bottom=8.dp),
+                horizontalArrangement=Arrangement.End,
                 verticalAlignment=Alignment.CenterVertically,
             ) {
                 Text("1回", style=MaterialTheme.typography.bodySmall, color=Color(0xFF6E666B))
+                Spacer(Modifier.width(6.dp))
                 FilterChip(
                     selected=playSentenceCount==1,
                     onClick={
@@ -276,6 +260,7 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
                     },
                     label={Text("1文")},
                 )
+                Spacer(Modifier.width(6.dp))
                 FilterChip(
                     selected=playSentenceCount==3,
                     onClick={
@@ -284,6 +269,31 @@ internal fun PlayScreen(runtime: ConversationController, onExit: () -> Unit) {
                     },
                     label={Text("3文")},
                 )
+            }
+            OutlinedButton(onClick={
+                val topic=selected
+                if(runtime.modelReady && status!=ProductionEmmaStatus.SPEAKING) {
+                    val candidates = playPhrasesForSentenceCount(topic.phrases, playSentenceCount)
+                    val phrase=nextPlayPhrase(candidates,previous); previous=phrase
+                    runtime.replay(phrase)
+                }
+            },enabled=runtime.modelReady,modifier=Modifier.fillMaxWidth().weight(1f),
+                colors=ButtonDefaults.outlinedButtonColors(containerColor=playContainerColor, contentColor=Color(0xFF342F32)),
+                border=BorderStroke(2.dp,Color(0xFFDED6DE)), contentPadding=PaddingValues(16.dp), shape=MaterialTheme.shapes.extraLarge) {
+                Column(Modifier.verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(24.dp)) {
+                    Box(Modifier.sizeIn(maxWidth=260.dp).fillMaxWidth().padding(8.dp)) {
+                        com.eltnegcellist.emma.ui.CompactEmmaAvatar(state=if(isSpeaking) com.eltnegcellist.emma.ui.EmmaVisualState.SPEAKING else com.eltnegcellist.emma.ui.EmmaVisualState.IDLE, mouthLevel=runtime.mouthLevel, modifier=Modifier.fillMaxWidth())
+                    }
+                    Text(selected.label,style=MaterialTheme.typography.headlineSmall)
+                    Text(if(isSpeaking) "一緒に聞こう" else "押して聞く",style=MaterialTheme.typography.headlineMedium)
+                    Text(
+                        text,
+                        modifier=Modifier.fillMaxWidth(),
+                        style=MaterialTheme.typography.titleLarge,
+                        textAlign=TextAlign.Center,
+                    )
+                    Text("親子で一緒に聞く・まねする・交互に押す",style=MaterialTheme.typography.bodyLarge)
+                }
             }
         }
     }
