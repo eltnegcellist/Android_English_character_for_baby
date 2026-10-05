@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.34**
+**現在のAndroid安定版：v1.9.35**
 
-**versionCode：117**
+**versionCode：118**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.34
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.34/Mitsukotoba-v1.9.34-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.35
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.35/Mitsukotoba-v1.9.35-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.34は、「押して聞く」の1回あたりの文数を選べるようにした版です。標準は1文で、110フレーズのまとまりを文ごとに分けた重複なし167種類の1文候補から、短い一言も含めて1回に1つだけ再生します。設定で「3文」を選ぶと、v1.9.33までの短い文をまとめて流す形式に戻せます。1文モードは長文を強制せず、短い自然な英語もそのまま使います。22話題・110フレーズの語彙拡張、v1.9.32のチュートリアル修正、通知修正は維持します。
+v1.9.35は、設定画面や「みつことばが英語学習に使える理由」などのサブ画面でAndroidの戻る操作を行った際、アプリが終了せず元の画面へ戻るよう修正した版です。設定内で確認ダイアログや話題ガイドが開いている場合は、まずそれらを閉じます。v1.9.34の「押して聞く」1文/3文設定など既存機能は維持します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -282,7 +282,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
 | LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
-Android v1.9.34はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
+Android v1.9.35はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
@@ -292,11 +292,11 @@ Android v1.9.34はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### プロジェクト状況
 
-**v1.9.34を現在の安定基準版とします。**
+**v1.9.35を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.34を再現可能な安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.35を再現可能な安定基準版として保持します。
 
 ### 開発資料
 
@@ -326,15 +326,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.34**
+**Current stable Android release: v1.9.35**
 
-**versionCode: 117**
+**versionCode: 118**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.34
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.34/Mitsukotoba-v1.9.34-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.35
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.35/Mitsukotoba-v1.9.35-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.34 makes Tap to Listen play one sentence per tap by default. It splits the existing 22-topic / 110-phrase bundles into 167 unique individual sentence candidates, including very short natural phrases, while Settings can switch back to the previous bundled 3-sentence style. The vocabulary expansion and existing tutorial/notification fixes are retained.
+v1.9.35 fixes Android system Back navigation on Settings and the About / learning-reason screen so Back returns to the previous app screen instead of exiting the Activity. Open settings dialogs are closed first. The v1.9.34 Tap to Listen sentence-count behavior is retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -583,7 +583,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
 | LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
-Android v1.9.34 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
+Android v1.9.35 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -593,11 +593,11 @@ See:
 
 ### Project Status
 
-**v1.9.34 is the current stable baseline.**
+**v1.9.35 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.34 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.35 remains reproducible as the stable Mitsukotoba reference point.
 
 ### Development Documents
 
