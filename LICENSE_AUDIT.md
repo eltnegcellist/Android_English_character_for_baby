@@ -99,3 +99,8 @@ Adds optional screen-off conversation, on-device text history, Tap to Listen, an
 ## v1.9.30 tutorial and notification fixes
 
 Adjusts tutorial scrolling/highlighting and screen-off conversation notification setup/permission flow. No TTS dependencies, bundled models, or license declarations change. Existing eSpeak/sherpa rejection and APK provenance checks remain in CI.
+
+
+## v1.9.31 tutorial start-button fix
+
+Changes only tutorial state handling and button enablement. No TTS dependencies, bundled models, or license declarations change. Existing eSpeak/sherpa rejection and APK provenance checks remain in CI.

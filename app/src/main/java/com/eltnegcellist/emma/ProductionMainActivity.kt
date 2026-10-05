@@ -1042,6 +1042,16 @@ private fun ProductionEmmaApp() {
                 if (tutorialStep == 0) tutorialStep = 1
             },
             onTutorialStartSession = {
+                // Step 2 must remain actionable even if the self-introduction TTS
+                // leaves a stale SPEAKING/busy state for one frame. Stop any
+                // leftover tutorial speech before starting the microphone session.
+                kitten.stop()
+                screenIntroductionPlaying = false
+                screenIntroductionPlayed = true
+                if (!recording && status == ProductionEmmaStatus.SPEAKING) {
+                    status = ProductionEmmaStatus.IDLE
+                    statusMessage = "自己紹介が終わりました。"
+                }
                 tutorialUserSpoke = false
                 tutorialStep = 2
                 startSession()
