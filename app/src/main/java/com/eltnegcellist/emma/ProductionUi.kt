@@ -1,5 +1,6 @@
 package com.eltnegcellist.emma
 
+import androidx.activity.compose.BackHandler
 import android.content.Context
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -626,6 +627,14 @@ internal fun EmmaSettingsScreen(
     var developerToolsVisible by remember { mutableStateOf(false) }
     var resetConfirmOpen by remember { mutableStateOf(false) }
     var familySettingsOpen by remember { mutableStateOf(false) }
+
+    BackHandler {
+        when {
+            resetConfirmOpen -> resetConfirmOpen = false
+            topicGuideOpen -> topicGuideOpen = false
+            else -> onBack()
+        }
+    }
 
     if (topicGuideOpen) {
         LiteTopicGuideDialog(onDismiss = { topicGuideOpen = false })
