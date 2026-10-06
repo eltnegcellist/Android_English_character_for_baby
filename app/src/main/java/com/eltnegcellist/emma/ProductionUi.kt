@@ -32,6 +32,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -605,6 +606,8 @@ internal fun EmmaSettingsScreen(
     asrModel: MoonshineAsrModel,
     semanticEnabled: Boolean,
     semanticInstalled: Boolean,
+    semanticDebugBusy: Boolean,
+    semanticDebugResult: String?,
     keepScreenOn: Boolean,
     aiName: String,
     onAiNameChange: (String) -> Unit,
@@ -613,6 +616,8 @@ internal fun EmmaSettingsScreen(
     onEngineMode: (ConversationEngineMode) -> Unit,
     onAsrModel: (MoonshineAsrModel) -> Unit,
     onSemanticEnabled: (Boolean) -> Unit,
+    onRunSemanticDiagnostic: (String) -> Unit,
+    onResetSemanticDiagnosticContext: () -> Unit,
     onLevel: (EnglishLevel) -> Unit,
     onPreview: () -> Unit,
     onStopPreview: () -> Unit,
@@ -631,6 +636,7 @@ internal fun EmmaSettingsScreen(
     var developerToolsVisible by remember { mutableStateOf(false) }
     var resetConfirmOpen by remember { mutableStateOf(false) }
     var familySettingsOpen by remember { mutableStateOf(false) }
+    var semanticDiagnosticInput by remember { mutableStateOf("お風呂入ろうね") }
 
     BackHandler {
         when {
@@ -973,6 +979,65 @@ internal fun EmmaSettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
 
+                        Text("モデル・実行状態", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            buildString {
+                                append("ASR: Moonshine ").append(asrModel.shortLabel)
+                                append(if (asrInstalled) " / 準備済み" else " / 未準備")
+                                append("\nSemantic: ")
+                                append(if (semanticInstalled) "Ruri 70M INT8 / 準備済み" else "Ruri 70M INT8 / 未準備")
+                                append("\nKitten TTS: ").append(if (kittenInstalled) "準備済み" else "未準備")
+                                append("\nGemma: ").append(if (gemmaInstalled) "準備済み" else "未準備")
+                                append("\n現在のモード: みつことば ").append(engineMode.label)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Text("Semantic 診断・比較", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "同じ日本語を従来LiteとRuri Semanticで判定し、話題・分類スコア・英語を比較します。診断用の話題履歴は通常会話とは分離されています。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OutlinedTextField(
+                            value = semanticDiagnosticInput,
+                            onValueChange = { semanticDiagnosticInput = it.take(200) },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = enabled && !semanticDebugBusy,
+                            label = { Text("日本語テキスト") },
+                            placeholder = { Text("例：お風呂入ろうね") },
+                            minLines = 2,
+                            maxLines = 4,
+                        )
+                        OutlinedButton(
+                            onClick = { onRunSemanticDiagnostic(semanticDiagnosticInput) },
+                            enabled = enabled && semanticInstalled && !semanticDebugBusy && semanticDiagnosticInput.isNotBlank(),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(if (semanticDebugBusy) "判定中…" else "Lite / Semanticを比較")
+                        }
+                        TextButton(
+                            onClick = onResetSemanticDiagnosticContext,
+                            enabled = enabled && !semanticDebugBusy,
+                        ) {
+                            Text("診断用の直前話題をクリア")
+                        }
+                        if (!semanticInstalled) {
+                            Text(
+                                "Ruri Semanticが未準備です。通常設定でSemanticを有効にすると準備できます。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        semanticDebugResult?.let { result ->
+                            Text(
+                                result,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+
                         Text("AI音声の試聴・診断", style = MaterialTheme.typography.titleSmall)
                         if (kittenInstalled) {
                             OutlinedButton(
@@ -1030,6 +1095,27 @@ internal fun EmmaSettingsScreen(
 
                         Text(
                             "試聴ではKitten生成・初音・TTS全体を確認できます。発話終了からの2項目は、通常会話を1回行うと更新されます。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Text("診断情報の書き出し", style = MaterialTheme.typography.titleSmall)
+                        OutlinedButton(
+                            onClick = onExportDiagnostics,
+                            enabled = enabled,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("診断ログをTXTで保存")
+                        }
+                        OutlinedButton(
+                            onClick = onExportCrashDetails,
+                            enabled = enabled,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("クラッシュ詳細・音声診断をZIPで保存")
+                        }
+                        Text(
+                            "ZIPには利用可能なクラッシュトレースや診断用に保存された音声が含まれる場合があります。共有前に内容を確認してください。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
