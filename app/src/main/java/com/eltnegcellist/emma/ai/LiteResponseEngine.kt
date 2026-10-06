@@ -116,7 +116,7 @@ internal class LiteResponseEngine {
             !semanticFollowup &&
                 requested != null &&
                 (
-                    semantic?.probability == null ||
+                    semantic == null ||
                         (semantic.probability >= SEMANTIC_CLEAR_PROBABILITY &&
                             semantic.margin >= SEMANTIC_CLEAR_MARGIN)
                     )
