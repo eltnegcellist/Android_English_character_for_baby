@@ -161,7 +161,7 @@ internal fun FirstRunOnboardingScreen(
                         Text(
                             when (option) {
                                 ConversationEngineMode.LITE ->
-                                    "Moonshine ${if (highPerformance) "Small" else "Tiny"} + LiteResponseEngine + Kitten TTS Nano / 完全ローカル"
+                                    if (highPerformance) "Moonshine Small + Ruri Semantic + LiteResponseEngine + Kitten TTS Nano / 完全ローカル" else "Moonshine Tiny + LiteResponseEngine + Kitten TTS Nano / 完全ローカル"
                                 ConversationEngineMode.FULL ->
                                     "Moonshine ${if (highPerformance) "Small" else "Tiny"} + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
                             },
@@ -196,9 +196,9 @@ internal fun FirstRunOnboardingScreen(
                         Text("高性能モデルを使う", style = MaterialTheme.typography.labelLarge)
                         Text(
                             if (highPerformance) {
-                                "Moonshine Small＋意味で話題を理解するモデルを使います。"
+                                "Moonshine Smallを使い、Liteでは意味で話題を理解するモデルも使います。"
                             } else {
-                                "Moonshine Tiny＋軽量な従来判定を使います。"
+                                "Moonshine Tinyを使い、Liteでは軽量な従来判定を使います。"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -235,7 +235,7 @@ internal fun FirstRunOnboardingScreen(
                     Text(
                         when (selectedMode) {
                             ConversationEngineMode.LITE ->
-                                "Moonshine日本語${if (highPerformance) "Small" else "Tiny"}で聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
+                                if (highPerformance) "Moonshine日本語Smallで聞き取り、Ruri Semanticで話題を理解し、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。" else "Moonshine日本語Tinyで聞き取り、軽量な従来判定で返答を選び、Kitten TTS Nano / Kikiで話します。"
                             ConversationEngineMode.FULL ->
                                 "Moonshine日本語${if (highPerformance) "Small" else "Tiny"}で聞き取り、KittenはLiteと共通です。Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
                         },
