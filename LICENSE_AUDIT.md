@@ -137,3 +137,8 @@ Changes only Compose Settings layout and removes a duplicate UI control for Tap 
 ## v1.9.39 Web/Android Semantic parity
 
 v1.9.39 adds the pinned Ruri v3 70M INT8 Semantic topic model to Android Lite, using the existing full ONNX Runtime Android runtime. The model and tokenizer are Apache-2.0/MIT-family assets documented under `licenses/semantic/`; this change does not add eSpeak NG, sherpa-onnx TTS, GPL TTS code, or a new native inference runtime. CI continues to reject the known GPL/eSpeak/sherpa regression identifiers and verifies the packaged ONNX Runtime provenance.
+
+## v1.9.40 hidden developer-tool parity
+
+v1.9.40 expands hidden diagnostics only: typed Japanese can be compared across legacy Lite, Ruri Semantic, and Guard selection; model/runtime readiness is shown; and existing diagnostic TXT / crash-detail ZIP export controls are restored. It does not add a new runtime, model family, TTS backend, eSpeak NG, sherpa-onnx, or GPL TTS dependency. The v1.9.39 Ruri / ModernBERT attribution and existing ONNX Runtime provenance checks remain unchanged.
+
