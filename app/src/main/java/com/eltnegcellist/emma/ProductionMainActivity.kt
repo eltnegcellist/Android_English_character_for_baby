@@ -492,6 +492,57 @@ private fun ProductionEmmaApp() {
         )
     }
 
+    fun startSemanticAutomaticSetup() {
+        if (
+            disposed ||
+            liteSetupBusy ||
+            RuriSemanticModelStore.isInstalled(context)
+        ) {
+            return
+        }
+
+        val requestedAsr = asrModel
+        liteSetupBusy = true
+        liteSetupDialogOpen = true
+        liteSetupProgressPercent = 0
+        liteSetupPhase = "意味で話題を理解するモデルを準備しています…"
+        status = ProductionEmmaStatus.MODEL_IMPORTING
+        statusMessage = liteSetupPhase
+
+        if (!ModelPreparationManager.start(context, ModelPreparationKind.SEMANTIC, requestedAsr)) {
+            liteSetupBusy = false
+            liteSetupDialogOpen = false
+            status = ProductionEmmaStatus.ERROR
+            statusMessage = "別のモデル準備が進行中です。"
+            return
+        }
+
+        monitorModelPreparation(
+            ModelPreparationKind.SEMANTIC,
+            requestedAsr,
+            onProgress = { phase, percent ->
+                liteSetupPhase = phase
+                liteSetupProgressPercent = percent
+                statusMessage = phase
+            },
+            onFinished = { result ->
+                liteSetupBusy = false
+                liteSetupDialogOpen = false
+                if (result.isSuccess) {
+                    liteSetupProgressPercent = 100
+                    status = if (modelReady) ProductionEmmaStatus.IDLE else status
+                    statusMessage = "意味で話題を理解するモデルの準備ができました。"
+                } else {
+                    liteSetupProgressPercent = null
+                    status = ProductionEmmaStatus.ERROR
+                    val detail = result.exceptionOrNull()?.message ?: "原因を確認できませんでした。"
+                    statusMessage = "話題理解モデルの準備に失敗しました: $detail"
+                    settingsOpen = true
+                }
+            },
+        )
+    }
+
     fun startFirstRunSetup(selectedMode: ConversationEngineMode) {
         if (disposed || firstRunBusy) return
 
