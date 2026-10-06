@@ -42,8 +42,8 @@ internal fun FirstRunOnboardingScreen(
     errorMessage: String?,
     aiName: String,
     onAiNameChange: (String) -> Unit,
-    startWithTiny: Boolean,
-    onStartWithTinyChange: (Boolean) -> Unit,
+    highPerformance: Boolean,
+    onHighPerformanceChange: (Boolean) -> Unit,
     onModeSelected: (ConversationEngineMode) -> Unit,
     onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
@@ -161,9 +161,9 @@ internal fun FirstRunOnboardingScreen(
                         Text(
                             when (option) {
                                 ConversationEngineMode.LITE ->
-                                    "Moonshine ${if (startWithTiny) "Tiny" else "Small"} + LiteResponseEngine + Kitten TTS Nano / 完全ローカル"
+                                    "Moonshine ${if (highPerformance) "Small" else "Tiny"} + LiteResponseEngine + Kitten TTS Nano / 完全ローカル"
                                 ConversationEngineMode.FULL ->
-                                    "Moonshine ${if (startWithTiny) "Tiny" else "Small"} + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
+                                    "Moonshine ${if (highPerformance) "Small" else "Tiny"} + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -181,31 +181,36 @@ internal fun FirstRunOnboardingScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             ) { Text("このモードを選ぶ") }
                         }
-                        if (option == ConversationEngineMode.LITE) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Column(Modifier.weight(1f)) {
-                                    Text("Moonshine Tiny（軽量）", style = MaterialTheme.typography.labelLarge)
-                                    Text(
-                                        "通常はSmall推奨。必要な場合だけTinyで開始します。",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                                Switch(
-                                    checked = startWithTiny,
-                                    onCheckedChange = onStartWithTinyChange,
-                                    enabled = !busy,
-                                )
-                            }
-                        }
                     }
                 }
             }
 
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("モデル性能", style = MaterialTheme.typography.titleMedium)
+                        Text("高性能モデルを使う", style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            if (highPerformance) {
+                                "Moonshine Small＋意味で話題を理解するモデルを使います。"
+                            } else {
+                                "Moonshine Tiny＋軽量な従来判定を使います。"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = highPerformance,
+                        onCheckedChange = onHighPerformanceChange,
+                        enabled = !busy,
+                    )
+                }
+            }
             OutlinedButton(
                 onClick = { familySettingsOpen = !familySettingsOpen },
                 enabled = !busy,
@@ -230,9 +235,9 @@ internal fun FirstRunOnboardingScreen(
                     Text(
                         when (selectedMode) {
                             ConversationEngineMode.LITE ->
-                                "Moonshine日本語${if (startWithTiny) "Tiny" else "Small"}で聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
+                                "Moonshine日本語${if (highPerformance) "Small" else "Tiny"}で聞き取り、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。"
                             ConversationEngineMode.FULL ->
-                                "Moonshine日本語${if (startWithTiny) "Tiny" else "Small"}で聞き取り、KittenはLiteと共通です。Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
+                                "Moonshine日本語${if (highPerformance) "Small" else "Tiny"}で聞き取り、KittenはLiteと共通です。Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                     )
