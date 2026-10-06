@@ -269,6 +269,26 @@ class LiteResponseEngineTest {
 
 
     @Test
+    fun guardModeKeepsConcreteRuleButUsesSemanticWhenRuleIsGeneric() {
+        val engineWithRule = LiteResponseEngine()
+        val guardPrediction = SemanticTopicPrediction(
+            topic = "sleep",
+            probability = 0.95,
+            margin = 0.80,
+            mode = "guard",
+        )
+
+        val concreteRule = engineWithRule.respond("お風呂入ろうね", semantic = guardPrediction)
+        assertEquals("bath", concreteRule.scene)
+        assertFalse(concreteRule.semanticUsed)
+
+        val engineWithoutRule = LiteResponseEngine()
+        val semanticFallback = engineWithoutRule.respond("今日はどうかな", semantic = guardPrediction)
+        assertEquals("sleep", semanticFallback.scene)
+        assertTrue(semanticFallback.semanticUsed)
+    }
+
+    @Test
     fun semanticTopicOverridesConflictingRuleLikeWeb() {
         val engine = LiteResponseEngine()
         val response = engine.respond(
