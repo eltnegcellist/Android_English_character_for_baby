@@ -227,6 +227,7 @@ private fun ProductionEmmaApp() {
                         buildString {
                             append("従来Lite: ").append(comparison.ruleScene)
                             append("\nSemantic採用: ").append(comparison.semanticScene)
+                            append("\nGuard採用: ").append(comparison.guardScene)
                             append("\nSemantic分類: ").append(comparison.semanticTopic ?: "—")
                             comparison.semanticProbability?.let {
                                 append("  ").append(String.format(java.util.Locale.US, "%.1f%%", it * 100.0))
@@ -237,6 +238,7 @@ private fun ProductionEmmaApp() {
                             append("\n直前話題を使用: ").append(if (comparison.semanticContextUsed) "はい" else "いいえ")
                             append("\n従来Lite英語: ").append(comparison.ruleEnglish)
                             append("\nSemantic英語: ").append(comparison.semanticEnglish)
+                            append("\nGuard英語: ").append(comparison.guardEnglish)
                         }
                     },
                     onFailure = { error -> "比較できませんでした: ${error.message ?: error.javaClass.simpleName}" },
