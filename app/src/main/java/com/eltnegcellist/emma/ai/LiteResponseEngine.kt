@@ -7,6 +7,9 @@ internal data class LiteResponse(
     val english: String,
     val scene: String,
     val score: Int,
+    val ruleScene: String = "generic",
+    val semanticUsed: Boolean = false,
+    val contextUsed: Boolean = false,
 )
 
 internal data class LiteTopicDetection(
@@ -29,7 +32,11 @@ internal class LiteResponseEngine {
     private var activeSceneId: String? = null
     private var activeSceneTurnsRemaining = 0
 
-    fun respond(transcript: String, spokenBabyName: String = ""): LiteResponse {
+    fun respond(
+        transcript: String,
+        spokenBabyName: String = "",
+        semantic: SemanticTopicPrediction? = null,
+    ): LiteResponse {
         val normalized = normalize(transcript)
         val flexible = LiteFlexibleTopicMatcher.detect(transcript)
         val ranked = scenes.map { scene -> scene to max(score(scene, normalized), flexible[scene.id] ?: 0) }
@@ -51,19 +58,29 @@ internal class LiteResponseEngine {
         }
 
         val detectedScene = selected?.first
-            ?: rescued?.sceneId?.let { sceneId -> scenes.firstOrNull { it.id == sceneId } }
-        val milkScene = scenes.first { it.id == "milk" }
+            ?: rescued?.sceneId?.let(::findScene)
+        val milkScene = findScene("milk")!!
         val drinking = LiteFlexibleTopicMatcher.detectDrinkingAction(transcript)
         val explicitMilk = "milk" in flexible || hasStrongTopicEvidence(milkScene, normalized)
         val drinkingScene = if (drinking && !explicitMilk) {
             if (activeSceneId == "milk" && !LiteFlexibleTopicMatcher.hasNonMilkDrink(transcript)) milkScene else drinkScene
-        } else null
-        val useDrinking = drinkingScene != null && (detectedScene == null || detectedScene.id == "milk" ||
-            !hasStrongTopicEvidence(detectedScene, normalized))
+        } else {
+            null
+        }
+        val useDrinking = drinkingScene != null && (
+            detectedScene == null ||
+                detectedScene.id == "milk" ||
+                !hasStrongTopicEvidence(detectedScene, normalized)
+            )
         val candidateScene = if (useDrinking) drinkingScene else detectedScene
         val candidateScore = if (useDrinking) 4 else selected?.second ?: rescued?.score ?: 0
         val candidateHasStrongTopicEvidence = candidateScene != null &&
-            (useDrinking || rescued != null || candidateScene.id in flexible || hasStrongTopicEvidence(candidateScene, normalized))
+            (
+                useDrinking ||
+                    rescued != null ||
+                    candidateScene.id in flexible ||
+                    hasStrongTopicEvidence(candidateScene, normalized)
+                )
         val explicitScene = when {
             candidateScene == null -> null
             activeSceneId == null -> candidateScene
@@ -73,21 +90,82 @@ internal class LiteResponseEngine {
         }
         val explicitScore = if (explicitScene != null) candidateScore else 0
         val contextualScene = if (explicitScene == null && activeSceneTurnsRemaining > 0) {
-            activeSceneId?.let { sceneId -> (scenes + drinkScene).firstOrNull { it.id == sceneId } }
+            findScene(activeSceneId)
         } else {
             null
         }
-        val scene = explicitScene ?: contextualScene
-        val score = if (explicitScene != null) explicitScore else if (contextualScene != null) CONTEXT_SCENE_SCORE else 0
 
-        if (explicitScene != null) {
+        val ruleScene = explicitScene ?: contextualScene
+        val requested = if (semantic?.topic == "generic") null else findScene(semantic?.topic)
+        val validSemantic = semantic != null && (semantic.topic == "generic" || requested != null)
+        val semanticUsed = validSemantic
+        var scene = if (semanticUsed) requested else ruleScene
+        var contextUsed = !semanticUsed && contextualScene != null
+
+        val plainFollowup = PLAIN_FOLLOWUP.matches(normalized)
+        val implicitMilkDrink =
+            useDrinking &&
+                drinkingScene?.id == "milk" &&
+                activeSceneId == "milk" &&
+                !explicitMilk &&
+                !LiteFlexibleTopicMatcher.hasNonMilkDrink(transcript)
+        val semanticFollowup =
+            activeSceneTurnsRemaining > 0 && (plainFollowup || implicitMilkDrink)
+
+        val semanticClear =
+            !semanticFollowup &&
+                requested != null &&
+                (
+                    semantic?.probability == null ||
+                        (semantic.probability >= SEMANTIC_CLEAR_PROBABILITY &&
+                            semantic.margin >= SEMANTIC_CLEAR_MARGIN)
+                    )
+        val ruleClear =
+            !semanticFollowup &&
+                explicitScene != null &&
+                candidateHasStrongTopicEvidence
+
+        var clearScene: Scene? = null
+        if (semanticUsed) {
+            if (activeSceneId == null || semanticClear) {
+                clearScene = requested
+            } else if (activeSceneTurnsRemaining > 0 && ruleClear) {
+                clearScene = explicitScene
+            }
+
+            if (clearScene != null) {
+                scene = clearScene
+            } else if (activeSceneTurnsRemaining > 0) {
+                scene = findScene(activeSceneId)
+                contextUsed = scene != null
+            }
+        }
+
+        val sceneScore = when {
+            semanticUsed && contextUsed -> CONTEXT_SCENE_SCORE
+            semanticUsed -> 0
+            explicitScene != null -> explicitScore
+            contextualScene != null -> CONTEXT_SCENE_SCORE
+            else -> 0
+        }
+
+        if (semanticUsed) {
+            when {
+                clearScene != null -> {
+                    activeSceneId = clearScene.id
+                    activeSceneTurnsRemaining = TOPIC_HOLD_TURNS
+                }
+                contextUsed -> {
+                    activeSceneTurnsRemaining--
+                    if (activeSceneTurnsRemaining <= 0) activeSceneId = null
+                }
+            }
+        } else if (explicitScene != null) {
             activeSceneId = explicitScene.id
             activeSceneTurnsRemaining = TOPIC_HOLD_TURNS
         } else if (contextualScene != null) {
             activeSceneTurnsRemaining--
-            if (activeSceneTurnsRemaining <= 0) {
-                activeSceneId = null
-            }
+            if (activeSceneTurnsRemaining <= 0) activeSceneId = null
         }
 
         val replies = scene?.replies ?: genericReplies
@@ -110,7 +188,10 @@ internal class LiteResponseEngine {
         return LiteResponse(
             english = styled,
             scene = scene?.id ?: "generic",
-            score = score,
+            score = sceneScore,
+            ruleScene = ruleScene?.id ?: "generic",
+            semanticUsed = semanticUsed,
+            contextUsed = contextUsed,
         )
     }
 
@@ -184,6 +265,12 @@ internal class LiteResponseEngine {
             score = candidateScore,
             strongEvidence = useDrinking || rescued != null || candidate.id in flexible || hasStrongTopicEvidence(candidate, normalized),
         )
+    }
+
+    private fun findScene(id: String?): Scene? = when (id) {
+        null -> null
+        "drink" -> drinkScene
+        else -> scenes.firstOrNull { it.id == id }
     }
 
     private fun hasStrongTopicEvidence(scene: Scene, transcript: String): Boolean {
@@ -375,6 +462,12 @@ internal class LiteResponseEngine {
         private const val MIN_SCENE_SCORE = 3
         private const val CONTEXT_SCENE_SCORE = 2
         private const val TOPIC_HOLD_TURNS = 6
+        private const val SEMANTIC_CLEAR_PROBABILITY = 0.65
+        private const val SEMANTIC_CLEAR_MARGIN = 0.15
+        private val PLAIN_FOLLOWUP = Regex(
+            "^(いいね|そうだね|いい感じだね|いい感じですね|気持ちいいね|気持ちいいですね|" +
+                "ゆっくりでいいよ|ゆっくりね|もう少し|もうちょっと|どうかな|上手だね|かわいいね)$"
+        )
         private const val RECENT_REPLY_WINDOW = 5
         private const val RECENT_OPENER_WINDOW = 3
 
