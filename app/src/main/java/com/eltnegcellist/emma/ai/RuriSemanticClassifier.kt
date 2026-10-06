@@ -141,7 +141,9 @@ internal class RuriSemanticClassifier(
         val buffer = ByteBuffer.wrap(bytes)
             .order(ByteOrder.LITTLE_ENDIAN)
             .asFloatBuffer()
-        return FloatArray(buffer.remaining()).also(buffer::get)
+        val values = FloatArray(buffer.remaining())
+        buffer.get(values)
+        return values
     }
 
     @Synchronized
