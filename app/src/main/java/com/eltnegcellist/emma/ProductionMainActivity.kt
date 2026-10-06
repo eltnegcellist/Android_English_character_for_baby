@@ -31,6 +31,7 @@ import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.ai.GemmaEmmaClient
 import com.eltnegcellist.emma.ai.LiteEmmaClient
+import com.eltnegcellist.emma.ai.RuriSemanticModelStore
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.audio.AudioRingRecorder
@@ -116,8 +117,17 @@ private fun ProductionEmmaApp() {
     }
     var engineMode by runtime.engineModeState
     var onboardingMode by remember { mutableStateOf(initialEngineMode) }
-    var startWithTiny by remember {
-        mutableStateOf(preferences.getBoolean("first_run_start_tiny", false))
+    var highPerformance by remember {
+        mutableStateOf(
+            if (preferences.contains("first_run_high_performance")) {
+                preferences.getBoolean("first_run_high_performance", true)
+            } else {
+                !preferences.getBoolean("first_run_start_tiny", false)
+            },
+        )
+    }
+    var semanticEnabled by remember {
+        mutableStateOf(preferences.getBoolean("semantic_enabled", true))
     }
     var asrModelManuallySelected by remember {
         mutableStateOf(preferences.getBoolean("asr_model_manual", false))
