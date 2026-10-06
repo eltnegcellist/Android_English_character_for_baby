@@ -14,6 +14,7 @@ internal data class SemanticTopicPrediction(
     val topic: String,
     val probability: Double,
     val margin: Double,
+    val mode: String = "semantic",
 )
 
 /**
