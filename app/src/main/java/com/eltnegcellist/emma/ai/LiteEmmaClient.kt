@@ -102,11 +102,10 @@ class LiteEmmaClient(
             baseSpokenName,
             preferences.getBoolean("use_chan_suffix", true),
         )
-        val prediction = if (RuriSemanticModelStore.isInstalled(appContext)) {
-            semantic.predict(transcript).getOrThrow()
-        } else {
-            null
+        check(RuriSemanticModelStore.isInstalled(appContext)) {
+            "Ruri Semanticモデルが未準備です。設定からSemanticを有効にしてモデルを準備してください。"
         }
+        val prediction = semantic.predict(transcript).getOrThrow()
 
         val rule = debugRuleResponses.respond(transcript, spokenName)
         val semanticResponse = debugSemanticResponses.respond(transcript, spokenName, prediction)
