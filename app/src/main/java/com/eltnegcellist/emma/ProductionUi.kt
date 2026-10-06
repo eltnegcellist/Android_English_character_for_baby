@@ -996,7 +996,7 @@ internal fun EmmaSettingsScreen(
 
                         Text("Semantic 診断・比較", style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "同じ日本語を従来LiteとRuri Semanticで判定し、話題・分類スコア・英語を比較します。診断用の話題履歴は通常会話とは分離されています。",
+                            "同じ日本語を従来Lite・Ruri Semantic・Guard（既存ルール優先）で判定し、話題・分類スコア・英語を比較します。診断用の話題履歴は通常会話とは分離されています。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -1015,7 +1015,7 @@ internal fun EmmaSettingsScreen(
                             enabled = enabled && semanticInstalled && !semanticDebugBusy && semanticDiagnosticInput.isNotBlank(),
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(if (semanticDebugBusy) "判定中…" else "Lite / Semanticを比較")
+                            Text(if (semanticDebugBusy) "判定中…" else "Lite / Semantic / Guardを比較")
                         }
                         TextButton(
                             onClick = onResetSemanticDiagnosticContext,
