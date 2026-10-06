@@ -1032,7 +1032,7 @@ private fun ProductionEmmaApp() {
                 preferences.edit().putBoolean("auto_respond", it).apply()
                 if (recording && !busy) {
                     status = ProductionEmmaStatus.LISTENING
-                    statusMessage = if (it) "普通に話しかけてください。" else "手動モードです。「今すぐ返事する」で返します。"
+                    statusMessage = if (it) "普通に話しかけてください。" else "手動モードです。「今すぐAIが返事する」で返します。"
                 }
             },
             onManualRespond = { askEmma(automatic = false) },
