@@ -10,6 +10,8 @@ internal data class LiteDiagnosticComparison(
     val ruleEnglish: String,
     val semanticScene: String,
     val semanticEnglish: String,
+    val guardScene: String,
+    val guardEnglish: String,
     val semanticTopic: String?,
     val semanticProbability: Double?,
     val semanticMargin: Double?,
@@ -28,6 +30,7 @@ class LiteEmmaClient(
     private val responses = LiteResponseEngine()
     private val debugRuleResponses = LiteResponseEngine()
     private val debugSemanticResponses = LiteResponseEngine()
+    private val debugGuardResponses = LiteResponseEngine()
 
     fun isReady(): Boolean = asr.isReady()
 
@@ -108,14 +111,25 @@ class LiteEmmaClient(
         val prediction = semantic.predict(transcript).getOrThrow()
 
         val rule = debugRuleResponses.respond(transcript, spokenName)
-        val semanticResponse = debugSemanticResponses.respond(transcript, spokenName, prediction)
+        val semanticResponse = debugSemanticResponses.respond(
+            transcript,
+            spokenName,
+            prediction.copy(mode = "semantic"),
+        )
+        val guardResponse = debugGuardResponses.respond(
+            transcript,
+            spokenName,
+            prediction.copy(mode = "guard"),
+        )
 
         LiteDiagnosticComparison(
             ruleScene = rule.scene,
             ruleEnglish = rule.english,
             semanticScene = semanticResponse.scene,
             semanticEnglish = semanticResponse.english,
-            semanticTopic = prediction?.topic,
+            guardScene = guardResponse.scene,
+            guardEnglish = guardResponse.english,
+            semanticTopic = prediction.topic,
             semanticProbability = prediction?.probability,
             semanticMargin = prediction?.margin,
             semanticContextUsed = semanticResponse.contextUsed,
@@ -125,6 +139,7 @@ class LiteEmmaClient(
     fun resetDebugConversationContext() {
         debugRuleResponses.resetConversationContext()
         debugSemanticResponses.resetConversationContext()
+        debugGuardResponses.resetConversationContext()
     }
 
     fun createGenericEnglishIsland(
