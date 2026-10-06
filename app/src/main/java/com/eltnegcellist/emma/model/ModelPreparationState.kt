@@ -3,7 +3,7 @@ package com.eltnegcellist.emma.model
 import android.content.Context
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 
-internal enum class ModelPreparationKind { LITE, FULL, ASR, KITTEN, GEMMA }
+internal enum class ModelPreparationKind { LITE, FULL, ASR, KITTEN, GEMMA, SEMANTIC }
 internal enum class ModelPreparationStatus { IDLE, QUEUED, RUNNING, SUCCEEDED, FAILED }
 
 internal data class ModelPreparationSnapshot(
