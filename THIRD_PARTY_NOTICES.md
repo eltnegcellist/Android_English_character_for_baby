@@ -45,6 +45,8 @@ separately licensed material such as Eigen under MPL-2.0.
 | Kitten TTS Nano | 0.8 FP32 | Apache-2.0 |
 | CMUDict | pinned 74790861… | BSD-style |
 | ONNX Runtime Android | 1.23.2 | MIT |
+| Ruri v3 Semantic | cl-nagoya/ruri-v3-70m, pinned INT8 ONNX | Apache-2.0 |
+| ModernBERT-Ja provenance | Ruri base architecture | MIT |
 | Eigen provenance | ORT / native dependency surface | MPL-2.0 |
 | OkHttp | 4.12.0 | Apache-2.0 |
 | AndroidX WorkManager | 2.12.0 | Apache-2.0 |
@@ -106,6 +108,21 @@ ONNX Runtime has its own ThirdPartyNotices. In particular, its dependency
 surface includes Eigen material under MPL-2.0. MPL-2.0 is not GPL, but its
 notice/source-availability obligations remain applicable.
 
+## Ruri v3 70M Semantic topic model
+
+- Upstream model: `cl-nagoya/ruri-v3-70m`
+- Source revision: `07a8b0aba47d29d2ca21f89b915c1efe2c23d1cc`
+- Android/Web shared INT8 model SHA-256:
+  `bd500193003fdeaba8c5422a47b974b40b49a5e0c91285c76f6bd949d2205264`
+- Ruri model license: Apache-2.0
+- ModernBERT-Ja provenance notice: MIT
+- Tokenizer provenance notice: MIT
+
+Android v1.9.39 downloads the same pinned Semantic Lite model, tokenizer and
+topic-classification head used by the Web app. The model is executed locally
+with the existing ONNX Runtime Android dependency; no parent speech is sent to
+a cloud inference service. The copied notices and model card are under
+`licenses/semantic/`.
 ## OkHttp
 
 - Version: 4.12.0
