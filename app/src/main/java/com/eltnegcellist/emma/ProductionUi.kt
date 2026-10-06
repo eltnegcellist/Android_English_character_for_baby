@@ -603,6 +603,8 @@ internal fun EmmaSettingsScreen(
     lastEndpointToFirstAudioMillis: Long?,
     engineMode: ConversationEngineMode,
     asrModel: MoonshineAsrModel,
+    semanticEnabled: Boolean,
+    semanticInstalled: Boolean,
     keepScreenOn: Boolean,
     aiName: String,
     onAiNameChange: (String) -> Unit,
@@ -610,6 +612,7 @@ internal fun EmmaSettingsScreen(
     onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
     onAsrModel: (MoonshineAsrModel) -> Unit,
+    onSemanticEnabled: (Boolean) -> Unit,
     onLevel: (EnglishLevel) -> Unit,
     onPreview: () -> Unit,
     onStopPreview: () -> Unit,
@@ -774,6 +777,50 @@ internal fun EmmaSettingsScreen(
             }
 
             Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text("返答と話題", style = MaterialTheme.typography.titleMedium)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("意味で話題を判定する（標準）")
+                            Text(
+                                if (semanticEnabled) {
+                                    if (semanticInstalled) {
+                                        "Ruri Semanticで日本語の意味から話題を選びます。"
+                                    } else {
+                                        "Ruri Semanticを有効にしています。初回のみモデル準備が必要です。"
+                                    }
+                                } else {
+                                    "軽量な従来Lite判定を使います。"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = semanticEnabled,
+                            onCheckedChange = onSemanticEnabled,
+                            enabled = enabled,
+                        )
+                    }
+                    Text(
+                        "話題が曖昧な場合は直前の話題を最大6回使い、明確な別の話題で切り替えます。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = { topicGuideOpen = true }) {
+                        Text("話題の判定方法・話題一覧を見る")
+                    }
+                }
+            }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Lite / Full", style = MaterialTheme.typography.titleMedium)
                     Text(
@@ -809,9 +856,6 @@ internal fun EmmaSettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    TextButton(onClick = { topicGuideOpen = true }) {
-                        Text("Liteの話題の判定方法・話題一覧を見る")
-                    }
                 }
             }
 
