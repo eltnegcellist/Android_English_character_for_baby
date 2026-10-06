@@ -13,6 +13,7 @@ class LiteEmmaClient(
     private val appContext = context.applicationContext
     private val preferences = appContext.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
     private val asr = MoonshineJapaneseAsr(appContext)
+    private val semantic = RuriSemanticClassifier(appContext)
     private val responses = LiteResponseEngine()
 
     fun isReady(): Boolean = asr.isReady()
@@ -45,14 +46,34 @@ class LiteEmmaClient(
             baseSpokenName,
             preferences.getBoolean("use_chan_suffix", true),
         )
-        val selected = responses.respond(transcript, spokenName)
+        val semanticRequested = preferences.getBoolean("semantic_enabled", true)
+        val semanticPrediction = if (
+            semanticRequested &&
+            RuriSemanticModelStore.isInstalled(appContext)
+        ) {
+            semantic.predict(transcript)
+                .onFailure { error ->
+                    DiagnosticStore.mark(
+                        appContext,
+                        "semantic_topic_fallback",
+                        "reason=${error.message ?: error.javaClass.simpleName}",
+                    )
+                }
+                .getOrNull()
+        } else {
+            null
+        }
+
+        val selected = responses.respond(transcript, spokenName, semanticPrediction)
         lastTopic = selected.scene
         val adjusted = fitLevel(selected.english, level)
 
         DiagnosticStore.mark(
             appContext,
             "lite_response_selected",
-            "scene=${selected.scene} score=${selected.score} level=${level.name} transcript=${transcript.take(80)}",
+            "scene=${selected.scene} ruleScene=${selected.ruleScene} semanticUsed=${selected.semanticUsed} " +
+                "semanticTopic=${semanticPrediction?.topic ?: "none"} score=${selected.score} " +
+                "level=${level.name} transcript=${transcript.take(80)}",
         )
         adjusted
     }
@@ -79,7 +100,10 @@ class LiteEmmaClient(
         adjusted
     }
 
-    fun close() = asr.close()
+    fun close() {
+        asr.close()
+        semantic.close()
+    }
 
     private fun fitLevel(text: String, level: EnglishLevel): String {
         val maxWords = when (level) {
