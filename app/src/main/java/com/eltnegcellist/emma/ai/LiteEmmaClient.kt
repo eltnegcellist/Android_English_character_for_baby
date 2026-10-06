@@ -94,7 +94,7 @@ class LiteEmmaClient(
         adjusted
     }
 
-    fun debugCompareText(text: String): Result<LiteDiagnosticComparison> = runCatching {
+    internal fun debugCompareText(text: String): Result<LiteDiagnosticComparison> = runCatching {
         val transcript = text.trim()
         require(transcript.isNotBlank()) { "日本語を入力してください。" }
 
@@ -108,7 +108,9 @@ class LiteEmmaClient(
         check(RuriSemanticModelStore.isInstalled(appContext)) {
             "Ruri Semanticモデルが未準備です。設定からSemanticを有効にしてモデルを準備してください。"
         }
-        val prediction = semantic.predict(transcript).getOrThrow()
+        val prediction = requireNotNull(semantic.predict(transcript).getOrThrow()) {
+            "Semantic診断では長すぎる入力を判定できません。短い日本語でお試しください。"
+        }
 
         val rule = debugRuleResponses.respond(transcript, spokenName)
         val semanticResponse = debugSemanticResponses.respond(
@@ -130,13 +132,13 @@ class LiteEmmaClient(
             guardScene = guardResponse.scene,
             guardEnglish = guardResponse.english,
             semanticTopic = prediction.topic,
-            semanticProbability = prediction?.probability,
-            semanticMargin = prediction?.margin,
+            semanticProbability = prediction.probability,
+            semanticMargin = prediction.margin,
             semanticContextUsed = semanticResponse.contextUsed,
         )
     }
 
-    fun resetDebugConversationContext() {
+    internal fun resetDebugConversationContext() {
         debugRuleResponses.resetConversationContext()
         debugSemanticResponses.resetConversationContext()
         debugGuardResponses.resetConversationContext()
