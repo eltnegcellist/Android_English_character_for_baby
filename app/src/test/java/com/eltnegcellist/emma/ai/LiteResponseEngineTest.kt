@@ -269,6 +269,58 @@ class LiteResponseEngineTest {
 
 
     @Test
+    fun semanticTopicOverridesConflictingRuleLikeWeb() {
+        val engine = LiteResponseEngine()
+        val response = engine.respond(
+            "お風呂に入ろうね",
+            semantic = SemanticTopicPrediction(
+                topic = "sleep",
+                probability = 0.90,
+                margin = 0.80,
+            ),
+        )
+
+        assertEquals("sleep", response.scene)
+        assertEquals("bath", response.ruleScene)
+        assertTrue(response.semanticUsed)
+    }
+
+    @Test
+    fun semanticGenericUsesHeldTopicForSixFollowUpsLikeWeb() {
+        val engine = LiteResponseEngine()
+        val clearMilk = SemanticTopicPrediction("milk", probability = 0.95, margin = 0.80)
+        val generic = SemanticTopicPrediction("generic", probability = 0.80, margin = 0.70)
+
+        assertEquals("milk", engine.respond("ミルクを飲もうか", semantic = clearMilk).scene)
+        repeat(6) {
+            val response = engine.respond("いいね", semantic = generic)
+            assertEquals("milk", response.scene)
+            assertTrue(response.contextUsed)
+        }
+        assertEquals("generic", engine.respond("どうかな", semantic = generic).scene)
+    }
+
+    @Test
+    fun clearSemanticTopicChangesHeldTopicLikeWeb() {
+        val engine = LiteResponseEngine()
+
+        assertEquals(
+            "milk",
+            engine.respond(
+                "ミルクを飲もうか",
+                semantic = SemanticTopicPrediction("milk", probability = 0.95, margin = 0.80),
+            ).scene,
+        )
+        assertEquals(
+            "sleep",
+            engine.respond(
+                "眠る時間だよ",
+                semantic = SemanticTopicPrediction("sleep", probability = 0.95, margin = 0.80),
+            ).scene,
+        )
+    }
+
+    @Test
     fun recentTopicPersistsAcrossSixGenericFollowUps() {
         val engine = LiteResponseEngine()
 
