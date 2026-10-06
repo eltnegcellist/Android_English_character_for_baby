@@ -495,13 +495,16 @@ private fun ProductionEmmaApp() {
     fun startFirstRunSetup(selectedMode: ConversationEngineMode) {
         if (disposed || firstRunBusy) return
 
-        val requestedAsr = if (startWithTiny) MoonshineAsrModel.TINY else MoonshineAsrModel.SMALL
+        val requestedAsr = if (highPerformance) MoonshineAsrModel.SMALL else MoonshineAsrModel.TINY
         asrModel = requestedAsr
-        asrModelManuallySelected = startWithTiny
+        asrModelManuallySelected = !highPerformance
+        semanticEnabled = highPerformance
         preferences.edit()
             .putString("asr_model", requestedAsr.savedValue)
-            .putBoolean("asr_model_manual", startWithTiny)
-            .putBoolean("first_run_start_tiny", startWithTiny)
+            .putBoolean("asr_model_manual", !highPerformance)
+            .putBoolean("first_run_start_tiny", !highPerformance)
+            .putBoolean("first_run_high_performance", highPerformance)
+            .putBoolean("semantic_enabled", highPerformance)
             .putString("conversation_engine_mode", selectedMode.savedValue)
             .apply()
         if (selectedMode != ConversationEngineMode.FULL) {
@@ -843,10 +846,13 @@ private fun ProductionEmmaApp() {
                 preferences.edit().putString("ai_character_name", value).apply()
                 screenIntroductionPlayed = false
             },
-            startWithTiny = startWithTiny,
-            onStartWithTinyChange = { enabled ->
-                startWithTiny = enabled
-                preferences.edit().putBoolean("first_run_start_tiny", enabled).apply()
+            highPerformance = highPerformance,
+            onHighPerformanceChange = { enabled ->
+                highPerformance = enabled
+                preferences.edit()
+                    .putBoolean("first_run_high_performance", enabled)
+                    .putBoolean("first_run_start_tiny", !enabled)
+                    .apply()
                 firstRunReady = false
             },
             onModeSelected = { selected ->
