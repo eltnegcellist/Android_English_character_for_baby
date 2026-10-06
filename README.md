@@ -282,7 +282,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
 | LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
-Android v1.9.35はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
+Android v1.9.39はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
@@ -292,11 +292,15 @@ Android v1.9.35はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### プロジェクト状況
 
-**v1.9.35を現在の安定基準版とします。**
+**v1.9.39を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.35を再現可能な安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.39を再現可能な安定基準版として保持します。
+
+### 隠し開発者設定
+
+設定画面下部の「みつことば Android」を5回タップすると開発者設定を表示します。通常のKiki音声試聴とTTS実測に加え、Ruri Semantic / Guard / 従来Liteを同じ日本語で比較する診断、モデル準備状態、診断ログTXT、クラッシュトレースや診断用音声を含む詳細ZIP、完全リセットを利用できます。Semantic診断の会話文脈は通常会話とは分離しています。
 
 ### 開発資料
 
@@ -583,7 +587,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
 | LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
-Android v1.9.35 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
+Android v1.9.39 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -593,11 +597,11 @@ See:
 
 ### Project Status
 
-**v1.9.35 is the current stable baseline.**
+**v1.9.39 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.35 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.39 remains reproducible as the stable Mitsukotoba reference point.
 
 ### Development Documents
 
