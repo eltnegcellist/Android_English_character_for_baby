@@ -134,3 +134,6 @@ Changes only Compose layout/alignment for the existing play screen. No TTS depen
 ## v1.9.38 Settings card organization
 
 Changes only Compose Settings layout and removes a duplicate UI control for Tap to Listen sentence count. No TTS dependencies, bundled models, or third-party license declarations change.
+## v1.9.39 Web/Android Semantic parity
+
+v1.9.39 adds the pinned Ruri v3 70M INT8 Semantic topic model to Android Lite, using the existing full ONNX Runtime Android runtime. The model and tokenizer are Apache-2.0/MIT-family assets documented under `licenses/semantic/`; this change does not add eSpeak NG, sherpa-onnx TTS, GPL TTS code, or a new native inference runtime. CI continues to reject the known GPL/eSpeak/sherpa regression identifiers and verifies the packaged ONNX Runtime provenance.
