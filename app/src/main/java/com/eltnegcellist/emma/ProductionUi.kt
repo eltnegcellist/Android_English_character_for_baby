@@ -148,13 +148,14 @@ internal fun EmmaHomeScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (recording) {
-                        OutlinedButton(
+                        Button(
                             onClick = onManualRespond,
                             enabled = modelReady && !busy,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .heightIn(min = 64.dp)
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                        ) { Text("ここで返事して") }
+                        ) { Text("今すぐ返事する") }
                     }
                     Row(
                         Modifier.fillMaxWidth(),
@@ -181,7 +182,7 @@ internal fun EmmaHomeScreen(
                                     .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                             ) { Text("会話を始める", textAlign = TextAlign.Center) }
                         } else {
-                            Button(
+                            OutlinedButton(
                                 onClick = onStopSession,
                                 modifier = Modifier.weight(0.72f).heightIn(min = 64.dp),
                             ) { Text("会話を止める", textAlign = TextAlign.Center) }
@@ -449,7 +450,7 @@ private fun EmmaCoachMarkOverlay(
                             "${aiName}が自己紹介しています。声が終わるまでそのまま聞いてください。"
                         }
                         1 -> "画面下で光っている「会話を始める」を実際に押してください。押すとマイクが始まり、会話を開始します。"
-                        else -> "赤ちゃんへ普段どおり日本語で話しかけてみてください。話し終わったら、必要に応じて明るく表示されている「ここで返事して」を押すと、その時点までの言葉をもとに${aiName}が返事します。「自動で返事」がオンの場合は、押さなくても話し終わりを検出して自動で返事します。"
+                        else -> "赤ちゃんへ普段どおり日本語で話しかけてみてください。話し終わったら、必要に応じて明るく表示されている「今すぐ返事する」を押すと、その時点までの言葉をもとに${aiName}が返事します。「自動で返事」がオンの場合は、押さなくても話し終わりを検出して自動で返事します。"
                     },
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -464,7 +465,7 @@ private fun EmmaCoachMarkOverlay(
                         Button(onClick = onNext, enabled = introReady) { Text("次へ") }
                     } else if (step == 2) {
                         Text(
-                            "↓ 必要なら「ここで返事して」を押す",
+                            "↓ 必要なら「今すぐ返事する」を押す",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                         )
