@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.38**
+**現在のAndroid安定版：v1.9.39**
 
-**versionCode：121**
+**versionCode：122**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.38
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.38/Mitsukotoba-v1.9.38-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.39
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.39/Mitsukotoba-v1.9.39-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.38は、設定画面を意味ごとのカードに整理した版です。「画面表示」「画面オフ中の会話」「会話履歴」をそれぞれ分け、画面オフ会話と通知停止だけは関連設定として同じカードにまとめました。各カードの冒頭に短い説明を追加し、「押して聞く」の1文／3文設定は押して聞く画面側にあるため設定画面から削除しました。v1.9.37までの表示・戻る操作修正は維持します。
+v1.9.39は、Web版のSemantic LiteをAndroidへ同期した版です。初期設定の「高性能モデルを使う」をオンにするとMoonshine Small＋Ruri v3 70M INT8による意味ベースの話題判定、オフにするとMoonshine Tiny＋軽量な従来Lite判定を使います。通常の設定画面では音声認識とSemanticを後から個別に変更できます。「今すぐAIが返事する」の強調、無入力時のgeneric応答、直前話題を最大6回保持する挙動も維持しています。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -326,15 +326,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.38**
+**Current stable Android release: v1.9.39**
 
-**versionCode: 121**
+**versionCode: 122**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.38
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.38/Mitsukotoba-v1.9.38-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.39
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.39/Mitsukotoba-v1.9.39-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.38 reorganizes Settings into separate meaning-based cards for display behavior, background conversation/notification controls, and conversation history. Each card starts with a concise explanation, and the duplicate Tap to Listen sentence-count option is removed from Settings because it is already available on the Tap to Listen screen. Earlier layout and Back-navigation fixes are retained.
+v1.9.39 aligns Android Lite with the Web Semantic Lite implementation. The first-run “high-performance model” preset selects Moonshine Small plus the Ruri v3 70M INT8 semantic topic classifier; turning it off selects Moonshine Tiny plus the lightweight rule matcher. ASR and Semantic can still be adjusted independently later in Settings. Manual-reply emphasis, generic replies on manual silence, and six-turn topic context are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
