@@ -608,6 +608,7 @@ internal fun EmmaSettingsScreen(
     semanticInstalled: Boolean,
     semanticDebugBusy: Boolean,
     semanticDebugResult: String?,
+    semanticDebugEnglish: String?,
     keepScreenOn: Boolean,
     aiName: String,
     onAiNameChange: (String) -> Unit,
@@ -617,6 +618,7 @@ internal fun EmmaSettingsScreen(
     onAsrModel: (MoonshineAsrModel) -> Unit,
     onSemanticEnabled: (Boolean) -> Unit,
     onRunSemanticDiagnostic: (String) -> Unit,
+    onSpeakSemanticDiagnostic: (String) -> Unit,
     onResetSemanticDiagnosticContext: () -> Unit,
     onLevel: (EnglishLevel) -> Unit,
     onPreview: () -> Unit,
@@ -1036,6 +1038,15 @@ internal fun EmmaSettingsScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                        if (!semanticDebugEnglish.isNullOrBlank()) {
+                            OutlinedButton(
+                                onClick = { onSpeakSemanticDiagnostic(semanticDebugEnglish) },
+                                enabled = enabled && !semanticDebugBusy,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text("Semantic英語をKikiで試聴")
+                            }
                         }
 
                         Text("AI音声の試聴・診断", style = MaterialTheme.typography.titleSmall)
