@@ -98,7 +98,10 @@ internal class LiteResponseEngine {
         val ruleScene = explicitScene ?: contextualScene
         val requested = if (semantic?.topic == "generic") null else findScene(semantic?.topic)
         val validSemantic = semantic != null && (semantic.topic == "generic" || requested != null)
-        val semanticUsed = validSemantic
+        val semanticUsed = validSemantic && (
+            semantic?.mode == "semantic" ||
+                (semantic?.mode == "guard" && ruleScene == null)
+            )
         var scene = if (semanticUsed) requested else ruleScene
         var contextUsed = !semanticUsed && contextualScene != null
 
