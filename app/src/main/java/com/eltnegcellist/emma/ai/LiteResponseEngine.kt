@@ -114,6 +114,30 @@ internal class LiteResponseEngine {
         )
     }
 
+    fun respondGeneric(spokenBabyName: String = ""): LiteResponse {
+        val safeName = sanitizeName(spokenBabyName)
+        val forceName = safeName.isNotBlank() &&
+            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW
+        val suppressName = safeName.isNotBlank() &&
+            turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
+        val raw = chooseReply(genericReplies, "", forceName, suppressName)
+        val named = applyName(raw, safeName, forceName)
+        val styled = alignToBabyStyle(named, "", null)
+
+        remember(raw, styled)
+        if (safeName.isNotBlank() && containsName(styled, safeName)) {
+            turnsSinceName = 0
+        } else {
+            turnsSinceName++
+        }
+        turnCounter++
+        return LiteResponse(
+            english = styled,
+            scene = "generic",
+            score = 0,
+        )
+    }
+
     fun resetConversationContext() {
         activeSceneId = null
         activeSceneTurnsRemaining = 0
