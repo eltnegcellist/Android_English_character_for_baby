@@ -118,7 +118,7 @@ notice/source-availability obligations remain applicable.
 - ModernBERT-Ja provenance notice: MIT
 - Tokenizer provenance notice: MIT
 
-Android v1.9.39 downloads the same pinned Semantic Lite model, tokenizer and
+Android v1.9.39+ downloads the same pinned Semantic Lite model, tokenizer and
 topic-classification head used by the Web app. The model is executed locally
 with the existing ONNX Runtime Android dependency; no parent speech is sent to
 a cloud inference service. The copied notices and model card are under
