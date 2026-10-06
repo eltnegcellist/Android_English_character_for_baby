@@ -295,6 +295,18 @@ class LiteResponseEngineTest {
     }
 
     @Test
+    fun explicitGenericReplyIgnoresStickyTopicWithoutClearingIt() {
+        val engine = LiteResponseEngine()
+
+        assertEquals("milk", engine.respond("ミルク飲もうね").scene)
+        val generic = engine.respondGeneric()
+        assertEquals("generic", generic.scene)
+        assertTrue(generic.english.isNotBlank())
+
+        assertEquals("milk", engine.respond("どうかな").scene)
+    }
+
+    @Test
     fun genericFallbackHasBroadVarietyAcrossRepeatedUnknownSpeech() {
         val engine = LiteResponseEngine()
         val outputs = (0 until 24).map {
