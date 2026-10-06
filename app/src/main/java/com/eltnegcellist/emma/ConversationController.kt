@@ -211,7 +211,7 @@ internal class ConversationController(val context: Context) {
                         if (recording) recorder.resumeBuffering(clearExisting = true)
                         status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE
                         statusMessage = if (recording) {
-                            if (autoRespond) "普通に話しかけてください。" else "話したところで「ここで返事して」を押してください。"
+                            if (autoRespond) "普通に話しかけてください。" else "話したところで「今すぐAIが返事する」を押してください。"
                         } else {
                             "試聴を終了しました。"
                         }
@@ -269,9 +269,9 @@ internal class ConversationController(val context: Context) {
                 EmmaWorkQueue.execute { lite.resetConversationContext() }
                 status = ProductionEmmaStatus.LISTENING
                 statusMessage = if (autoRespond) {
-                    "普通に話しかけてください。必要なら「ここで返事して」で区切れます。"
+                    "普通に話しかけてください。必要なら「今すぐAIが返事する」で区切れます。"
                 } else {
-                    "話したところで「ここで返事して」を押してください。"
+                    "話したところで「今すぐAIが返事する」を押してください。"
                 }
             }
             .onFailure {
@@ -299,6 +299,68 @@ internal class ConversationController(val context: Context) {
         onStopped?.invoke()
     }
 
+    private fun respondGenericallyToManualRequest() {
+        if (!recording || generating || status == ProductionEmmaStatus.SPEAKING) return
+
+        val ticket = session.ticket()
+        val requestedLevel = englishLevel
+        val requestedMode = engineMode
+        latestTranscript = ""
+        latestEmmaText = ""
+        generating = true
+        recorder.pauseBuffering()
+        recorder.clear()
+        status = ProductionEmmaStatus.THINKING
+        statusMessage = "返事を考えています…"
+
+        DiagnosticStore.mark(
+            context,
+            "manual_generic_response_started",
+            "mode=${requestedMode.label} reason=no_meaningful_speech",
+        )
+
+        EmmaWorkQueue.execute {
+            val result = lite.createGenericEnglishIsland(requestedLevel)
+            mainHandler.post {
+                if (disposed) return@post
+                if (!session.accepts(ticket)) return@post
+                generating = false
+
+                result.onSuccess { english ->
+                    val spokenEnglish = AiCharacterName.stripLeadingSpeakerLabel(english, resolvedAiName)
+                    latestEmmaText = spokenEnglish
+                    status = ProductionEmmaStatus.SPEAKING
+                    statusMessage = "${resolvedAiName}が話しています。"
+                    voiceError = null
+                    playbackHistory.offer(
+                        HistoryEntry.create(
+                            sessionId,
+                            "",
+                            spokenEnglish,
+                            "generic",
+                            requestedMode.savedValue.lowercase(),
+                        )
+                    )
+                    if (!speakEmma(spokenEnglish)) {
+                        playbackHistory.cancel()
+                        recorder.resumeBuffering(clearExisting = true)
+                        endpointStartedNanos = null
+                        ttsRequestedAfterEndpointMillis = null
+                        status = ProductionEmmaStatus.ERROR
+                        statusMessage = voiceError ?: "音声を再生できませんでした。"
+                    }
+                }.onFailure { error ->
+                    recorder.resumeBuffering(clearExisting = true)
+                    endpointStartedNanos = null
+                    ttsRequestedAfterEndpointMillis = null
+                    status = ProductionEmmaStatus.ERROR
+                    statusMessage =
+                        "みつことばの生成に失敗しました: ${error.message ?: error.javaClass.simpleName}"
+                }
+            }
+        }
+    }
+
     fun askEmma(automatic: Boolean = false) {
         if (!recording || generating || status == ProductionEmmaStatus.THINKING || status == ProductionEmmaStatus.SPEAKING) return
         val activeReady = when (engineMode) {
@@ -313,10 +375,7 @@ internal class ConversationController(val context: Context) {
 
         val minimumSeconds = if (automatic) 0.45 else 0.8
         if (recorder.secondsAvailable() < minimumSeconds) {
-            if (!automatic) {
-                status = ProductionEmmaStatus.LISTENING
-                statusMessage = "もう少し話してください。"
-            }
+            if (!automatic) respondGenericallyToManualRequest()
             return
         }
 
@@ -416,17 +475,25 @@ internal class ConversationController(val context: Context) {
                     val noMeaningfulSpeech =
                         error.message?.contains("聞き取れませんでした") == true
 
-                    recorder.resumeBuffering(clearExisting = true)
-                    if (noMeaningfulSpeech) {
+                    if (noMeaningfulSpeech && !automatic) {
+                        DiagnosticStore.mark(
+                            context,
+                            "meaningless_turn_replaced_with_generic",
+                            "automatic=false message=${error.message ?: ""}",
+                        )
+                        respondGenericallyToManualRequest()
+                    } else if (noMeaningfulSpeech) {
+                        recorder.resumeBuffering(clearExisting = true)
                         latestEmmaText = ""
                         status = ProductionEmmaStatus.LISTENING
                         statusMessage = "意味のあることばを待っています。"
                         DiagnosticStore.mark(
                             context,
                             "meaningless_turn_suppressed",
-                            "automatic=$automatic message=${error.message ?: ""}",
+                            "automatic=true message=${error.message ?: ""}",
                         )
                     } else {
+                        recorder.resumeBuffering(clearExisting = true)
                         status = ProductionEmmaStatus.ERROR
                         statusMessage =
                             "みつことばの生成に失敗しました: ${error.message ?: error.javaClass.simpleName}"
@@ -502,7 +569,7 @@ internal class ConversationController(val context: Context) {
                             }, 140L)
                         } else if (!generating && status != ProductionEmmaStatus.SPEAKING) {
                             status = ProductionEmmaStatus.LISTENING
-                            statusMessage = "聞き取りました。「ここで返事して」で返します。"
+                            statusMessage = "聞き取りました。「今すぐAIが返事する」で返します。"
                         }
                     }
                 }
