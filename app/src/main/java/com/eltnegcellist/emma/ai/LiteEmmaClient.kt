@@ -57,6 +57,28 @@ class LiteEmmaClient(
         adjusted
     }
 
+    fun createGenericEnglishIsland(
+        level: EnglishLevel,
+    ): Result<String> = runCatching {
+        val babyName = preferences.getString("baby_name", "").orEmpty()
+        val explicitSpokenName = preferences.getString("baby_spoken_name", "").orEmpty()
+        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, explicitSpokenName)
+        val spokenName = BabyNamePronunciation.withChanSuffix(
+            baseSpokenName,
+            preferences.getBoolean("use_chan_suffix", true),
+        )
+        val selected = responses.respondGeneric(spokenName)
+        lastTopic = selected.scene
+        val adjusted = fitLevel(selected.english, level)
+
+        DiagnosticStore.mark(
+            appContext,
+            "lite_generic_response_selected",
+            "scene=${selected.scene} level=${level.name} reason=manual_without_meaningful_speech",
+        )
+        adjusted
+    }
+
     fun close() = asr.close()
 
     private fun fitLevel(text: String, level: EnglishLevel): String {
