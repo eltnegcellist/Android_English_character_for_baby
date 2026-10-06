@@ -212,11 +212,13 @@ private fun ProductionEmmaApp() {
     var lastHandledPreparationAtMillis by remember { mutableStateOf(0L) }
     var semanticDebugBusy by remember { mutableStateOf(false) }
     var semanticDebugResult by remember { mutableStateOf<String?>(null) }
+    var semanticDebugEnglish by remember { mutableStateOf<String?>(null) }
 
     fun runSemanticDebug(text: String) {
         if (semanticDebugBusy) return
         semanticDebugBusy = true
         semanticDebugResult = "判定中…"
+        semanticDebugEnglish = null
         EmmaWorkQueue.execute {
             val result = lite.debugCompareText(text)
             mainHandler.post {
@@ -224,6 +226,7 @@ private fun ProductionEmmaApp() {
                 semanticDebugBusy = false
                 semanticDebugResult = result.fold(
                     onSuccess = { comparison ->
+                        semanticDebugEnglish = comparison.semanticEnglish
                         buildString {
                             append("従来Lite: ").append(comparison.ruleScene)
                             append("\nSemantic採用: ").append(comparison.semanticScene)
@@ -1033,6 +1036,7 @@ private fun ProductionEmmaApp() {
             semanticInstalled = RuriSemanticModelStore.isInstalled(context),
             semanticDebugBusy = semanticDebugBusy,
             semanticDebugResult = semanticDebugResult,
+            semanticDebugEnglish = semanticDebugEnglish,
             keepScreenOn = keepScreenOn,
             aiName = aiName,
             onAiNameChange = { value ->
@@ -1092,6 +1096,7 @@ private fun ProductionEmmaApp() {
                 }
             },
             onRunSemanticDiagnostic = ::runSemanticDebug,
+            onSpeakSemanticDiagnostic = { text -> runtime.replay(text) },
             onResetSemanticDiagnosticContext = {
                 lite.resetDebugConversationContext()
                 semanticDebugResult = "診断用の直前話題をクリアしました。"
