@@ -774,6 +774,21 @@ private fun ProductionEmmaApp() {
         } else if (!modelPresent) {
             settingsOpen = true
         }
+
+        // Existing users do not revisit first-run setup after an update.
+        // Keep Web's default-on Semantic behavior by preparing Ruri quietly;
+        // Lite continues with rule matching until the verified assets are ready.
+        if (
+            !onboardingOpen &&
+            semanticEnabled &&
+            !RuriSemanticModelStore.isInstalled(context)
+        ) {
+            ModelPreparationManager.start(
+                context,
+                ModelPreparationKind.SEMANTIC,
+                initialAsrModel,
+            )
+        }
     }
 
     LaunchedEffect(
