@@ -780,6 +780,7 @@ private fun ProductionEmmaApp() {
         // Lite continues with rule matching until the verified assets are ready.
         if (
             !onboardingOpen &&
+            initialEngineMode == ConversationEngineMode.LITE &&
             semanticEnabled &&
             !RuriSemanticModelStore.isInstalled(context)
         ) {
