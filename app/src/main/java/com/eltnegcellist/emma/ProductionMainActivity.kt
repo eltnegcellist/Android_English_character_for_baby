@@ -977,6 +977,8 @@ private fun ProductionEmmaApp() {
             lastEndpointToFirstAudioMillis = lastEndpointToFirstAudioMillis,
             engineMode = engineMode,
             asrModel = asrModel,
+            semanticEnabled = semanticEnabled,
+            semanticInstalled = RuriSemanticModelStore.isInstalled(context),
             keepScreenOn = keepScreenOn,
             aiName = aiName,
             onAiNameChange = { value ->
@@ -1016,6 +1018,16 @@ private fun ProductionEmmaApp() {
                     val needsDownload = !MoonshineModelStore.isInstalled(context, selected)
                     activateAsrModel(selected)
                     if (needsDownload) startLiteAutomaticSetup()
+                }
+            },
+            onSemanticEnabled = { enabled ->
+                if (!recording && !busy) {
+                    semanticEnabled = enabled
+                    preferences.edit().putBoolean("semantic_enabled", enabled).apply()
+                    lite.resetConversationContext()
+                    if (enabled && !RuriSemanticModelStore.isInstalled(context)) {
+                        startSemanticAutomaticSetup()
+                    }
                 }
             },
             onLevel = { englishLevel = it; preferences.edit().putString("level", it.name).apply() },
