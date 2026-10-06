@@ -210,6 +210,40 @@ private fun ProductionEmmaApp() {
     var screenIntroductionPlaying by runtime.screenIntroductionPlayingState
     var tutorialUserSpoke by runtime.tutorialUserSpokeState
     var lastHandledPreparationAtMillis by remember { mutableStateOf(0L) }
+    var semanticDebugBusy by remember { mutableStateOf(false) }
+    var semanticDebugResult by remember { mutableStateOf<String?>(null) }
+
+    fun runSemanticDebug(text: String) {
+        if (semanticDebugBusy) return
+        semanticDebugBusy = true
+        semanticDebugResult = "判定中…"
+        EmmaWorkQueue.execute {
+            val result = lite.debugCompareText(text)
+            mainHandler.post {
+                if (disposed) return@post
+                semanticDebugBusy = false
+                semanticDebugResult = result.fold(
+                    onSuccess = { comparison ->
+                        buildString {
+                            append("従来Lite: ").append(comparison.ruleScene)
+                            append("\nSemantic採用: ").append(comparison.semanticScene)
+                            append("\nSemantic分類: ").append(comparison.semanticTopic ?: "—")
+                            comparison.semanticProbability?.let {
+                                append("  ").append(String.format(java.util.Locale.US, "%.1f%%", it * 100.0))
+                            }
+                            comparison.semanticMargin?.let {
+                                append(" / 候補差 ").append(String.format(java.util.Locale.US, "%.1fpt", it * 100.0))
+                            }
+                            append("\n直前話題を使用: ").append(if (comparison.semanticContextUsed) "はい" else "いいえ")
+                            append("\n従来Lite英語: ").append(comparison.ruleEnglish)
+                            append("\nSemantic英語: ").append(comparison.semanticEnglish)
+                        }
+                    },
+                    onFailure = { error -> "比較できませんでした: ${error.message ?: error.javaClass.simpleName}" },
+                )
+            }
+        }
+    }
 
     DisposableEffect(recording, keepScreenOn) {
         val window = (context as? ComponentActivity)?.window
@@ -995,6 +1029,8 @@ private fun ProductionEmmaApp() {
             asrModel = asrModel,
             semanticEnabled = semanticEnabled,
             semanticInstalled = RuriSemanticModelStore.isInstalled(context),
+            semanticDebugBusy = semanticDebugBusy,
+            semanticDebugResult = semanticDebugResult,
             keepScreenOn = keepScreenOn,
             aiName = aiName,
             onAiNameChange = { value ->
@@ -1052,6 +1088,11 @@ private fun ProductionEmmaApp() {
                         startSemanticAutomaticSetup()
                     }
                 }
+            },
+            onRunSemanticDiagnostic = ::runSemanticDebug,
+            onResetSemanticDiagnosticContext = {
+                lite.resetDebugConversationContext()
+                semanticDebugResult = "診断用の直前話題をクリアしました。"
             },
             onLevel = { englishLevel = it; preferences.edit().putString("level", it.name).apply() },
             onPreview = {
