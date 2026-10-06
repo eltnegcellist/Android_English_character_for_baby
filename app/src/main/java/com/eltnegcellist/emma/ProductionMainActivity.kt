@@ -1026,6 +1026,13 @@ private fun ProductionEmmaApp() {
                         fullSetupOpen = true
                     } else {
                         activateEngineMode(selected)
+                        if (
+                            selected == ConversationEngineMode.LITE &&
+                            semanticEnabled &&
+                            !RuriSemanticModelStore.isInstalled(context)
+                        ) {
+                            startSemanticAutomaticSetup()
+                        }
                     }
                 }
             },
