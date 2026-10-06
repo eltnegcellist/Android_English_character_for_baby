@@ -5,6 +5,17 @@ import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineJapaneseAsr
 import com.eltnegcellist.emma.tts.DiagnosticStore
 
+internal data class LiteDiagnosticComparison(
+    val ruleScene: String,
+    val ruleEnglish: String,
+    val semanticScene: String,
+    val semanticEnglish: String,
+    val semanticTopic: String?,
+    val semanticProbability: Double?,
+    val semanticMargin: Double?,
+    val semanticContextUsed: Boolean,
+)
+
 class LiteEmmaClient(
     context: Context,
 ) {
@@ -15,6 +26,8 @@ class LiteEmmaClient(
     private val asr = MoonshineJapaneseAsr(appContext)
     private val semantic = RuriSemanticClassifier(appContext)
     private val responses = LiteResponseEngine()
+    private val debugRuleResponses = LiteResponseEngine()
+    private val debugSemanticResponses = LiteResponseEngine()
 
     fun isReady(): Boolean = asr.isReady()
 
@@ -76,6 +89,43 @@ class LiteEmmaClient(
                 "level=${level.name} transcript=${transcript.take(80)}",
         )
         adjusted
+    }
+
+    fun debugCompareText(text: String): Result<LiteDiagnosticComparison> = runCatching {
+        val transcript = text.trim()
+        require(transcript.isNotBlank()) { "日本語を入力してください。" }
+
+        val babyName = preferences.getString("baby_name", "").orEmpty()
+        val explicitSpokenName = preferences.getString("baby_spoken_name", "").orEmpty()
+        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, explicitSpokenName)
+        val spokenName = BabyNamePronunciation.withChanSuffix(
+            baseSpokenName,
+            preferences.getBoolean("use_chan_suffix", true),
+        )
+        val prediction = if (RuriSemanticModelStore.isInstalled(appContext)) {
+            semantic.predict(transcript).getOrThrow()
+        } else {
+            null
+        }
+
+        val rule = debugRuleResponses.respond(transcript, spokenName)
+        val semanticResponse = debugSemanticResponses.respond(transcript, spokenName, prediction)
+
+        LiteDiagnosticComparison(
+            ruleScene = rule.scene,
+            ruleEnglish = rule.english,
+            semanticScene = semanticResponse.scene,
+            semanticEnglish = semanticResponse.english,
+            semanticTopic = prediction?.topic,
+            semanticProbability = prediction?.probability,
+            semanticMargin = prediction?.margin,
+            semanticContextUsed = semanticResponse.contextUsed,
+        )
+    }
+
+    fun resetDebugConversationContext() {
+        debugRuleResponses.resetConversationContext()
+        debugSemanticResponses.resetConversationContext()
     }
 
     fun createGenericEnglishIsland(
