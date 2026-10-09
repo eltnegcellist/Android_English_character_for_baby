@@ -16,4 +16,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "EmmaBilingual"
 include(":app")
+include(":semantic-parity-host")
 
