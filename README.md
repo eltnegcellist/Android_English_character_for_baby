@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.40**
+**現在のAndroid安定版：v1.9.41**
 
-**versionCode：123**
+**versionCode：124**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.40
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.40/Mitsukotoba-v1.9.40-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.41
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.41/Mitsukotoba-v1.9.41-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.40は、v1.9.39で揃えたWeb版Semantic Liteとの通常機能パリティを維持しつつ、隠し開発者設定を拡張した版です。初期設定の「高性能モデルを使う」はオンでMoonshine Small＋Ruri v3 70M INT8、オフでMoonshine Tiny＋軽量な従来Lite判定を選びます。隠し設定では従来Lite・Semantic・Guardの比較、モデル状態、診断TXT、クラッシュ詳細ZIPを利用できます。
+v1.9.41は、Ruri SemanticのONNX出力を配列順ではなく明示的な`sentence_embedding`名で取得するよう修正した版です。Semantic実推論のAndroid/Web自動一致テストを追加する過程で、実行条件によって出力順に依存すると誤った384次元出力を読む可能性があることが分かったため修正しました。固定14ケースをWeb WASMとAndroid相当Java ORTで実推論し、token ID・最終topic/raw topic・スコア差をCIで監視します。v1.9.40の診断機能と通常UIは維持します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -282,7 +282,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
 | LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
-Android v1.9.40はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
+Android v1.9.41はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
@@ -292,11 +292,11 @@ Android v1.9.40はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### プロジェクト状況
 
-**v1.9.40を現在の安定基準版とします。**
+**v1.9.41を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.40を再現可能な安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.41を再現可能な安定基準版として保持します。
 
 CIではSemantic実推論のAndroid/Web一致も検証します。固定ケースをWeb WASMとAndroid相当のJava ONNX Runtimeで実際に推論し、token ID、話題分類、確率・marginの差を自動検出します。これは分類精度のベンチマークではなく、両実装の回帰差を検出するためのテストです。
 
@@ -332,15 +332,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.40**
+**Current stable Android release: v1.9.41**
 
-**versionCode: 123**
+**versionCode: 124**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.40
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.40/Mitsukotoba-v1.9.40-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.41
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.41/Mitsukotoba-v1.9.41-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.40 retains the v1.9.39 Web/Android Semantic Lite parity and expands hidden developer diagnostics. The first-run high-performance preset still selects Moonshine Small plus Ruri v3 70M INT8, while the lightweight preset uses Moonshine Tiny plus legacy Lite matching. Hidden tools now compare Lite, Semantic, and Guard behavior, show model readiness, and export diagnostic TXT or crash-detail ZIP files.
+v1.9.41 retains the v1.9.39 Web/Android Semantic Lite parity and expands hidden developer diagnostics. The first-run high-performance preset still selects Moonshine Small plus Ruri v3 70M INT8, while the lightweight preset uses Moonshine Tiny plus legacy Lite matching. Hidden tools now compare Lite, Semantic, and Guard behavior, show model readiness, and export diagnostic TXT or crash-detail ZIP files.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -589,7 +589,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
 | LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
-Android v1.9.40 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
+Android v1.9.41 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -599,11 +599,11 @@ See:
 
 ### Project Status
 
-**v1.9.40 is the current stable baseline.**
+**v1.9.41 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.40 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.41 remains reproducible as the stable Mitsukotoba reference point.
 
 ### Development Documents
 
