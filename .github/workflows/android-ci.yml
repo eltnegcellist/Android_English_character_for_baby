@@ -23,6 +23,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Checkout Web Semantic runtime
+        uses: actions/checkout@v5
+        with:
+          repository: eltnegcellist/Web_EmmaLocal_English_for_babies
+          ref: main
+          path: .web-parity
+
       - name: Verify shared topic source and generated help
         run: |
           python3 scripts/sync-lite-topic-contract.py --check
@@ -41,6 +48,24 @@ jobs:
         with:
           gradle-version: '9.5.0'
           cache-disabled: true
+
+      - name: Compare actual Android and Web Semantic inference
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Web parity revision: $(git -C .web-parity rev-parse HEAD)"
+          node .web-parity/scripts/semantic-parity-web.mjs             --output .semantic-parity/web.json
+          WEB_ROOT="$PWD/.web-parity"
+          gradle --no-daemon :semantic-parity-host:run --stacktrace --args="--web $WEB_ROOT/.semantic-parity/web.json --model $WEB_ROOT/semantic-assets/ruri70-int8-bd500193/model.onnx --tokenizer $WEB_ROOT/semantic-assets/ruri70-int8-bd500193/tokenizer.json --head $WEB_ROOT/semantic-assets/ruri70-int8-bd500193/head-topic.f32 --output $PWD/build/semantic-parity/android-vs-web.json"
+          cat build/semantic-parity/android-vs-web.json
+
+      - name: Upload Semantic parity report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-runtime-parity
+          path: build/semantic-parity/android-vs-web.json
+          if-no-files-found: error
+          retention-days: 2
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
