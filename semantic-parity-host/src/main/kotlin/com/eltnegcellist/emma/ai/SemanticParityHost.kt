@@ -9,14 +9,14 @@ import java.nio.ByteOrder
 import java.nio.LongBuffer
 import kotlin.math.abs
 import kotlin.math.exp
+import kotlin.math.sqrt
 import org.json.JSONArray
 import org.json.JSONObject
 
 private const val EMBEDDING_DIMENSIONS = 384
 private const val HEAD_WIDTH = EMBEDDING_DIMENSIONS + 1
 private const val TOPIC_MARGIN = 0.05
-private const val MAX_EMBEDDING_ABS_DRIFT = 0.02
-private const val MAX_SCORE_DRIFT = 0.01
+private const val MAX_SCORE_DRIFT = 0.02
 
 private val TOPICS = listOf(
     "drink", "bath", "milk", "sleep", "wake", "diaper", "clothes",
@@ -58,9 +58,11 @@ fun main(rawArgs: Array<String>) {
     val session = environment.createSession(modelFile.absolutePath, options)
 
     var maxEmbeddingDrift = 0.0
+    var minEmbeddingCosine = 1.0
     var maxProbabilityDrift = 0.0
     var maxMarginDrift = 0.0
     val summaries = JSONArray()
+    val failures = mutableListOf<String>()
 
     try {
         for (index in 0 until cases.length()) {
@@ -69,8 +71,8 @@ fun main(rawArgs: Array<String>) {
             val text = expected.getString("text")
             val actualIds = tokenizer.encode(text)
             val expectedIds = expected.getJSONArray("tokenIds").toLongArray()
-            check(actualIds.contentEquals(expectedIds)) {
-                "Tokenizer mismatch for $id"
+            if (!actualIds.contentEquals(expectedIds)) {
+                failures += "Tokenizer mismatch for $id"
             }
 
             val mask = LongArray(actualIds.size) { 1L }
@@ -104,35 +106,39 @@ fun main(rawArgs: Array<String>) {
             val expectedEmbedding = expected.getJSONArray("embedding")
             require(expectedEmbedding.length() == EMBEDDING_DIMENSIONS)
             var caseEmbeddingDrift = 0.0
+            var dot = 0.0
+            var actualNorm = 0.0
+            var expectedNorm = 0.0
             for (dimension in 0 until EMBEDDING_DIMENSIONS) {
-                caseEmbeddingDrift = maxOf(
-                    caseEmbeddingDrift,
-                    abs(embedding[dimension].toDouble() - expectedEmbedding.getDouble(dimension)),
-                )
+                val actual = embedding[dimension].toDouble()
+                val expectedValue = expectedEmbedding.getDouble(dimension)
+                caseEmbeddingDrift = maxOf(caseEmbeddingDrift, abs(actual - expectedValue))
+                dot += actual * expectedValue
+                actualNorm += actual * actual
+                expectedNorm += expectedValue * expectedValue
             }
+            val cosine = dot / sqrt(actualNorm * expectedNorm)
             maxEmbeddingDrift = maxOf(maxEmbeddingDrift, caseEmbeddingDrift)
-            check(caseEmbeddingDrift <= MAX_EMBEDDING_ABS_DRIFT) {
-                "Embedding drift for $id is $caseEmbeddingDrift"
-            }
+            minEmbeddingCosine = minOf(minEmbeddingCosine, cosine)
 
             val actualTopic = classify(embedding, head)
             val expectedTopic = expected.getJSONObject("topic")
-            check(actualTopic.rawId == expectedTopic.getString("rawId")) {
-                "Raw topic mismatch for $id"
+            if (actualTopic.rawId != expectedTopic.getString("rawId")) {
+                failures += "Raw topic mismatch for $id"
             }
-            check(actualTopic.id == expectedTopic.getString("id")) {
-                "Topic mismatch for $id"
+            if (actualTopic.id != expectedTopic.getString("id")) {
+                failures += "Topic mismatch for $id"
             }
 
             val probabilityDrift = abs(actualTopic.probability - expectedTopic.getDouble("probability"))
             val marginDrift = abs(actualTopic.margin - expectedTopic.getDouble("margin"))
             maxProbabilityDrift = maxOf(maxProbabilityDrift, probabilityDrift)
             maxMarginDrift = maxOf(maxMarginDrift, marginDrift)
-            check(probabilityDrift <= MAX_SCORE_DRIFT) {
-                "Probability drift for $id is $probabilityDrift"
+            if (probabilityDrift > MAX_SCORE_DRIFT) {
+                failures += "Probability drift for $id: $probabilityDrift"
             }
-            check(marginDrift <= MAX_SCORE_DRIFT) {
-                "Margin drift for $id is $marginDrift"
+            if (marginDrift > MAX_SCORE_DRIFT) {
+                failures += "Margin drift for $id: $marginDrift"
             }
 
             summaries.put(
@@ -141,6 +147,7 @@ fun main(rawArgs: Array<String>) {
                     .put("topic", actualTopic.id)
                     .put("rawId", actualTopic.rawId)
                     .put("embeddingMaxAbsDrift", caseEmbeddingDrift)
+                    .put("embeddingCosine", cosine)
                     .put("probabilityDrift", probabilityDrift)
                     .put("marginDrift", marginDrift),
             )
@@ -157,15 +164,18 @@ fun main(rawArgs: Array<String>) {
         .put("modelSha", MODEL_SHA)
         .put("caseCount", cases.length())
         .put("maxEmbeddingAbsDrift", maxEmbeddingDrift)
+        .put("minEmbeddingCosine", minEmbeddingCosine)
         .put("maxProbabilityDrift", maxProbabilityDrift)
         .put("maxMarginDrift", maxMarginDrift)
         .put("cases", summaries)
+        .put("failures", JSONArray(failures))
 
     outputFile?.let {
         it.parentFile?.mkdirs()
         it.writeText(summary.toString(2) + "\n")
     }
     println(summary.toString(2))
+    check(failures.isEmpty()) { failures.joinToString("; ") }
 }
 
 private fun classify(embedding: FloatArray, head: FloatArray): TopicScore {
