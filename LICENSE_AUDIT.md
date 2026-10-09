@@ -142,3 +142,8 @@ v1.9.39 adds the pinned Ruri v3 70M INT8 Semantic topic model to Android Lite, u
 
 v1.9.40 expands hidden diagnostics only: typed Japanese can be compared across legacy Lite, Ruri Semantic, and Guard selection; model/runtime readiness is shown; and existing diagnostic TXT / crash-detail ZIP export controls are restored. It does not add a new runtime, model family, TTS backend, eSpeak NG, sherpa-onnx, or GPL TTS dependency. The v1.9.39 Ruri / ModernBERT attribution and existing ONNX Runtime provenance checks remain unchanged.
 
+
+
+## v1.9.41 Semantic output selection and parity CI
+
+Changes Ruri Semantic ONNX output selection to the named `sentence_embedding` output and adds host-side parity test infrastructure using ONNX Runtime Java 1.23.2 for CI only. The Android APK runtime remains the existing ONNX Runtime Android 1.23.2; no new production model or TTS dependency is added.
