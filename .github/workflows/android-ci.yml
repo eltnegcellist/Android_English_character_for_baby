@@ -60,6 +60,7 @@ jobs:
           cat build/semantic-parity/android-vs-web.json
 
       - name: Upload Semantic parity report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semantic-runtime-parity
