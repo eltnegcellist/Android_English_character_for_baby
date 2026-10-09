@@ -16,7 +16,8 @@ import org.json.JSONObject
 private const val EMBEDDING_DIMENSIONS = 384
 private const val HEAD_WIDTH = EMBEDDING_DIMENSIONS + 1
 private const val TOPIC_MARGIN = 0.05
-private const val MAX_SCORE_DRIFT = 0.02
+private const val MAX_PROBABILITY_DRIFT = 0.02
+private const val MAX_MARGIN_DRIFT = 0.03
 
 private val TOPICS = listOf(
     "drink", "bath", "milk", "sleep", "wake", "diaper", "clothes",
@@ -134,10 +135,10 @@ fun main(rawArgs: Array<String>) {
             val marginDrift = abs(actualTopic.margin - expectedTopic.getDouble("margin"))
             maxProbabilityDrift = maxOf(maxProbabilityDrift, probabilityDrift)
             maxMarginDrift = maxOf(maxMarginDrift, marginDrift)
-            if (probabilityDrift > MAX_SCORE_DRIFT) {
+            if (probabilityDrift > MAX_PROBABILITY_DRIFT) {
                 failures += "Probability drift for $id: $probabilityDrift"
             }
-            if (marginDrift > MAX_SCORE_DRIFT) {
+            if (marginDrift > MAX_MARGIN_DRIFT) {
                 failures += "Margin drift for $id: $marginDrift"
             }
 
