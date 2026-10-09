@@ -23,6 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+
       - name: Verify shared topic source and generated help
         run: |
           python3 scripts/sync-lite-topic-contract.py --check
@@ -41,6 +42,7 @@ jobs:
         with:
           gradle-version: '9.5.0'
           cache-disabled: true
+
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4

@@ -82,5 +82,5 @@ Webの画面ロック中の継続は保証しません。
 
 設定画面の「みつことば Android」5回タップで開く開発者設定を拡張します。従来のKiki試聴・TTS実測に加え、同じ日本語を従来Lite・Ruri Semantic・Guard（既存ルール優先）で比較し、分類スコア・候補差・採用話題・英語を表示します。診断用の話題履歴は通常会話と分離します。
 
-既存コードに残っていた診断ログTXTとクラッシュ詳細ZIPの書き出し導線も復活させます。モデル準備状態（Moonshine / Ruri / Kitten / Gemma）を隠し設定内で一覧できます。Web側にも実行環境・モデル状態・TTS直近計測の診断TXTと各診断ページへの導線を追加し、Full・Android OS固有機能を除く開発者向け診断の機能差を縮めます。Semantic実推論のクロスプラットフォーム自動一致テストは次の課題とします。
+既存コードに残っていた診断ログTXTとクラッシュ詳細ZIPの書き出し導線も復活させます。モデル準備状態（Moonshine / Ruri / Kitten / Gemma）を隠し設定内で一覧できます。Web側にも実行環境・モデル状態・TTS直近計測の診断TXTと各診断ページへの導線を追加し、Full・Android OS固有機能を除く開発者向け診断の機能差を縮めます。Semantic実推論のクロスプラットフォーム自動一致テストをCIへ追加します。固定14ケースをWebのWASM ONNX Runtime 1.30とAndroid相当のJava ONNX Runtime 1.23.2で毎回実推論し、Android本番と同じRuriSemanticTokenizerのtoken ID完全一致、最終topic/raw topic完全一致、probabilityは0.02、marginは0.03以内の許容差を検証します。embeddingはバックエンド固有の量子化数値差があるため診断値として記録し、合否はユーザーに影響する分類結果とスコア差で判定します。
 
