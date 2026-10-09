@@ -889,8 +889,14 @@ private fun ProductionEmmaApp() {
     }
 
     if (featureScreen != null) {
-        if (featureScreen == "history") HistoryScreen(runtime) { featureScreen = null }
-        else PlayScreen(runtime) { featureScreen = null }
+        when (featureScreen) {
+            "history" -> HistoryScreen(runtime) { featureScreen = null }
+            "repetitionLab" -> RepetitionLabScreen(runtime) {
+                featureScreen = null
+                settingsOpen = true
+            }
+            else -> PlayScreen(runtime) { featureScreen = null }
+        }
         return
     }
 
@@ -1123,6 +1129,12 @@ private fun ProductionEmmaApp() {
             },
             onExportDiagnostics = { diagnosticsExporter.launch("emma-beta13-diagnostics.txt") },
             onExportCrashDetails = { crashDetailsExporter.launch("emma-beta13-crash-details.zip") },
+            onOpenRepetitionLab = {
+                stopSession()
+                autoStartPending = false
+                settingsOpen = false
+                featureScreen = "repetitionLab"
+            },
             onOpenTutorial = {
                 stopSession()
                 settingsOpen = false
