@@ -84,3 +84,8 @@ Webの画面ロック中の継続は保証しません。
 
 既存コードに残っていた診断ログTXTとクラッシュ詳細ZIPの書き出し導線も復活させます。モデル準備状態（Moonshine / Ruri / Kitten / Gemma）を隠し設定内で一覧できます。Web側にも実行環境・モデル状態・TTS直近計測の診断TXTと各診断ページへの導線を追加し、Full・Android OS固有機能を除く開発者向け診断の機能差を縮めます。Semantic実推論のクロスプラットフォーム自動一致テストをCIへ追加します。固定14ケースをWebのWASM ONNX Runtime 1.30とAndroid相当のJava ONNX Runtime 1.23.2で毎回実推論し、Android本番と同じRuriSemanticTokenizerのtoken ID完全一致、最終topic/raw topic完全一致、probabilityは0.02、marginは0.03以内の許容差を検証します。embeddingはバックエンド固有の量子化数値差があるため診断値として記録し、合否はユーザーに影響する分類結果とスコア差で判定します。
 
+
+
+## v1.9.41 Semantic出力名の固定
+
+Ruri SemanticのONNX推論結果は出力配列の0番目ではなく、モデルが定義する `sentence_embedding` を名前で取得します。Semantic実推論のクロスランタイムテスト作成中、Java ORTで出力順に依存すると同じ384次元でも別出力を読む可能性が確認されたためです。固定14ケースの専用CIではtoken IDと最終topic/raw topicを完全一致、probability差0.02以内、margin差0.03以内で監視します。embeddingの数値差は診断値として保存します。
