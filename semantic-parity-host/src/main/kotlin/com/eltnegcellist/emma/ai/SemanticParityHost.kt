@@ -16,6 +16,7 @@ import org.json.JSONObject
 private const val EMBEDDING_DIMENSIONS = 384
 private const val HEAD_WIDTH = EMBEDDING_DIMENSIONS + 1
 private const val TOPIC_MARGIN = 0.05
+private const val MIN_EMBEDDING_COSINE = 0.995
 private const val MAX_PROBABILITY_DRIFT = 0.02
 private const val MAX_MARGIN_DRIFT = 0.03
 
@@ -122,6 +123,9 @@ fun main(rawArgs: Array<String>) {
             val cosine = dot / sqrt(actualNorm * expectedNorm)
             maxEmbeddingDrift = maxOf(maxEmbeddingDrift, caseEmbeddingDrift)
             minEmbeddingCosine = minOf(minEmbeddingCosine, cosine)
+            if (cosine < MIN_EMBEDDING_COSINE) {
+                failures += "Embedding cosine for $id: $cosine"
+            }
 
             val actualTopic = classify(embedding, head)
             val expectedTopic = expected.getJSONObject("topic")
