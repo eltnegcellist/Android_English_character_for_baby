@@ -39,10 +39,6 @@ class LiteEmmaClient(
     fun initialize(model: MoonshineAsrModel): Result<Unit> =
         asr.initialize(model, useChildcareKeyterms = true)
 
-    /** Phase 0 developer diagnostic: run the production Japanese ASR without response generation. */
-    internal fun debugTranscribe(wavAudio: ByteArray): Result<String> =
-        asr.transcribe(wavAudio)
-
     fun createEnglishIsland(
         wavAudio: ByteArray,
         level: EnglishLevel,
