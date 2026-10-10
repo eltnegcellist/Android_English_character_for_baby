@@ -306,18 +306,31 @@ class LiteResponseEngineTest {
     }
 
     @Test
-    fun semanticGenericUsesHeldTopicForSixFollowUpsLikeWeb() {
+    fun semanticGenericUsesHeldTopicForTwoFollowUpsLikeWeb() {
         val engine = LiteResponseEngine()
         val clearMilk = SemanticTopicPrediction("milk", probability = 0.95, margin = 0.80)
         val generic = SemanticTopicPrediction("generic", probability = 0.80, margin = 0.70)
 
         assertEquals("milk", engine.respond("ミルクを飲もうか", semantic = clearMilk).scene)
-        repeat(6) {
+        repeat(2) {
             val response = engine.respond("いいね", semantic = generic)
             assertEquals("milk", response.scene)
             assertTrue(response.contextUsed)
         }
         assertEquals("generic", engine.respond("どうかな", semantic = generic).scene)
+    }
+
+    @Test
+    fun oneOffSemanticMistakesExpireAfterTwoFollowUps() {
+        val generic = SemanticTopicPrediction("generic", probability = 0.80, margin = 0.70)
+        listOf("おはよう" to "diaper", "マユ" to "sleep").forEach { (utterance, mistakenTopic) ->
+            val engine = LiteResponseEngine()
+            val mistaken = SemanticTopicPrediction(mistakenTopic, probability = 0.95, margin = 0.80)
+            assertEquals(mistakenTopic, engine.respond(utterance, semantic = mistaken).scene)
+            assertEquals(mistakenTopic, engine.respond("どうかな", semantic = generic).scene)
+            assertEquals(mistakenTopic, engine.respond("いいね", semantic = generic).scene)
+            assertEquals("generic", engine.respond("どうかな", semantic = generic).scene)
+        }
     }
 
     @Test
@@ -341,16 +354,12 @@ class LiteResponseEngineTest {
     }
 
     @Test
-    fun recentTopicPersistsAcrossSixGenericFollowUps() {
+    fun recentTopicPersistsAcrossTwoGenericFollowUps() {
         val engine = LiteResponseEngine()
 
         assertEquals("milk", engine.respond("ミルク飲もうね").scene)
         assertEquals("milk", engine.respond("どうかな").scene)
-        assertEquals("milk", engine.respond("おいしいね").scene)
         assertEquals("milk", engine.respond("いい感じだね").scene)
-        assertEquals("milk", engine.respond("そのままでいいよ").scene)
-        assertEquals("milk", engine.respond("よかったね").scene)
-        assertEquals("milk", engine.respond("ゆっくりでいいよ").scene)
 
         val afterWindow = engine.respond("かわいいね")
         assertEquals("generic", afterWindow.scene)
