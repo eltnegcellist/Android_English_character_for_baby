@@ -7,7 +7,7 @@ import org.junit.Test
 
 class FullTopicTrackerTest {
     @Test
-    fun genericTurnsAreOmittedButStillAgeTheTwoTurnWindow() {
+    fun genericTurnsAreOmittedButStillAgeTheOneTurnWindow() {
         val tracker = FullTopicTracker()
 
         val first = tracker.observe("ミルク飲もうね")
@@ -15,7 +15,7 @@ class FullTopicTrackerTest {
         assertEquals("milk", first.carriedTopic)
         assertTrue(first.recentConcreteTopics.isEmpty())
 
-        listOf("どうかな", "いい感じだね").forEach { input ->
+        listOf("どうかな").forEach { input ->
             val context = tracker.observe(input)
             assertNull("generic turn should not become an explicit topic: $input", context.currentExplicitTopic)
             assertEquals("milk", context.carriedTopic)
@@ -38,7 +38,7 @@ class FullTopicTrackerTest {
         val bath = tracker.observe("お風呂入ろうね")
         assertEquals("bath", bath.currentExplicitTopic)
         assertEquals("bath", bath.carriedTopic)
-        assertEquals(listOf("milk"), bath.recentConcreteTopics)
+        assertTrue(bath.recentConcreteTopics.isEmpty())
 
         val followUp = tracker.observe("気持ちいいね")
         assertNull(followUp.currentExplicitTopic)
