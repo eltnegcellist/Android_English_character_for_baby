@@ -33,11 +33,11 @@ class LiteWebTopicParityTest {
             }
         }
     }
-    @Test fun drinkingContextAndSixTurnExpiry() {
+    @Test fun drinkingContextAndOneTurnExpiry() {
         for (text in listOf("飲むかい", "飲もうか", "のむ？", "飲みたい？")) {
             val engine = LiteResponseEngine()
             assertEquals("drink", engine.respond(text).scene)
-            for (i in 0 until 6) assertEquals("drink", engine.respond("いい感じですね").scene)
+            for (i in 0 until 1) assertEquals("drink", engine.respond("いい感じですね").scene)
             assertEquals("generic", engine.respond("いい感じですね").scene)
             engine.respond("ミルクの時間だよ")
             assertEquals("milk", engine.respond(text).scene)

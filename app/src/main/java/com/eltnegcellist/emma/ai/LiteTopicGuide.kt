@@ -1,4 +1,4 @@
-// Generated from shared/lite-topic-contract.json (SHA-256 bc74706a452ca33d2076283a07c1cd4280d00a3b623b906c2fc6e0f6a36f4f00). Do not edit.
+// Generated from shared/lite-topic-contract.json (SHA-256 8dbf9d060f3f479c927ec22a16fb5c86c2b198d9eb4796bae0bea4b44e6ff03e). Do not edit.
 package com.eltnegcellist.emma.ai
 
 internal object LiteTopicGuide {
@@ -22,7 +22,7 @@ internal object LiteTopicGuide {
 
     val context = Section(
         "直前の話題を引き継ぎます", listOf(
-            "一度話題が決まると、話題を特定できない続きの発話でも最大6ターンは前の話題を使います。時間ではなく、返答した回数で数えます。別の話題を表す明確な言葉があれば、途中でも切り替わります。",
+            "一度話題が決まると、話題を特定できない続きの発話でも最大1ターンは前の話題を使います。時間ではなく、返答した回数で数えます。別の話題を表す明確な言葉があれば、途中でも切り替わります。",
             "「ミルク飲もうね」→「おいしいね」：ミルクの話題を続けます。",
             "「ミルク飲もうね」→「飲むかい？」：ミルクの返答になります。",
             "「飲むかい？」だけ：飲む物を決めつけず、少しずつ飲む英語で返します。",

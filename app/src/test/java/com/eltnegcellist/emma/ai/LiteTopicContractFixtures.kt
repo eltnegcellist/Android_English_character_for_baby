@@ -1,4 +1,4 @@
-// Generated from shared/lite-topic-contract.json (SHA-256 bc74706a452ca33d2076283a07c1cd4280d00a3b623b906c2fc6e0f6a36f4f00). Do not edit.
+// Generated from shared/lite-topic-contract.json (SHA-256 8dbf9d060f3f479c927ec22a16fb5c86c2b198d9eb4796bae0bea4b44e6ff03e). Do not edit.
 package com.eltnegcellist.emma.ai
 
 internal object LiteTopicContractFixtures {
@@ -6,7 +6,7 @@ internal object LiteTopicContractFixtures {
     data class Step(val text: String? = null, val scene: String? = null,
                     val meaningful: Boolean = true, val reset: Boolean = false)
     data class Sequence(val id: String, val steps: List<Step>)
-    const val CONTEXT_FOLLOWUP_TURNS = 6
+    const val CONTEXT_FOLLOWUP_TURNS = 1
     val cases = listOf(
         Case("case-001", "てがみだよ", "generic", true),
         Case("case-002", "ほんとだね", "generic", true),
@@ -276,30 +276,15 @@ internal object LiteTopicContractFixtures {
         Sequence("book-expiry", listOf(
             Step("えほうを読もうね", "book", true),
             Step("いい感じですね", "book", true),
-            Step("いい感じですね", "book", true),
-            Step("いい感じですね", "book", true),
-            Step("いい感じですね", "book", true),
-            Step("いい感じですね", "book", true),
-            Step("いい感じですね", "book", true),
             Step("いい感じですね", "generic", true),
         )),
         Sequence("drink-expiry", listOf(
             Step("飲むかい", "drink", true),
             Step("いい感じですね", "drink", true),
-            Step("いい感じですね", "drink", true),
-            Step("いい感じですね", "drink", true),
-            Step("いい感じですね", "drink", true),
-            Step("いい感じですね", "drink", true),
-            Step("いい感じですね", "drink", true),
             Step("いい感じですね", "generic", true),
         )),
         Sequence("milk-expiry", listOf(
             Step("ミルク飲もうね", "milk", true),
-            Step("いい感じですね", "milk", true),
-            Step("いい感じですね", "milk", true),
-            Step("いい感じですね", "milk", true),
-            Step("いい感じですね", "milk", true),
-            Step("いい感じですね", "milk", true),
             Step("いい感じですね", "milk", true),
             Step("いい感じですね", "generic", true),
         )),
