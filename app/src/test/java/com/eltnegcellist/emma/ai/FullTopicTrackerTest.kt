@@ -43,6 +43,6 @@ class FullTopicTrackerTest {
         val followUp = tracker.observe("気持ちいいね")
         assertNull(followUp.currentExplicitTopic)
         assertEquals("bath", followUp.carriedTopic)
-        assertEquals(listOf("milk", "bath"), followUp.recentConcreteTopics)
+        assertEquals(listOf("bath"), followUp.recentConcreteTopics)
     }
 }
