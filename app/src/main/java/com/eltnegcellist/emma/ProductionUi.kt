@@ -630,7 +630,6 @@ internal fun EmmaSettingsScreen(
     onKeepScreenOn: (Boolean) -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
-    onOpenRepetitionLab: () -> Unit,
     onOpenTutorial: () -> Unit,
     onResetAllData: () -> Unit,
 ) {
@@ -1048,20 +1047,6 @@ internal fun EmmaSettingsScreen(
                             ) {
                                 Text("Semantic英語をKikiで試聴")
                             }
-                        }
-
-                        Text("英語復唱 Phase 0", style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            "Emmaの英語を親がまねしたとき、日本語Moonshineがどう文字起こしするかを実機で測ります。本番の返答判定は変更しません。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        OutlinedButton(
-                            onClick = onOpenRepetitionLab,
-                            enabled = enabled && asrInstalled && engineMode == ConversationEngineMode.LITE,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("英語復唱のASR測定を開く")
                         }
 
                         Text("AI音声の試聴・診断", style = MaterialTheme.typography.titleSmall)
