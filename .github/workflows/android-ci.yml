@@ -128,7 +128,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.40-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.41-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -176,7 +176,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.40
+          name: Mitsukotoba-v1.9.41
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -192,7 +192,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.40"
+          TAG="mitsukotoba-v1.9.41"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -210,5 +210,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.40" \
-            --notes "Mitsukotoba v1.9.40 expands the hidden developer tools while keeping normal user flows unchanged. Android can compare legacy Lite, Ruri Semantic, and Guard topic selection from typed Japanese, shows model/runtime readiness, restores diagnostic TXT and crash-detail ZIP export, and retains the v1.9.39 Semantic Lite parity, manual generic replies, and six-turn topic context."
+            --title "みつことば v1.9.41" \
+            --notes "Mitsukotoba v1.9.41 finalizes cross-runtime Semantic parity verification. Android now reads the ONNX sentence_embedding output by name, and CI compares actual Web WASM ORT and Android-equivalent Java ORT inference on fixed Japanese cases with exact token/topic matching plus bounded score and embedding drift. Existing v1.9.40 diagnostics and user flows are retained."
