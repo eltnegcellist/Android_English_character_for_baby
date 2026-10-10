@@ -464,7 +464,7 @@ internal class LiteResponseEngine {
         private val drinkScene = Scene("drink", emptyList(), listOf("Little sips. Sip, sip! Nice and slow.", "Let's drink. Little sips. Nice and slow.", "Sip, sip! Take your time. Little sips.", "Small sips. Nice and easy. Take your time.", "{name}, little sips. Sip, sip! Nice and slow."))
         private const val MIN_SCENE_SCORE = 3
         private const val CONTEXT_SCENE_SCORE = 2
-        private const val TOPIC_HOLD_TURNS = 2
+        private const val TOPIC_HOLD_TURNS = 1
         private const val SEMANTIC_CLEAR_PROBABILITY = 0.65
         private const val SEMANTIC_CLEAR_MARGIN = 0.15
         private val PLAIN_FOLLOWUP = Regex(
