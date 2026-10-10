@@ -10,15 +10,15 @@
 
 ### 安定版
 
-**現在のAndroid安定版：v1.9.40**
+**現在のAndroid安定版：v1.9.41**
 
-**versionCode：123**
+**versionCode：124**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.40
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.40/Mitsukotoba-v1.9.40-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.41
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.41/Mitsukotoba-v1.9.41-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.40は、v1.9.39で揃えたWeb版Semantic Liteとの通常機能パリティを維持しつつ、隠し開発者設定を拡張した版です。初期設定の「高性能モデルを使う」はオンでMoonshine Small＋Ruri v3 70M INT8、オフでMoonshine Tiny＋軽量な従来Lite判定を選びます。隠し設定では従来Lite・Semantic・Guardの比較、モデル状態、診断TXT、クラッシュ詳細ZIPを利用できます。
+v1.9.41は、Web/AndroidのRuri Semantic実推論一致をCIで自動検証する版です。固定14ケースをWeb WASM ONNX Runtime 1.30とAndroid相当のJava ONNX Runtime 1.23.2へ実際に通し、token ID・raw topic・最終topicの完全一致、score差、embedding cosineを検証します。Android本番もONNX出力を名前 `sentence_embedding` で取得するようにし、出力順依存をなくしました。v1.9.40の隠し診断機能は維持します。
 
 > 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
 
@@ -286,7 +286,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
 | LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
-Android v1.9.40はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
+Android v1.9.41はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
@@ -296,15 +296,15 @@ Android v1.9.40はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### プロジェクト状況
 
-**v1.9.40を現在の安定基準版とします。**
+**v1.9.41を現在の安定基準版とします。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
-今後の機能変更は新しいバージョンとして公開し、v1.9.40を再現可能な安定基準版として保持します。
+今後の機能変更は新しいバージョンとして公開し、v1.9.41を再現可能な安定基準版として保持します。
 
 Lite版では一度判定した育児の話題を、曖昧な発話に限り次の最大1ターンまで引き継ぎます。明確な新しい話題が出た場合はすぐ切り替え、保持が切れた後はジェネラルに戻ります。従来Lite・Ruri Semantic・Guardで共通です。Fullの補助TopicTrackerも、過去1ターンの具体的な話題だけを参照します。
 
-CIではSemantic実推論のAndroid/Web一致も検証します。固定ケースをWeb WASMとAndroid相当のJava ONNX Runtimeで実際に推論し、token ID、話題分類、確率・marginの差を自動検出します。これは分類精度のベンチマークではなく、両実装の回帰差を検出するためのテストです。
+CIではSemantic実推論のAndroid/Web一致も検証します。固定14ケースをWeb WASMとAndroid相当のJava ONNX Runtimeで実際に推論し、token ID・raw topic・最終topicを完全一致、probability差0.025以下、margin差0.035以下、embedding cosine 0.995以上で検証します。これは分類精度のベンチマークではなく、両実装の回帰差を検出するためのテストです。
 
 ### 隠し開発者設定
 
@@ -338,15 +338,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Stable Release
 
-**Current stable Android release: v1.9.40**
+**Current stable Android release: v1.9.41**
 
-**versionCode: 123**
+**versionCode: 124**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.40
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.40/Mitsukotoba-v1.9.40-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.41
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.41/Mitsukotoba-v1.9.41-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.40 retains the v1.9.39 Web/Android Semantic Lite parity and expands hidden developer diagnostics. The first-run high-performance preset still selects Moonshine Small plus Ruri v3 70M INT8, while the lightweight preset uses Moonshine Tiny plus legacy Lite matching. Hidden tools now compare Lite, Semantic, and Guard behavior, show model readiness, and export diagnostic TXT or crash-detail ZIP files.
+v1.9.41 adds automated actual-inference parity checks between Web and Android-equivalent Semantic runtimes. Fourteen fixed Japanese cases run through Web WASM ONNX Runtime 1.30 and Java ONNX Runtime 1.23.2, enforcing exact token/raw-topic/final-topic agreement plus bounded score drift and embedding cosine similarity. Android also reads the ONNX `sentence_embedding` output by name instead of output order. v1.9.40 diagnostics are retained.
 
 > The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
 
@@ -595,7 +595,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
 | LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
-Android v1.9.40 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
+Android v1.9.41 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -605,11 +605,11 @@ See:
 
 ### Project Status
 
-**v1.9.40 is the current stable baseline.**
+**v1.9.41 is the current stable baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 
-Future functional changes should be released under a new version so that v1.9.40 remains reproducible as the stable Mitsukotoba reference point.
+Future functional changes should be released under a new version so that v1.9.41 remains reproducible as the stable Mitsukotoba reference point.
 
 ### Development Documents
 

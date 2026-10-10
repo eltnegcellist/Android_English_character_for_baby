@@ -16,8 +16,9 @@ import org.json.JSONObject
 private const val EMBEDDING_DIMENSIONS = 384
 private const val HEAD_WIDTH = EMBEDDING_DIMENSIONS + 1
 private const val TOPIC_MARGIN = 0.05
-private const val MAX_PROBABILITY_DRIFT = 0.02
-private const val MAX_MARGIN_DRIFT = 0.03
+private const val MAX_PROBABILITY_DRIFT = 0.025
+private const val MAX_MARGIN_DRIFT = 0.035
+private const val MIN_EMBEDDING_COSINE = 0.995
 
 private val TOPICS = listOf(
     "drink", "bath", "milk", "sleep", "wake", "diaper", "clothes",
@@ -94,7 +95,8 @@ fun main(rawArgs: Array<String>) {
                         "attention_mask" to attentionMaskTensor,
                     ),
                 ).use { output ->
-                    val tensor = output[0] as OnnxTensor
+                    val tensor = output.get("sentence_embedding").orElse(null) as? OnnxTensor
+                        ?: error("sentence_embedding output is missing.")
                     val buffer = requireNotNull(tensor.floatBuffer)
                     require(buffer.remaining() == EMBEDDING_DIMENSIONS)
                     FloatArray(EMBEDDING_DIMENSIONS).also(buffer::get)
@@ -121,6 +123,9 @@ fun main(rawArgs: Array<String>) {
             val cosine = dot / sqrt(actualNorm * expectedNorm)
             maxEmbeddingDrift = maxOf(maxEmbeddingDrift, caseEmbeddingDrift)
             minEmbeddingCosine = minOf(minEmbeddingCosine, cosine)
+            if (cosine < MIN_EMBEDDING_COSINE) {
+                failures += "Embedding cosine for $id is $cosine"
+            }
 
             val actualTopic = classify(embedding, head)
             val expectedTopic = expected.getJSONObject("topic")

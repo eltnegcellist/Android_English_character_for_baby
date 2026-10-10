@@ -81,7 +81,7 @@ internal class RuriSemanticClassifier(
                     "attention_mask" to attentionMaskTensor,
                 ),
             ).use { output ->
-                val tensor = output[0] as? OnnxTensor
+                val tensor = output.get("sentence_embedding").orElse(null) as? OnnxTensor
                     ?: error("Semanticモデルの埋め込み出力がありません。")
                 val buffer = tensor.floatBuffer
                     ?: error("Semanticモデルの埋め込みがfloat32ではありません。")
