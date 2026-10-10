@@ -119,7 +119,7 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 
 ### 設計研究メモ
 
-0〜2歳、とくに0歳児向けの機能設計について、自由会話・AIと乳児のインタラクション・月齢別最適化・親の英語復唱・Repetition Guard・競合比較まで含めた検討記録を [RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md](RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md) にまとめています。これは実装仕様ではなく、将来の機能判断で再利用するための研究メモです。
+0〜2歳、とくに0歳児向けの機能設計について、自由会話・AIと乳児のインタラクション・月齢別最適化・親の英語復唱・Repetition Guardまで含めた検討記録を [RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md](RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md) にまとめています。これは実装仕様ではなく、将来の機能判断で再利用するための研究メモです。
 
 ### 「呼びかけ」と「会話」
 
