@@ -117,6 +117,10 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 - [World Health Organization (2019)](https://www.who.int/publications/i/item/9789241550536) — *Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age*.
 - [Johnson et al. (1991)](https://doi.org/10.1016/0010-0277(91)90045-6) — *Newborns' preferential tracking of face-like stimuli and its subsequent decline*. Cognition 40(1–2), 1–19.
 
+### 設計研究メモ
+
+0〜2歳、とくに0歳児向けの機能設計について、自由会話・AIと乳児のインタラクション・月齢別最適化・親の英語復唱・Repetition Guard・競合比較まで含めた検討記録を [RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md](RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md) にまとめています。これは実装仕様ではなく、将来の機能判断で再利用するための研究メモです。
+
 ### 「呼びかけ」と「会話」
 
 みつことばの2つのインタラクションは、相手を「赤ちゃん向け / 親向け」に分けるのではなく、**3人がどう関わるか**で分けます。
