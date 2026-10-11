@@ -2,7 +2,7 @@
 
 ## 話し終わりの判定（Silero・従来方式）
 
-Sileroを標準の発話開始・終了判定として追加しました。設定の「話し終わりの判定」から従来の音量方式へ戻せます。選択は保存され、終了待ちは1.1秒です。Moonshine Japanese Smallと既存のASR音声経路を維持します。 Androidの作業ブランチでは次版v1.9.42としてビルドします。 実装・固定モデル・検証範囲・実行方法は [SILERO_VAD.md](SILERO_VAD.md) を参照してください。
+Sileroを標準の発話開始・終了判定として追加しました。設定の「話し終わりの判定」から従来の音量方式へ戻せます。選択は保存され、終了待ちは1.1秒です。Moonshine Japanese Smallと既存のASR音声経路を維持します。 Android v1.9.42に含まれます。 実装・固定モデル・検証範囲・実行方法は [SILERO_VAD.md](SILERO_VAD.md) を参照してください。
 
 
 ## 日本語
@@ -13,19 +13,19 @@ Sileroを標準の発話開始・終了判定として追加しました。設�
 
 乳児の外国語学習研究では、**ただ音声や映像を与えることと、社会的な相手と関わりながら経験することでは学習が異なる可能性**が示されています。みつことばは、スマホを渡して終わりにするのではなく、親も一緒に参加する3者の相互作用を家庭につくることを目指しています。
 
-### 安定版
+### 配布版
 
-**現在のAndroid安定版：v1.9.41**
+**現在のAndroid配布版：v1.9.42**
 
-**versionCode：124**
+**versionCode：125**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.41
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.41/Mitsukotoba-v1.9.41-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.42
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.42/Mitsukotoba-v1.9.42-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.41は、Web/AndroidのRuri Semantic実推論一致をCIで自動検証する版です。固定14ケースをWeb WASM ONNX Runtime 1.30とAndroid相当のJava ONNX Runtime 1.23.2へ実際に通し、token ID・raw topic・最終topicの完全一致、score差、embedding cosineを検証します。Android本番もONNX出力を名前 `sentence_embedding` で取得するようにし、出力順依存をなくしました。v1.9.40の隠し診断機能は維持します。
+v1.9.42はSileroによる発話開始・終了判定を追加した版です。設定から従来RMSへ戻せ、選択は保存されます。終了待ちは1.1秒、Moonshine Japanese Smallと既存の録音音声処理を維持します。v1.9.41のSemantic実推論パリティと隠し診断機能も維持します。Android実機のマイク・CPU負荷・画面オフ会話は未確認で、静音の認識精度が全環境で維持される保証はまだありません。
 
-> 現在配布しているAPKはCIによるdebug署名版です。プロジェクト上の安定版ですが、Play Store向けproduction署名版ではありません。
+> 現在配布しているAPKはCIによるdebug署名版です。Play Store向けproduction署名版ではありません。
 
 ### なぜみつことばを使うのか
 
@@ -291,7 +291,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
 | LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
-Android v1.9.41はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
+Android v1.9.42はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
 モデルファイルは別途取得され、リポジトリへ直接含めません。
 
@@ -301,7 +301,7 @@ Android v1.9.41はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 ### プロジェクト状況
 
-**v1.9.41を現在の安定基準版とします。**
+**Silero導入前の比較基準としてv1.9.41を保持します。**
 
 みつことばは独立開発中のプロジェクトです。言語習得効果を保証するものではなく、子どもの発達に関する専門的助言の代替を目的としていません。
 
@@ -341,19 +341,19 @@ The parent speaks naturally in Japanese. The default AI character is **Emma**. E
 
 Research on infant foreign-language learning suggests that passive audio or video exposure may not be equivalent to socially interactive experience. Mitsukotoba is designed around that distinction: not handing a phone to a baby and walking away, but bringing an English-speaking AI into an interaction in which the caregiver remains involved.
 
-### Stable Release
+### Current Release
 
-**Current stable Android release: v1.9.41**
+**Current distributed Android release: v1.9.42**
 
-**versionCode: 124**
+**versionCode: 125**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.41
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.41/Mitsukotoba-v1.9.41-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.42
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.42/Mitsukotoba-v1.9.42-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.41 adds automated actual-inference parity checks between Web and Android-equivalent Semantic runtimes. Fourteen fixed Japanese cases run through Web WASM ONNX Runtime 1.30 and Java ONNX Runtime 1.23.2, enforcing exact token/raw-topic/final-topic agreement plus bounded score drift and embedding cosine similarity. Android also reads the ONNX `sentence_embedding` output by name instead of output order. v1.9.40 diagnostics are retained.
+v1.9.42 adds Silero speech start/end detection with a saved Settings switch back to the original RMS detector. Endpoint waiting is 1.1 seconds; Moonshine Japanese Small and the existing captured-audio processing remain unchanged. Semantic runtime parity checks and diagnostics are retained. Physical-device microphone, CPU load and screen-off conversation checks remain outstanding; unchanged quiet-room ASR accuracy across environments has not been established.
 
-> The distributed APK is currently CI debug-signed. It is a stable project baseline, but not a Play Store production-signed build.
+> The distributed APK is currently CI debug-signed. It is not a Play Store production-signed build.
 
 ### Why Use Mitsukotoba?
 
@@ -600,7 +600,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
 | LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
-Android v1.9.41 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
+Android v1.9.42 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
 Model files are downloaded separately and are not committed to this repository.
 
@@ -610,7 +610,7 @@ See:
 
 ### Project Status
 
-**v1.9.41 is the current stable baseline.**
+**v1.9.41 remains the pre-Silero comparison baseline.**
 
 Mitsukotoba is an independently developed project. It does not claim to guarantee language-learning outcomes or replace professional guidance about child development.
 

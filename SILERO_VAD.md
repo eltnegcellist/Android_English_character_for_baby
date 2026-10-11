@@ -44,4 +44,4 @@ gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
 SILERO_TEST_WAV_DIR=/absolute/private/wavs gradle :app:testDebugUnitTest --rerun-tasks
 ```
 
-作業ブランチのビルドは次版v1.9.42（versionCode 125）。既存の公開v1.9.41タグ/APKは変更しません。
+Android版はv1.9.42（versionCode 125）。既存の公開v1.9.41タグ/APKは変更しません。
