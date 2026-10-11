@@ -1,5 +1,6 @@
 package com.eltnegcellist.emma.audio
 
+import android.content.res.AssetManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -7,11 +8,16 @@ import java.io.ByteArrayOutputStream
 import kotlin.concurrent.thread
 
 class AudioRingRecorder(
+    private val assets: AssetManager? = null,
     private val sampleRate: Int = 16_000,
     private val capacitySeconds: Int = 30,
 ) {
     private val buffer = PcmRingBuffer(sampleRate * capacitySeconds)
-    private val endpointDetector = AdaptiveEndpointDetector(sampleRate)
+    private val detectorLock = Any()
+    private val legacyDetector = LegacyEndpointDetector(sampleRate)
+    private var endpointDetector: EndpointDetector = legacyDetector
+    var endpointFallbackReason: String? = null
+        private set
 
     @Volatile private var running = false
     @Volatile private var endpointingEnabled = false
@@ -24,11 +30,22 @@ class AudioRingRecorder(
     private var runFlag: java.util.concurrent.atomic.AtomicBoolean? = null
 
     // Called from the main thread. Each worker owns and releases its own AudioRecord.
-    fun start() {
+    fun start(mode: EndpointMode = EndpointMode.SILERO) {
         if (running) return
         check(worker?.isAlive != true) { "録音の終了処理中です。少し待って再開してください。" }
+        synchronized(detectorLock) {
+            endpointDetector.close()
+            endpointFallbackReason = null
+            endpointDetector = if (mode == EndpointMode.SILERO) {
+                try {
+                    SileroEndpointDetector(requireNotNull(assets).open("vad/silero_vad.onnx").use { it.readBytes() }, sampleRate)
+                } catch (error: Exception) {
+                    endpointFallbackReason = error.message ?: error.javaClass.simpleName
+                    legacyDetector
+                }
+            } else legacyDetector
+        }
         clear()
-        endpointDetector.reset()
         endpointingEnabled = true
         val minBufferSize = AudioRecord.getMinBufferSize(
             sampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
@@ -51,6 +68,7 @@ class AudioRingRecorder(
         audioRecord = recorder
         buffer.resume()
         running = true
+        val workerDetector = endpointDetector
         worker = thread(name = "EmmaAudioRing", isDaemon = true) {
             try {
                 val temp = ShortArray(maxOf(2_048, minBufferSize / 2))
@@ -63,7 +81,12 @@ class AudioRingRecorder(
 
                     buffer.append(temp, read, readEpoch)
                     if (endpointingEnabled) {
-                        when (val event = endpointDetector.process(temp, read)) {
+                        val events = synchronized(detectorLock) {
+                            if (endpointingEnabled && readEpoch == buffer.epoch()) workerDetector.process(temp, read) else emptyList()
+                        }
+                        for (event in events) {
+                            if (!endpointingEnabled || readEpoch != buffer.epoch()) break
+                            when (event) {
                             VoiceActivityEvent.SpeechStarted -> {
                                 // Detector confirms speech after a short onset window. Keep a little
                                 // pre-roll, but drop long idle-room audio so Gemma receives the turn.
@@ -71,7 +94,7 @@ class AudioRingRecorder(
                                 onVoiceActivity?.invoke(event)
                             }
                             is VoiceActivityEvent.Endpoint -> onVoiceActivity?.invoke(event)
-                            null -> Unit
+                            }
                         }
                     }
                 }
@@ -84,17 +107,19 @@ class AudioRingRecorder(
             } finally {
                 runCatching { recorder.stop() }
                 recorder.release()
+                synchronized(detectorLock) { workerDetector.close() }
             }
         }
     }
 
     fun stop() {
         endpointingEnabled = false
-        endpointDetector.reset()
+        synchronized(detectorLock) { endpointDetector.reset() }
         runFlag?.set(false)
         running = false
         runCatching { audioRecord?.stop() }
         worker?.join(500)
+        if (worker?.isAlive != true) synchronized(detectorLock) { endpointDetector.close() }
         // A slow worker retains ownership of its recorder; never release it under read().
         audioRecord = null
         clear()
@@ -102,19 +127,19 @@ class AudioRingRecorder(
 
     fun pauseBuffering() {
         endpointingEnabled = false
-        endpointDetector.reset()
+        synchronized(detectorLock) { endpointDetector.reset() }
         buffer.pause()
     }
 
     fun resumeBuffering(clearExisting: Boolean = false) {
         if (clearExisting) clear()
-        endpointDetector.reset()
+        synchronized(detectorLock) { endpointDetector.reset() }
         buffer.resume()
         endpointingEnabled = true
     }
 
     fun clear() {
-        endpointDetector.reset()
+        synchronized(detectorLock) { endpointDetector.reset() }
         buffer.clear()
     }
 

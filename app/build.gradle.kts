@@ -101,8 +101,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 124
-        versionName = "1.9.41"
+        versionCode = 125
+        versionName = "1.9.42"
 
         // Emma is distributed for physical Android devices.
         // Keep both 64-bit and legacy 32-bit ARM, but omit x86/x86_64 emulator/PC ABIs.
@@ -175,6 +175,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation("junit:junit:4.13.2")
+    // Host-only native inference verifies the same Silero model/API without adding APK libraries.
+    testImplementation("com.microsoft.onnxruntime:onnxruntime:1.23.2")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

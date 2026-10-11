@@ -147,3 +147,7 @@ v1.9.40 expands hidden diagnostics only: typed Japanese can be compared across l
 ## v1.9.41 Semantic runtime parity
 
 Adds CI-only cross-runtime inference comparison using the already licensed pinned Ruri model and Microsoft ONNX Runtime Java/Web packages. Android production code now reads the existing `sentence_embedding` output by name. No new model family, TTS backend, eSpeak NG, sherpa-onnx, or GPL TTS dependency is added.
+
+## Silero endpoint update (2026-10-11)
+
+The standalone microphone VAD model is bundled under MIT with the upstream copyright and complete license. Provenance and checksum are stored beside the model. It uses the existing full ONNX Runtime; no TTS dependency or phonemizer is added. `scripts/verify-silero-assets.py` verifies the committed model and notice.

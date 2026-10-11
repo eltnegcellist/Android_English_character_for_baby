@@ -14,6 +14,7 @@ import com.eltnegcellist.emma.ai.GemmaEmmaClient
 import com.eltnegcellist.emma.ai.LiteEmmaClient
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineModelStore
+import com.eltnegcellist.emma.audio.EndpointMode
 import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
@@ -71,6 +72,15 @@ internal class ConversationController(val context: Context) {
 
     val latestTranscriptState = mutableStateOf("")
     var latestTranscript by latestTranscriptState
+
+    val endpointModeState = mutableStateOf(EndpointMode.fromSaved(preferences.getString("endpoint_mode", null)))
+    var endpointMode by endpointModeState
+
+    fun updateEndpointMode(mode: EndpointMode) {
+        if (recording || generating) return
+        endpointMode = mode
+        preferences.edit().putString("endpoint_mode", mode.savedValue).apply()
+    }
 
     val autoRespondState = mutableStateOf(preferences.getBoolean("auto_respond", true))
     var autoRespond by autoRespondState
@@ -168,7 +178,7 @@ internal class ConversationController(val context: Context) {
 
     val session = SessionGate()
 
-    val recorder = AudioRingRecorder()
+    val recorder = AudioRingRecorder(context.assets)
 
     val gemma = GemmaEmmaClient(context)
 
@@ -263,15 +273,21 @@ internal class ConversationController(val context: Context) {
         startRequested = false
         sessionId = java.util.UUID.randomUUID().toString()
         session.start()
-        runCatching { recorder.start() }
+        runCatching { recorder.start(endpointMode) }
             .onSuccess {
                 recording = true
+                recorder.endpointFallbackReason?.let {
+                    DiagnosticStore.mark(context, "silero_fallback", it)
+                }
                 EmmaWorkQueue.execute { lite.resetConversationContext() }
                 status = ProductionEmmaStatus.LISTENING
                 statusMessage = if (autoRespond) {
                     "普通に話しかけてください。必要なら「今すぐAIが返事する」で区切れます。"
                 } else {
                     "話したところで「今すぐAIが返事する」を押してください。"
+                }
+                if (recorder.endpointFallbackReason != null) {
+                    statusMessage += " 声の判定を準備できなかったため、今回は従来方式を使います。"
                 }
             }
             .onFailure {
