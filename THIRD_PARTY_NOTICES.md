@@ -159,3 +159,12 @@ Adds Filled mode and per-mode Gradient selections. This update changes no depend
 ## v1.9.28 character color update
 
 Brightens Vivid and Filled colors, adds gradient explanations, and uses a 60-second cycle. No dependencies, bundled models, or license declarations change.
+
+## Silero VAD for microphone endpoint detection
+
+- Source: https://github.com/snakers4/silero-vad
+- Pinned revision: `1e261b036686cd0017d500ee96acd1c4ba572a9d`.
+- License: MIT.
+- Bundled ONNX model: 2,327,524 bytes; SHA-256 `1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3`.
+- Model and notice are bundled together; see `app/src/main/assets/vad/model-provenance.json` and `LICENSE-SILERO-VAD-MIT.txt` in that directory.
+- Runs through the existing full ONNX Runtime Android 1.23.2. This adds no eSpeak or sherpa TTS dependency.

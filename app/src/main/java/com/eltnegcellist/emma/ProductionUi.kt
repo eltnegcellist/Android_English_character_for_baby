@@ -1,5 +1,6 @@
 package com.eltnegcellist.emma
 
+import com.eltnegcellist.emma.audio.EndpointMode
 import androidx.activity.compose.BackHandler
 import android.content.Context
 import androidx.compose.animation.core.RepeatMode
@@ -588,6 +589,8 @@ private fun ConversationExchange(transcript: String, emmaText: String, aiName: S
 
 @Composable
 internal fun EmmaSettingsScreen(
+    endpointMode: EndpointMode,
+    onEndpointMode: (EndpointMode) -> Unit,
     featureSettings: @Composable () -> Unit,
     level: EnglishLevel,
     enabled: Boolean,
@@ -739,6 +742,20 @@ internal fun EmmaSettingsScreen(
                             enabled = enabled,
                         )
                     }
+                }
+            }
+
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("話し終わりの判定", style = MaterialTheme.typography.titleMedium)
+                    EndpointMode.entries.forEach { option ->
+                        if (endpointMode == option) {
+                            Button(onClick = {}, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(option.label) }
+                        } else {
+                            OutlinedButton(onClick = { onEndpointMode(option) }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(option.label) }
+                        }
+                    }
+                    Text("声で判定すると、背景音がある場所でも話の区切りを捉えやすくなります。動作が気になる場合は従来方式へ戻せます。会話を止めてから変更してください。", style = MaterialTheme.typography.bodySmall)
                 }
             }
 

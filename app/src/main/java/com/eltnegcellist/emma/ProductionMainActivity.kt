@@ -1016,6 +1016,8 @@ private fun ProductionEmmaApp() {
         )
     } else if (settingsOpen) {
         EmmaSettingsScreen(
+            endpointMode = runtime.endpointMode,
+            onEndpointMode = runtime::updateEndpointMode,
             featureSettings = { FeatureSettings(runtime) { stopSession(); autoStartPending=false; featureScreen="history" } },
             level = englishLevel,
             enabled = !busy && !recording,

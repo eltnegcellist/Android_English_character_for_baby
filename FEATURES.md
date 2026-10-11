@@ -96,3 +96,7 @@ Repetition GuardのPhase 0測定UIは検討用プロトタイプとして一度�
 ## v1.9.41 Semantic実推論パリティ
 
 WebとAndroid相当ランタイムへ同じ固定日本語を実際に入力し、Ruri v3 70M INT8のtokenization・ONNX embedding・topic分類を自動比較します。Android本番はONNX出力を順番ではなく `sentence_embedding` 名で取得します。CIはtoken ID / raw topic / 最終topicの完全一致に加え、probability差0.025以下、margin差0.035以下、embedding cosine 0.995以上を要求します。
+
+## v1.9.42 Silero発話判定と従来方式への復帰
+
+標準VADをSileroへ切り替え、設定「話し終わりの判定」で従来RMS方式を選べるようにします。選択は端末内に保存し、会話停止中に変更します。終了待ちは1.1秒、ASRは既存Moonshine Japanese Small、音声は生MIC PCMです。モデル準備失敗時は従来方式へ戻して知らせます。固定モデル・パラメータ・実録音検証・実機未確認事項は [SILERO_VAD.md](SILERO_VAD.md) に記載します。
