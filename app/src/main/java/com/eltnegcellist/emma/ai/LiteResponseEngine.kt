@@ -44,7 +44,7 @@ internal class LiteResponseEngine {
         interactionEnabled: Boolean = false,
     ): LiteResponse {
         val topic = semantic?.let { p ->
-            findScene(p.topic.takeUnless { it == "generic" || p.margin < 0.05 })
+            findScene(p.topic.takeUnless { it == "generic" || p.margin < 0.05 || p.probability < 0.50 })
         }
         val interaction = if (interactionEnabled && semantic != null &&
             semantic.interactionProbability >= 0.40 &&
