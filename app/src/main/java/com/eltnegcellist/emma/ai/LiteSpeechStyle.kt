@@ -15,8 +15,8 @@ internal object LiteSpeechStyle {
     const val MAX_WORDS_PER_SENTENCE = 4
 
     val neutralClosers = listOf(
-        "Here we go!",
-        "Nice and easy.",
+        "You are wonderful!",
+        "You are loved.",
         "I'm right here.",
         "Hello, hello!",
         "Look with me.",
