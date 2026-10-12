@@ -15,6 +15,9 @@ internal data class SemanticTopicPrediction(
     val probability: Double,
     val margin: Double,
     val mode: String = "semantic",
+    val interaction: String? = null,
+    val interactionProbability: Double = 0.0,
+    val interactionMargin: Double = 0.0,
 )
 
 /**
@@ -29,6 +32,7 @@ internal class RuriSemanticClassifier(
     private var session: OrtSession? = null
     private var tokenizer: RuriSemanticTokenizer? = null
     private var topicHead: FloatArray? = null
+    private var interactionHead: FloatArray? = null
 
     @Synchronized
     private fun ensureReady() {
@@ -46,11 +50,16 @@ internal class RuriSemanticClassifier(
             )
             val nextTokenizer = RuriSemanticTokenizer(File(dir, "tokenizer.json"))
             val nextHead = readTopicHead(File(dir, "head-topic.f32"))
+            // Bundled small head: no additional ~78MB model download is required.
+            val nextInteractionHead = appContext.assets.open("semantic/head-interaction.f32").use { stream ->
+                readInteractionHead(stream.readBytes())
+            }
 
             sessionOptions = options
             session = nextSession
             tokenizer = nextTokenizer
             topicHead = nextHead
+            interactionHead = nextInteractionHead
         } catch (error: Throwable) {
             options.close()
             throw error
@@ -90,7 +99,14 @@ internal class RuriSemanticClassifier(
                 }
                 val embedding = FloatArray(EMBEDDING_DIMENSIONS)
                 buffer.get(embedding)
-                classify(embedding, topicHead!!)
+                val topic = classify(embedding, topicHead!!)
+                val (interactionId, interactionProbability, interactionMargin) =
+                    classifyInteraction(embedding, requireNotNull(interactionHead))
+                topic.copy(
+                    interaction = interactionId,
+                    interactionProbability = interactionProbability,
+                    interactionMargin = interactionMargin,
+                )
             }
         } finally {
             inputIdsTensor.close()
@@ -134,6 +150,36 @@ internal class RuriSemanticClassifier(
         )
     }
 
+    private fun classifyInteraction(embedding: FloatArray, head: FloatArray): Triple<String, Double, Double> {
+        require(head.size == INTERACTIONS.size * HEAD_WIDTH)
+        val logits = DoubleArray(INTERACTIONS.size)
+        for (classIndex in INTERACTIONS.indices) {
+            val offset = classIndex * HEAD_WIDTH
+            var value = head[offset + EMBEDDING_DIMENSIONS].toDouble()
+            for (dimension in 0 until EMBEDDING_DIMENSIONS) {
+                value += head[offset + dimension] * embedding[dimension]
+            }
+            logits[classIndex] = value
+        }
+        val maximum = logits.maxOrNull() ?: 0.0
+        val exponentials = DoubleArray(logits.size) { exp(logits[it] - maximum) }
+        val sum = exponentials.sum().takeIf { it > 0 } ?: error("Interactionスコアが不正です。")
+        val probabilities = DoubleArray(logits.size) { exponentials[it] / sum }
+        val ranking = probabilities.indices.sortedByDescending { probabilities[it] }
+        val first = ranking[0]
+        val second = ranking[1]
+        return Triple(INTERACTIONS[first], probabilities[first], probabilities[first] - probabilities[second])
+    }
+
+    private fun readInteractionHead(bytes: ByteArray): FloatArray {
+        require(bytes.size == INTERACTIONS.size * HEAD_WIDTH * 4) { "Interaction headサイズが不正です。" }
+        val hash = java.security.MessageDigest.getInstance("SHA-256").digest(bytes)
+            .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        require(hash == INTERACTION_SHA256) { "Interaction headのSHA256が不正です。" }
+        val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
+        return FloatArray(buffer.remaining()).also { buffer.get(it) }
+    }
+
     private fun readTopicHead(file: File): FloatArray {
         val bytes = file.readBytes()
         require(bytes.size == TOPICS.size * HEAD_WIDTH * 4) {
@@ -155,6 +201,7 @@ internal class RuriSemanticClassifier(
         sessionOptions = null
         tokenizer = null
         topicHead = null
+        interactionHead = null
     }
 
     companion object {
@@ -162,6 +209,12 @@ internal class RuriSemanticClassifier(
         private const val EMBEDDING_DIMENSIONS = 384
         private const val HEAD_WIDTH = EMBEDDING_DIMENSIONS + 1
         private const val TOPIC_MARGIN = 0.05
+        private const val INTERACTION_SHA256 = "d65b1e4e7ac4c4b73a2410f0213dd478aa745b22a82ad998393b745c66045582"
+        private val INTERACTIONS = listOf(
+            "affection", "praise", "achievement", "effort", "encouragement", "invitation",
+            "start", "finish", "finish_check", "care", "inquiry", "reassurance",
+            "repeat", "pause", "none",
+        )
 
         // Same order as Web semantic-assets/.../heads-config.json.
         private val TOPICS = listOf(
