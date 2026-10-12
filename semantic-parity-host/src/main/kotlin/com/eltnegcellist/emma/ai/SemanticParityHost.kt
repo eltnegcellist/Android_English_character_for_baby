@@ -64,10 +64,6 @@ fun main(rawArgs: Array<String>) {
     val options = OrtSession.SessionOptions().apply {
         setIntraOpNumThreads(1)
         setInterOpNumThreads(1)
-        // Diagnostic: compare the unoptimized graph against WASM to identify
-        // native graph fusion versus operator/kernel numerical disagreement.
-        setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
-        setDeterministicCompute(true)
     }
     val session = environment.createSession(modelFile.absolutePath, options)
 
