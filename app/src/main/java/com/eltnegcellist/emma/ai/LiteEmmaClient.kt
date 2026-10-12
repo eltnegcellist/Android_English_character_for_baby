@@ -80,7 +80,9 @@ class LiteEmmaClient(
             null
         }
 
-        val selected = responses.respond(transcript, spokenName, semanticPrediction)
+        // Provisional Interaction head: opt-in only until independent caregiver/ASR tests.
+        val interactionExperimental = preferences.getBoolean("interaction_experimental_enabled", false)
+        val selected = responses.respond(transcript, spokenName, semanticPrediction, interactionExperimental)
         lastTopic = selected.scene
         val adjusted = fitLevel(selected.english, level)
 
