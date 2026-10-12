@@ -53,6 +53,11 @@ fun main(rawArgs: Array<String>) {
     val cases = web.getJSONArray("cases")
     require(cases.length() > 0) { "No Semantic parity cases." }
 
+    // Diagnostic parity failures may be backend numerical differences rather than
+    // a changed model. Always print actual sha of native model, not just a constant.
+    val nativeModelSha = java.security.MessageDigest.getInstance("SHA-256")
+        .digest(modelFile.readBytes()).joinToString("") { "%02x".format(it.toInt() and 0xff) }
+    println("PARITY_DEBUG nativeModelSha=$nativeModelSha modelBytes=${modelFile.length()}")
     val tokenizer = RuriSemanticTokenizer(tokenizerFile)
     val head = readHead(headFile)
     val environment = OrtEnvironment.getEnvironment()
@@ -124,6 +129,13 @@ fun main(rawArgs: Array<String>) {
                 expectedNorm += expectedValue * expectedValue
             }
             val cosine = dot / sqrt(actualNorm * expectedNorm)
+            if (index == 0) {
+                val actualFirst = embedding.take(8).joinToString(",")
+                val expectedFirst = (0 until 8).joinToString(",") { expectedEmbedding.getDouble(it).toString() }
+                println("PARITY_DEBUG input=${text} tokenIds=${actualIds.take(20)}")
+                println("PARITY_DEBUG actualEmbedding8=$actualFirst expectedEmbedding8=$expectedFirst")
+                println("PARITY_DEBUG firstCaseCosine=$cosine actualNorm=$actualNorm expectedNorm=$expectedNorm")
+            }
             maxEmbeddingDrift = maxOf(maxEmbeddingDrift, caseEmbeddingDrift)
             minEmbeddingCosine = minOf(minEmbeddingCosine, cosine)
             if (cosine < MIN_EMBEDDING_COSINE) {
