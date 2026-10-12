@@ -42,7 +42,9 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: eltnegcellist/Web_EmmaLocal_English_for_babies
-          ref: main
+          # Pair this draft Android implementation with Web PR-D #73.
+          # Web main is evolving independently during this feature's development.
+          ref: feature/interaction-prd-web-integration-20261012
           path: .web-parity
 
       - name: Set up Java 17
