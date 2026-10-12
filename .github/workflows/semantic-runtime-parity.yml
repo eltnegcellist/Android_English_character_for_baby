@@ -32,7 +32,10 @@ concurrency:
 
 jobs:
   compare:
-    runs-on: ubuntu-latest
+    # Galaxy S25 is ARM64. Linux x86 runner type changes (EPYC 7763 vs
+    # EPYC 9V45) have produced divergent Native ORT embeddings on same SHA.
+    # Gate Android release behavior on ARM64 Native vs WASM, not random x86.
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     steps:
       - name: Checkout Android
