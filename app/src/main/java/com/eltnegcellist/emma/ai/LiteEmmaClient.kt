@@ -82,7 +82,9 @@ class LiteEmmaClient(
 
         // Provisional Interaction head: opt-in only until independent caregiver/ASR tests.
         val interactionExperimental = preferences.getBoolean("interaction_experimental_enabled", false)
-        val selected = responses.respond(transcript, spokenName, semanticPrediction, interactionExperimental)
+        // Live Lite never falls back to Japanese rule-based topic detection.
+        // When Ruri is unavailable/disabled, select generic English instead.
+        val selected = responses.respondRuri(transcript, spokenName, semanticPrediction, interactionExperimental)
         lastTopic = selected.scene
         val adjusted = fitLevel(selected.english, level)
 
