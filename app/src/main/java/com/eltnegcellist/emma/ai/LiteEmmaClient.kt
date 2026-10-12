@@ -91,9 +91,14 @@ class LiteEmmaClient(
         DiagnosticStore.mark(
             appContext,
             "lite_response_selected",
-            "scene=${selected.scene} ruleScene=${selected.ruleScene} semanticUsed=${selected.semanticUsed} " +
-                "semanticTopic=${semanticPrediction?.topic ?: "none"} score=${selected.score} " +
-                "level=${level.name} transcript=${transcript.take(80)}",
+            "scene=${selected.scene} semanticUsed=${selected.semanticUsed} " +
+                "topic=${semanticPrediction?.topic ?: "none"} " +
+                "topicProbability=${semanticPrediction?.probability ?: 0.0} " +
+                "topicMargin=${semanticPrediction?.margin ?: 0.0} " +
+                "interaction=${semanticPrediction?.interaction ?: "none"} " +
+                "interactionProbability=${semanticPrediction?.interactionProbability ?: 0.0} " +
+                "interactionMargin=${semanticPrediction?.interactionMargin ?: 0.0} " +
+                "interactionExperimental=${interactionExperimental} level=${level.name}",
         )
         adjusted
     }
