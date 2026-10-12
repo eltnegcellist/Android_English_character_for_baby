@@ -13,8 +13,8 @@ class InteractionReplyBankTest {
         )
 
     @Test fun allCombinedRepliesAreNaturalLengthAndThreeSentences() {
-        assertEquals(88, RuriCompositeReplies.combinations.size)
-        assertEquals(264, RuriCompositeReplies.combinations.values.sumOf { it.size })
+        assertEquals(111, RuriCompositeReplies.combinations.size)
+        assertEquals(333, RuriCompositeReplies.combinations.values.sumOf { it.size })
         assertEquals(21, RuriCompositeReplies.combinations.keys.map { it.substringBefore('|') }.toSet().size)
         val seen=mutableSetOf<String>()
         val word = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
