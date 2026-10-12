@@ -36,6 +36,7 @@ internal class LiteResponseEngine {
         transcript: String,
         spokenBabyName: String = "",
         semantic: SemanticTopicPrediction? = null,
+        interactionEnabled: Boolean = false,
     ): LiteResponse {
         val normalized = normalize(transcript)
         val flexible = LiteFlexibleTopicMatcher.detect(transcript)
@@ -81,6 +82,13 @@ internal class LiteResponseEngine {
                     candidateScene.id in flexible ||
                     hasStrongTopicEvidence(candidateScene, normalized)
                 )
+        // New explicit caregiving utterance may replace the previous held Topic,
+        // but never overrides a concrete topic in this current utterance.
+        val interactionId = if (interactionEnabled) {
+            InteractionReplyBank.choose(transcript, semantic, candidateHasStrongTopicEvidence)
+        } else null
+        if (interactionId != null) return respondInteraction(interactionId, normalized)
+
         val explicitScene = when {
             candidateScene == null -> null
             activeSceneId == null -> candidateScene
@@ -195,6 +203,19 @@ internal class LiteResponseEngine {
             ruleScene = ruleScene?.id ?: "generic",
             semanticUsed = semanticUsed,
             contextUsed = contextUsed,
+        )
+    }
+
+    private fun respondInteraction(id: String, normalized: String): LiteResponse {
+        activeSceneId = null
+        activeSceneTurnsRemaining = 0
+        val raw = chooseReply(InteractionReplyBank.replies.getValue(id), normalized, false, false)
+        remember(raw, raw)
+        turnsSinceName++
+        turnCounter++
+        return LiteResponse(
+            english = raw, scene = "interaction:" + id, score = 0,
+            ruleScene = "generic", semanticUsed = true, contextUsed = false,
         )
     }
 
