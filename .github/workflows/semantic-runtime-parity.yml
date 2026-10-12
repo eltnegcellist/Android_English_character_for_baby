@@ -32,17 +32,37 @@ concurrency:
 
 jobs:
   compare:
-    runs-on: ubuntu-latest
+    # Galaxy S25 is ARM64. Linux x86 runner type changes (EPYC 7763 vs
+    # EPYC 9V45) have produced divergent Native ORT embeddings on same SHA.
+    # Gate Android release behavior on ARM64 Native vs WASM, not random x86.
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     steps:
       - name: Checkout Android
         uses: actions/checkout@v5
 
+      - name: Guard against fixed Native ORT threads that broke Ruri parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in \
+            app/src/main/java/com/eltnegcellist/emma/ai/RuriSemanticClassifier.kt \
+            semantic-parity-host/src/main/kotlin/com/eltnegcellist/emma/ai/SemanticParityHost.kt; do
+            if grep -nE '^[[:space:]]*set(Intra|Inter)OpNumThreads\(' "$source"; then
+              echo "::error::Explicit Native ORT thread count previously caused Ruri embedding mismatch. Restore defaults or validate with a separate controlled experiment."
+              exit 1
+            fi
+          done
+
       - name: Checkout Web Semantic runtime
         uses: actions/checkout@v5
         with:
           repository: eltnegcellist/Web_EmmaLocal_English_for_babies
-          ref: main
+          # Pair this draft Android implementation with Web PR-D #73.
+          # Web main is evolving independently during this feature's development.
+          # Compare the paired Web PR; historical pinned-commit diagnosis did not
+          # resolve the observed native-vs-WASM embedding mismatch.
+          ref: feature/interaction-prd-web-integration-20261012
           path: .web-parity
 
       - name: Set up Java 17
@@ -56,6 +76,19 @@ jobs:
         with:
           gradle-version: '9.5.0'
           cache-disabled: true
+
+      - name: Capture Native ORT runner fingerprint for intermittent parity
+        shell: bash
+        run: |
+          echo "=== Runner ==="
+          uname -a
+          lscpu | grep -E 'Architecture:|Model name:|CPU\(s\):|Thread\(s\) per core:|NUMA|Flags:' | head -n 12 || true
+          echo "=== JVM ==="
+          java -version
+          echo "=== Thread/ORT environment ==="
+          env | sort | grep -E '^(OMP|OPENBLAS|MKL|ONNX|ORT|JAVA_TOOL_OPTIONS|_JAVA_OPTIONS)=' || true
+          echo "=== Model checksum ==="
+          sha256sum .web-parity/semantic-assets/ruri70-int8-bd500193/model.onnx
 
       - name: Compare actual Android and Web Semantic inference
         shell: bash

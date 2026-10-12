@@ -32,10 +32,61 @@ internal class LiteResponseEngine {
     private var activeSceneId: String? = null
     private var activeSceneTurnsRemaining = 0
 
+    /**
+     * LIVE Lite reply selection. The single Ruri embedding supplies BOTH axes.
+     * The Japanese transcript is only a stable reply-variation seed; never
+     * inspected for keyword/negation/phonetic topic or Interaction classification.
+     */
+    fun respondRuri(
+        transcript: String,
+        spokenBabyName: String = "",
+        semantic: SemanticTopicPrediction? = null,
+        interactionEnabled: Boolean = false,
+    ): LiteResponse {
+        val topic = semantic?.let { p ->
+            findScene(p.topic.takeUnless { it == "generic" || p.margin < 0.05 || p.probability < 0.50 })
+        }
+        val interaction = if (interactionEnabled && semantic != null &&
+            semantic.interactionProbability >= 0.50 &&
+            semantic.interaction != "none" &&
+            semantic.interaction in InteractionReplyBank.replies) {
+            semantic.interaction
+        } else null
+        val pair = RuriCompositeReplies.forAxes(topic?.id, interaction)
+        val replies = pair ?: topic?.replies
+            ?: interaction?.let { InteractionReplyBank.replies[it] } ?: genericReplies
+        val route = when {
+            pair != null -> "combined:${topic!!.id}:${interaction}"
+            topic != null -> topic.id
+            interaction != null -> "interaction:${interaction}"
+            else -> "generic"
+        }
+        activeSceneId = null
+        activeSceneTurnsRemaining = 0
+        val safeName = sanitizeName(spokenBabyName)
+        val allowName = pair == null && interaction == null
+        val forceName = allowName && safeName.isNotBlank() &&
+            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW
+        val suppressName = allowName && safeName.isNotBlank() &&
+            turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
+        val raw = chooseReply(replies, transcript, forceName, suppressName)
+        val named = if (allowName) applyName(raw, safeName, forceName) else raw
+        val styled = alignToBabyStyle(named, transcript, topic?.id)
+        remember(raw, styled)
+        if (safeName.isNotBlank() && containsName(styled, safeName)) turnsSinceName = 0
+        else turnsSinceName++
+        turnCounter++
+        return LiteResponse(
+            english = styled, scene = route, score = 0,
+            ruleScene = "unused", semanticUsed = true, contextUsed = false,
+        )
+    }
+
     fun respond(
         transcript: String,
         spokenBabyName: String = "",
         semantic: SemanticTopicPrediction? = null,
+        interactionEnabled: Boolean = false,
     ): LiteResponse {
         val normalized = normalize(transcript)
         val flexible = LiteFlexibleTopicMatcher.detect(transcript)
@@ -81,6 +132,13 @@ internal class LiteResponseEngine {
                     candidateScene.id in flexible ||
                     hasStrongTopicEvidence(candidateScene, normalized)
                 )
+        // New explicit caregiving utterance may replace the previous held Topic,
+        // but never overrides a concrete topic in this current utterance.
+        val interactionId = if (interactionEnabled) {
+            InteractionReplyBank.choose(transcript, semantic, candidateHasStrongTopicEvidence)
+        } else null
+        if (interactionId != null) return respondInteraction(interactionId, normalized)
+
         val explicitScene = when {
             candidateScene == null -> null
             activeSceneId == null -> candidateScene
@@ -195,6 +253,19 @@ internal class LiteResponseEngine {
             ruleScene = ruleScene?.id ?: "generic",
             semanticUsed = semanticUsed,
             contextUsed = contextUsed,
+        )
+    }
+
+    private fun respondInteraction(id: String, normalized: String): LiteResponse {
+        activeSceneId = null
+        activeSceneTurnsRemaining = 0
+        val raw = chooseReply(InteractionReplyBank.replies.getValue(id), normalized, false, false)
+        remember(raw, raw)
+        turnsSinceName++
+        turnCounter++
+        return LiteResponse(
+            english = raw, scene = "interaction:" + id, score = 0,
+            ruleScene = "generic", semanticUsed = true, contextUsed = false,
         )
     }
 
@@ -461,7 +532,17 @@ internal class LiteResponseEngine {
         .replace(Regex("(?<!かさ|重|たず|尋|訪|は|跳|ま|真)ねた"), "寝た")
 
     companion object {
-        private val drinkScene = Scene("drink", emptyList(), listOf("Little sips. Sip, sip! Nice and slow.", "Let's drink. Little sips. Nice and slow.", "Sip, sip! Take your time. Little sips.", "Small sips. Nice and easy. Take your time.", "{name}, little sips. Sip, sip! Nice and slow."))
+        private val drinkScene = Scene(
+            "drink", emptyList(), listOf(
+                "Would you like some? Here's a little sip. There you go!",
+                "Here's your drink! Ready for a sip? Here you are!",
+                "Drink time! One little sip. How does it taste?",
+                "Want a little sip? Here's your drink. Sip if you like!",
+                "Want another sip? No need to hurry. Here you go!",
+                "{name}, your drink! Here's a little sip. There you go!",
+                "{name}, thirsty? Let's have a drink. Sip when you're ready!",
+            ),
+        )
         private const val MIN_SCENE_SCORE = 3
         private const val CONTEXT_SCENE_SCORE = 2
         private const val TOPIC_HOLD_TURNS = 1
@@ -541,9 +622,8 @@ internal class LiteResponseEngine {
             "music" to listOf("歌舞伎", "うたがう", "うたがっ", "うたがい")
         )
 
-        // Generic fallback catalog generated by Gemma 4 E2B Q4 during development
-        // and human-reviewed before being baked into Lite. Exact model strings are retained.
-        // The runtime stays fully local and does not invoke Gemma for these replies.
+        // Curated baby-directed English; Play Topics uses a separate one/three-sentence
+        // catalog, so ordinary conversation replies can evolve independently.
         private val sceneRescuePhrases = mapOf(
             "bath" to listOf("お風呂入りますか", "お風呂入ろうか", "お風呂入ろうね", "お風呂に入ろうか"),
             "milk" to listOf("ミルク飲みますか", "ミルク飲む", "ミルク飲もうか", "ミルク飲もうね", "ミルクにしようか", "ミルクの時間だよ"),
@@ -560,83 +640,57 @@ internal class LiteResponseEngine {
         )
 
         private val genericReplies = listOf(
-            "Hello there. Take a moment. Here we are.",
-            "Hello there. Just a moment. Here we go.",
-            "Hello there. Hi little one. I'm right here.",
-            "Hello dear. Near and far. I'm right here.",
-            "Oh, ooh! Hello there. Just be.",
-            "Hi there. Let's be here. Hello again.",
-            "Hi, little one. Hello again. Let's wonder.",
-            "Hello, little one. Here we are now. One little moment.",
-            "I'm right here. Together now. Just one moment.",
-            "Look with me. Here we go. Near and far.",
-            "Take your time. Let's wonder. Just a moment.",
-            "Ahh, ahh! Together now. Near and far.",
-            "I'm right here. Let's listen. Just one moment.",
-            "Here we are. Take your time. No rush.",
-            "Look around. One little moment. Here we are.",
-            "Look at me now. Watch me now. We look together.",
-            "Let's look now. Take a look. Look around slow.",
-            "Look around now. Look with me there. Take your time.",
-            "Look around now. Take a look now. Just look around.",
-            "Hello, little one. Look with me now. Take a look.",
-            "Look over here. Take your time. Near and far.",
-            "Look with me. Just look. Oh, ooh!",
-            "Look there now. Here and there. Let's look.",
-            "Let's listen now. Pause and listen. I am here.",
-            "Listen here. Take a moment. Just listen.",
-            "Take your time. Just listen here. Let's wonder.",
-            "Listen with me. Let's listen now. Take your time.",
-            "Pause and listen. We can listen here. Just listen closely.",
-            "Listen with me. Take your time. Let's listen now.",
-            "Listen with me. Let's listen now. Pause and listen.",
-            "Let's listen now. Pause and listen here. Listen with me.",
-            "I wonder now. Let's wonder. What next?",
-            "I wonder. Take your time. Let's wonder.",
-            "Let's wonder. Let's wonder here. Just wonder now.",
-            "I wonder now. Let's wonder. What comes next?",
-            "Take your time. No rush now. Let's be slow.",
-            "Here we go. Take a moment. Just one moment.",
-            "Let's wonder. Take your time. Slow and steady.",
-            "Just take time. Be very gentle. Here we go.",
-            "Here and there. Take your time. Just be here.",
-            "No rush now. Take your time. We go slow.",
-            "Oh, ooh! Ahh, ahh! Hello there.",
-            "Hmm, hmm. Look here now. Take your time.",
-            "Hi, little one. Oh, ooh! Near and far.",
-            "Ahh, ahh! Let's wonder. Take your time.",
-            "Hi, little one. Ahh, ahh! Near and far.",
-            "Hey baby. Take your time. Near and far.",
-            "Ahh, ahh! Let's wonder. Ooh, ooh!",
-            "Ooh, ooh! Ahh, ahh! Hey, hello there.",
-            "Near and far. I am here. Take your time.",
-            "Listen with me. Look around now. Oh, ooh!",
-            "Here and there. I am here now. Take your time.",
-            "Look with me. Near and far. Let's wonder.",
-            "Look around now. Oh, ooh! Take your time.",
-            "Look around. Let's wonder. Take your time.",
-            "Here and there. Let's explore. Take your time.",
+            "Hello, sweet baby! You're so loved. I'm right here.",
+            "Hi, little one! It's nice being together. Hello again!",
+            "Look at you! What a sweet face. I'm glad you're here!",
+            "You're very special. I'm happy you're here. Hello, sweetheart!",
+            "Hello again, baby! It's lovely seeing you. Shall we say hello?",
+            "You're my little sunshine. I love you. Big hugs!",
+            "Can you hear me? It's my voice. Hello there!",
+            "Let's say hello! Hi, little one! Hello again!",
+            "I'm glad we're together. Let's spend time here. Hello, sweetie!",
+            "Hello, sweetheart! Look at my face. Here I am!",
+            "Shall we talk? I'm listening, baby. Your turn!",
+            "Tell me more! I'm listening to you. Hello, baby!",
+            "You're so precious. I love you lots. Big hugs!",
+            "Hi there, baby! It's lovely seeing you. Hello!",
+            "Hello, little one! Can you hear me? Hi there!",
+            "Let's make a sound! Ba, ba, ba! Your turn!",
+            "One, two, three! Let's count together. Shall we go again?",
+            "Shall we wave hello? Hi, hi, hi! Here comes my hand!",
+            "Look at my hands! Let's wave hello. Hi, hi!",
+            "Let's say good morning! Hello, sweet baby. Hi there!",
+            "You're my sweet baby. I'm here with you. Big hugs!",
+            "Can you see me? Here I am! Hello, hello!",
+            "What do you think? Tell me, little one. I'm listening!",
+            "Do you hear that? That's my voice! Hello, baby!",
+            "{name}, hello there! I'm here with you. Big hugs!",
+            "{name}, my sweetheart! You're so loved. Hello, baby!",
+            "{name}, look here! It's me again. Hello there!",
+            "{name}, how are you? I'm listening, baby. Your turn!",
+            "{name}, my little star! I love you. Hello, sweetheart!",
+            "{name}, hello again! I'm happy you're here. Big hugs!",
         )
 
         private val sceneFillers = mapOf(
-            "bath" to listOf("Splash, splash!", "Here we go!"),
-            "milk" to listOf("Sip, sip!", "Nice and slow."),
+            "bath" to listOf("Splash, splash!", "Let's get clean!"),
+            "milk" to listOf("Sip, sip!", "Is it yummy?"),
             "sleep" to listOf("Night-night.", "Rest, rest."),
             "wake" to listOf("Hello, hello!", "Good morning!"),
-            "diaper" to listOf("Here we go!", "Nice and easy."),
-            "clothes" to listOf("Here we go!", "All ready."),
+            "diaper" to listOf("Let's change you!", "All fresh!"),
+            "clothes" to listOf("Let's get dressed!", "All ready."),
             "hug" to listOf("Big cuddle!", "Nice and close."),
             "hands" to listOf("Squeeze, squeeze!", "Wiggle, wiggle!"),
             "feet" to listOf("Kick, kick!", "Wiggle, wiggle!"),
             "smile" to listOf("Smile, smile!", "Hello, hello!"),
             "cry" to listOf("I'm right here.", "Nice and gentle."),
             "voice" to listOf("Ooh, ahh!", "I'm listening."),
-            "tummy" to listOf("Nice and easy.", "Take your time."),
-            "play" to listOf("Look, look!", "Here we go!"),
-            "outside" to listOf("Look around!", "Here we go!"),
+            "tummy" to listOf("Big hugs!", "I'm with you."),
+            "play" to listOf("Look, look!", "Let's have fun!"),
+            "outside" to listOf("Look around!", "What do you see?"),
             "rain" to listOf("Pitter-patter!", "Listen, listen!"),
             "sun" to listOf("Bright, bright!", "Look, look!"),
-            "food" to listOf("Yum, yum!", "Nice and slow."),
+            "food" to listOf("Yum, yum!", "Is it tasty?"),
             "book" to listOf("Look, look!", "Turn the page."),
             "music" to listOf("La-la-la!", "Listen, listen!"),
         )
@@ -646,22 +700,28 @@ internal class LiteResponseEngine {
                 "bath",
                 listOf("お風呂", "風呂", "湯船", "お湯", "シャワー", "体洗", "あったかいお湯"),
                 listOf(
-                    "Bath time! Splash, splash! Here we go!",
-                    "Warm bath! Splash, splash! Nice and easy.",
-                    "Bath time! Wash, wash! All clean.",
-                    "Here we go! Bath time! Splash, splash!",
-                    "{name}, bath time! Splash, splash! Here we go!",
+                    "Bath time is here! Is the water warm? Splash, splash!",
+                    "Let's wash your hands. One, then the other. All clean!",
+                    "Your little toes! Let's wash them gently. Splash, splash!",
+                    "Feel the warm water. Can you hear it? Splish, splash!",
+                    "We're taking a bath. Listen to the water. Splash, splash!",
+                    "Let's wash your tummy. A little splash. There you go!",
+                    "{name}, bath time! Feel the warm water. Splash, splash!",
+                    "{name}, look! Water on your toes. Splish, splash!",
                 ),
             ),
             Scene(
                 "milk",
                 listOf("ミルク", "母乳", "おっぱい", "飲んだ", "飲もう", "飲めた", "哺乳瓶", "授乳"),
                 listOf(
-                    "Milk time! Sip, sip! Nice and slow.",
-                    "Yummy milk! Sip, sip! Mmm, yummy!",
-                    "Milk, milk! Little sips. Nice and easy.",
-                    "Time for milk! Sip, sip! All done.",
-                    "{name}, milk time! Sip, sip! Nice and slow.",
+                    "Here's your milk! Ready for a sip? Here you go!",
+                    "Can you taste it? A little milk. Mmm, yummy!",
+                    "Milk for you! One little sip. Then another!",
+                    "Are you still hungry? We can have more. I'm here!",
+                    "It's milk time! Take little sips. I'm here with you.",
+                    "Milk time! Are you hungry? Let's have some!",
+                    "{name}, your milk! Here's a little sip. Mmm, yummy!",
+                    "{name}, milk time! Take a little sip. I'm here!",
                 ),
             ),
             Scene(
@@ -672,203 +732,257 @@ internal class LiteResponseEngine {
                     "睡眠", "就寝", "眠く",
                 ),
                 listOf(
-                    "So sleepy. Night-night. Rest, little one.",
-                    "Sleepy time. Nice and quiet. Night-night.",
-                    "Time to sleep. Rest, rest. Nice and cozy.",
-                    "Sleepy eyes. Night-night. Rest, little one.",
-                    "{name}, sleepy time. Night-night. Rest nice and easy.",
+                    "Are you sleepy? Let's get cozy. Night-night!",
+                    "Time to rest. Let's get cozy now. I'll stay close.",
+                    "Let's close our eyes. I'll stay nearby. Sleep well!",
+                    "Shh, little one. Let's have quiet time. I'm right here.",
+                    "Getting sleepy? I'll stay with you. Rest well!",
+                    "Rest well, baby. I'll stay close by. Sweet dreams!",
+                    "{name}, sleep well. I'm right here. Sweet dreams!",
+                    "{name}, night-night! Let's get cozy. Rest well!",
                 ),
             ),
             Scene(
                 "wake",
                 listOf("起きた", "おはよう", "目覚め", "起きよう", "起きて", "朝だ"),
                 listOf(
-                    "Good morning! You're awake! Hello, hello!",
-                    "You're awake! Hello, hello! Good morning!",
-                    "Morning, little one! Eyes open. Hello, hello!",
-                    "Hello there! You're awake! Here we go!",
-                    "{name}, good morning! You're awake! Hello, hello!",
+                    "You're awake! Hello, little one. It's nice seeing you!",
+                    "Your eyes are open! Hello, little one. How are you?",
+                    "Look who's awake! How are you? Hello, little one!",
+                    "Hello again! Did you rest well? I'm glad you're awake.",
+                    "Look who's awake! Did you rest well? Hello there!",
+                    "Hello there! You're awake now. Let's say hello!",
+                    "{name}, you're awake! How was your rest? Hello, sweetheart!",
+                    "{name}, you're awake! How are you? Hello again!",
                 ),
             ),
             Scene(
                 "diaper",
                 listOf("おむつ", "オムツ", "うんち", "おしっこ", "替えよう", "替える", "お尻"),
                 listOf(
-                    "Diaper time! Nice and easy. Here we go!",
-                    "Fresh diaper! Here we go! Nice and easy.",
-                    "Diaper change! Wipe, wipe! All clean.",
-                    "Here we go! Diaper time! Nice and clean.",
-                    "{name}, diaper time! Nice and easy. Here we go!",
+                    "Time for a change. Let's get you dry. All fresh!",
+                    "New diaper time! Let's wipe your bottom. All clean!",
+                    "Let's change your diaper. One little wipe. All fresh!",
+                    "Off comes your diaper. Let's clean you up. There!",
+                    "Let's change your diaper. I'll be gentle. Nice and fresh!",
+                    "Diaper change! I'll be gentle. You're doing great!",
+                    "{name}, diaper time! Let's get you clean. All fresh!",
+                    "{name}, let's change you. One little wipe. All clean!",
                 ),
             ),
             Scene(
                 "clothes",
                 listOf("着替え", "服着", "服脱", "お洋服", "パジャマ", "靴下", "帽子"),
                 listOf(
-                    "Clothes on! Here we go! Nice and easy.",
-                    "Time to dress! One little arm. Here we go!",
-                    "Getting dressed! Nice and easy. All ready.",
-                    "Clothes time! Here we go! All cozy.",
-                    "{name}, clothes on! Nice and easy. All ready.",
+                    "Let's put clothes on. One arm first. Other arm next!",
+                    "Your little shirt! Let's put it on. One arm goes in!",
+                    "Here come your socks. One little foot. Then another!",
+                    "Time to get dressed. Arms through the sleeves. All ready!",
+                    "Let's change your clothes. This arm first. There you go!",
+                    "Look at your clothes! Shall we get dressed? One arm first!",
+                    "{name}, clothes on! One arm in. Looking lovely!",
+                    "{name}, let's get dressed. Socks on next. All ready!",
                 ),
             ),
             Scene(
                 "hug",
                 listOf("抱っこ", "だっこ", "ぎゅ", "抱きしめ", "抱っこしよう", "腕の中"),
                 listOf(
-                    "Big cuddle! Up, up! Nice and close.",
-                    "Cuddle time! Nice and close. Here we go!",
-                    "Up we go! Big hug. So cozy.",
-                    "Big hug! Nice and close. I'm right here.",
-                    "{name}, cuddle time! Big hug. Nice and close.",
+                    "Come here, baby. Let's have a cuddle. Big hugs!",
+                    "Up you go! Into my arms. I've got you!",
+                    "A little cuddle? I'll hold you close. So cozy!",
+                    "Let's have a hug. Close to my heart. I love you!",
+                    "Here are my arms. Come close, sweetheart. Big hug!",
+                    "Hug time! You're warm and cozy. I'm here!",
+                    "{name}, come here! A big warm hug. I love you!",
+                    "{name}, cuddle time! I'll hold you close. So cozy!",
                 ),
             ),
             Scene(
                 "hands",
                 listOf("手", "おてて", "握って", "にぎって", "ぎゅっと", "指", "つかん"),
                 listOf(
-                    "Tiny hands! Squeeze, squeeze! Wiggle, wiggle!",
-                    "Little hands! Open, close. Wiggle, wiggle!",
-                    "Tiny fingers! Squeeze, squeeze! Little hands!",
-                    "Hands, hands! Open and close. Wiggle, wiggle!",
-                    "{name}, tiny hands! Squeeze, squeeze! Wiggle, wiggle!",
+                    "Look at your hands! Ten tiny fingers. Wiggle, wiggle!",
+                    "Open your hands. Close them again. Good job!",
+                    "Those little fingers! Can you wiggle them? Wiggle, wiggle!",
+                    "Here's your little hand. Hold my finger. So tiny!",
+                    "One hand, two hands! Let's wave hello. Hi there!",
+                    "Your fingers are moving! Open and close. Look at that!",
+                    "{name}, tiny hands! Hold my finger. Hello there!",
+                    "{name}, look! Your hands are moving. Wiggle, wiggle!",
                 ),
             ),
             Scene(
                 "feet",
                 listOf("足", "あんよ", "キック", "蹴って", "つま先", "足バタ"),
                 listOf(
-                    "Little feet! Kick, kick! Wiggle, wiggle!",
-                    "Tiny feet! Kick, kick! Little toes!",
-                    "Feet, feet! Up and down. Kick, kick!",
-                    "Little toes! Wiggle, wiggle! Kick, kick!",
-                    "{name}, little feet! Kick, kick! Wiggle, wiggle!",
+                    "Look at your feet! Ten tiny toes. Wiggle, wiggle!",
+                    "Kick those little legs! Kick, kick! Look at you!",
+                    "Your toes are moving! One, two, three. So tiny!",
+                    "Let's count your toes. One, two, three. More to go!",
+                    "Little feet up! Little feet down! Kick, kick!",
+                    "Can you kick? There go your feet! Good job!",
+                    "{name}, little feet! Kick, kick! Look at you!",
+                    "{name}, tiny toes! Wiggle those feet. So cute!",
                 ),
             ),
             Scene(
                 "smile",
                 listOf("笑った", "笑って", "笑顔", "にこにこ", "ニコニコ", "微笑"),
                 listOf(
-                    "Big smile! Smile, smile! Hello, little one!",
-                    "What a smile! Hello, hello! Smile, smile!",
-                    "Smile, smile! There it is! Hello there!",
-                    "Happy smile! Hello, little one! So sweet.",
-                    "{name}, big smile! Hello, hello! Smile, smile!",
+                    "What a smile! I love seeing it. You're so sweet!",
+                    "There's your smile! I love seeing it. So sweet!",
+                    "You're smiling! That makes me smile. Thank you!",
+                    "Such a big smile! Your cheeks look lovely. Hello, baby!",
+                    "I see a smile! Are you happy? I am too!",
+                    "Hello, little smiler! That's a lovely grin. I see you!",
+                    "{name}, that smile! You make me happy. Hello, sweetheart!",
+                    "{name}, you're smiling! I love that smile. So sweet!",
                 ),
             ),
             Scene(
                 "cry",
                 listOf("泣いて", "泣いた", "泣いちゃ", "涙", "えーん", "ぐず", "ぐずぐず"),
                 listOf(
-                    "I hear you. I'm right here. Nice and gentle.",
-                    "I hear you. Here with you. Nice and close.",
-                    "Hello, little one. I hear you. I'm right here.",
-                    "I hear your voice. Nice and gentle. I'm right here.",
-                    "{name}, I hear you. I'm right here. Nice and gentle.",
+                    "I hear you crying. I'm right here. You're not alone.",
+                    "Are you feeling upset? I'm listening, baby. I'm right here.",
+                    "Are you upset? I'll stay close. Would you like cuddles?",
+                    "I hear you crying. Would a cuddle help? I'm here.",
+                    "Are you upset? I'm here with you. Big hugs!",
+                    "You can cry. I'll stay beside you. I love you.",
+                    "{name}, I'm here. I hear you crying. Big hugs!",
+                    "{name}, it's okay. I'm listening to you. I'm here!",
                 ),
             ),
             Scene(
                 "voice",
                 listOf("声出", "あーって", "うーって", "おしゃべり", "喃語", "クーイング", "あうあう"),
                 listOf(
-                    "I hear you! Hello, hello! I'm listening.",
-                    "What a voice! Ooh, ahh! I hear you.",
-                    "Hello, little one! I hear you. Ooh, ahh!",
-                    "You're talking! Hello, hello! I'm listening.",
-                    "{name}, I hear you! Ooh, ahh! I'm listening.",
+                    "I hear your voice! Tell me more. I'm listening!",
+                    "Are you talking? Hello, little one. Your turn!",
+                    "What a lovely sound! Say it again. I'm listening!",
+                    "Ooh, ahh! I hear you! Hello there!",
+                    "You're making sounds! I love your voice. Talk to me!",
+                    "Was that a coo? I heard you! Hello, baby!",
+                    "{name}, I hear you! Tell me more. I'm listening!",
+                    "{name}, your voice! I love hearing it. Hello, sweetheart!",
                 ),
             ),
             Scene(
                 "tummy",
                 listOf("お腹", "おなか", "げっぷ", "ゲップ", "お腹いっぱい", "満腹", "吐き戻"),
                 listOf(
-                    "Little tummy. Nice and easy. Take your time.",
-                    "Little tummy. Nice and gentle. Here we go.",
-                    "Nice and slow. Little tummy. Take your time.",
-                    "Easy, easy. Little tummy. I'm right here.",
-                    "{name}, little tummy. Nice and easy. Take your time.",
+                    "How's your tummy? Do you feel full? I'm here!",
+                    "Let's pat your back. Maybe a little burp. There!",
+                    "Your little tummy! Let's have a cuddle. So cozy!",
+                    "Is that a burp? Let's take it slowly. I'm right here.",
+                    "Let's get comfortable. I'll hold you close. Big hugs!",
+                    "Full tummy? We can rest now. I'm right here.",
+                    "{name}, little tummy! Let's get comfortable. Big hugs!",
+                    "{name}, feeling full? I'll hold you close. So cozy!",
                 ),
             ),
             Scene(
                 "play",
                 listOf("遊ぼう", "遊ん", "おもちゃ", "ガラガラ", "ぬいぐるみ", "メリー", "ボール"),
                 listOf(
-                    "Play time! Look, look! Here we go!",
-                    "Let's play! Look with me. Here we go!",
-                    "Play, play! Look, look! So much fun!",
-                    "Time to play! Hello, hello! Let's play!",
-                    "{name}, play time! Look, look! Here we go!",
+                    "Let's play together! What should we try? Peekaboo!",
+                    "Here's your toy! Can you see it? Look here!",
+                    "Ready to play? Shall we start together? Here's a little game!",
+                    "Peekaboo! Where did I go? Here I am!",
+                    "Let's shake the rattle. Can you hear it? Shake, shake!",
+                    "Look at this toy! It's here for you. Let's play!",
+                    "{name}, let's play! Here's your toy. Look at that!",
+                    "{name}, peekaboo! Where am I? Here I am!",
                 ),
             ),
             Scene(
                 "outside",
                 listOf("散歩", "お散歩", "外行", "お外", "公園", "ベビーカー", "出かけ"),
                 listOf(
-                    "Outside time! Look around! Here we go!",
-                    "Out we go! Look, look! Listen with me.",
-                    "Outside, outside! Look around! Here we go!",
-                    "Time outside! Look with me. Listen, listen!",
-                    "{name}, outside time! Look around! Here we go!",
+                    "Let's go outside! Look at the sky. What do you see?",
+                    "Fresh air outside! Can you feel it? Hello, world!",
+                    "Time for a stroll. Let's look around. What's over there?",
+                    "We're going outside! Let's look all around. What do you see?",
+                    "Look up, baby! There's the sky. So big!",
+                    "Out we go! What can you hear? Let's listen!",
+                    "{name}, outside time! Look at the sky. Hello, world!",
+                    "{name}, let's stroll! What can you see? Look around!",
                 ),
             ),
             Scene(
                 "rain",
                 listOf("雨", "降ってる", "降ってきた", "雨音", "傘"),
                 listOf(
-                    "Rain, rain! Pitter-patter! Listen, listen!",
-                    "Rain outside! Drip, drop! Listen with me.",
-                    "Pitter-patter! Rain, rain! Drip, drop!",
-                    "Listen, listen! Rain outside! Pitter-patter!",
-                    "{name}, rain outside! Pitter-patter! Listen, listen!",
+                    "Rain is falling! Can you hear it? Pitter-patter!",
+                    "Listen to the rain. Drip, drop! Drip, drop!",
+                    "Rain on the window! Tap, tap, tap. Can you hear?",
+                    "It's raining outside. Look at the drops. Drip, drop!",
+                    "The rain sounds soft. Listen with me. Pitter-patter!",
+                    "Raindrops are falling. Listen to their sound. Drip, drop!",
+                    "{name}, it's raining! Listen to the drops. Drip, drop!",
+                    "{name}, hear that? It's the rain. Pitter-patter!",
                 ),
             ),
             Scene(
                 "sun",
                 listOf("晴れ", "いい天気", "お日様", "太陽", "明るい", "ぽかぽか"),
                 listOf(
-                    "Bright day! Hello, sunshine! Look, look!",
-                    "Sunshine! Bright, bright! Look with me.",
-                    "Hello, sunshine! Bright day! Look, look!",
-                    "Bright, bright! Sunshine! Here we go!",
-                    "{name}, bright day! Hello, sunshine! Look, look!",
+                    "The sun is shining! What a bright day. Hello, sunshine!",
+                    "Look at the sunlight! It's bright outside. So lovely!",
+                    "Hello, sunshine! The sky is bright. Look up!",
+                    "A sunny day! Let's look outside. Can you see?",
+                    "See the bright sky? The sun is out. Hello, sunshine!",
+                    "Look at the sunshine! Can you see it? So bright!",
+                    "{name}, it's sunny! Look at the light. So bright!",
+                    "{name}, sunshine today! The sky is bright. Hello, sunshine!",
                 ),
             ),
             Scene(
                 "food",
                 listOf("ごはん", "離乳食", "食べよう", "食べた", "おいしい", "いただきます", "スプーン"),
                 listOf(
-                    "Food time! Yum, yum! Nice and slow.",
-                    "Yummy food! Little bite. Nice and easy.",
-                    "Time to eat! Yum, yum! Here we go!",
-                    "Food, food! Little bite. Yum, yum!",
-                    "{name}, food time! Yum, yum! Nice and slow.",
+                    "Time for a bite! Here's your spoon. Open wide!",
+                    "Let's try some food. One little bite. How is it?",
+                    "Ready to eat? A little spoonful. There you go!",
+                    "Do you like it? Want another bite? No need to hurry.",
+                    "Here's a little bite. Let's taste it. Mmm, yummy!",
+                    "All done eating? Shall we wipe up? You did well!",
+                    "{name}, food time! One little spoonful. Is it yummy?",
+                    "{name}, let's eat! Here's your spoon. Open wide!",
                 ),
             ),
             Scene(
                 "book",
                 listOf("絵本", "本読", "読もう", "お話", "ページ", "めく"),
                 listOf(
-                    "Book time! Look, look! Turn the page.",
-                    "Let's read! Look with me. Turn the page.",
-                    "Book, book! Look, look! Here we go!",
-                    "Story time! Turn the page. Let's see!",
-                    "{name}, book time! Look, look! Turn the page.",
+                    "Let's read a book! Look at the pictures. What's that?",
+                    "Here's your book! Turn the page. What comes next?",
+                    "Look at this picture! What can you see? Let's look together!",
+                    "One more page! Let's see what's there. Turn, turn!",
+                    "Story time! Listen to my voice. Here comes a story!",
+                    "Let's look together. See that picture? What do you notice?",
+                    "{name}, book time! Look at the pictures. What's that?",
+                    "{name}, let's read! Turn the page. What comes next?",
                 ),
             ),
             Scene(
                 "music",
                 listOf("歌", "音楽", "うた", "歌おう", "踊ろう", "リズム", "曲"),
                 listOf(
-                    "Music time! La-la-la! Listen, listen!",
-                    "Let's sing! La-la-la! Listen with me.",
-                    "Music, music! Tap, tap! Here we go!",
-                    "Song time! La-la-la! Listen, listen!",
-                    "{name}, music time! La-la-la! Listen, listen!",
+                    "Let's sing together! La, la, la! Your turn!",
+                    "Listen to the music. Can you hear it? Tap, tap!",
+                    "Here's a little song. Listen with me. La, la!",
+                    "Hear the music? Tap, tap! Let's sing!",
+                    "Let's make some music! Clap, clap! What fun!",
+                    "A song for you! La, la, la! Sing with me!",
+                    "{name}, let's sing! La, la, la! Your turn!",
+                    "{name}, hear that song? Let's listen together. Tap, tap!",
                 ),
             ),
         )
 
         internal fun allTemplatesForValidation(): List<String> =
-            genericReplies + scenes.flatMap { it.replies }
+            genericReplies + scenes.flatMap { it.replies } + drinkScene.replies
     }
 }
