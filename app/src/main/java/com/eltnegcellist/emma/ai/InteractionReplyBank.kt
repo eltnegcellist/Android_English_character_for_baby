@@ -3,7 +3,7 @@ package com.eltnegcellist.emma.ai
 /**
  * Experimental fixed English Interaction bank. Same texts as Web PR-D.
  * Not human-approved or Kiki-auditioned. Opt in with interaction_experimental_enabled.
- * Explicit current childcare Topic has precedence over this provisional head.
+ * Classification is Ruri-only; the separate combinator chooses fixed English templates.
  */
 internal object InteractionReplyBank {
     val replies: Map<String, List<String>> = mapOf(
@@ -149,34 +149,11 @@ internal object InteractionReplyBank {
         )
     )
 
-    private val patterns = mapOf(
-        "affection" to Regex("かわいい|可愛い|大好き|愛して|愛しい|いとしい|宝物"),
-        "praise" to Regex("よくでき|えらい|偉い|上手|おりこう|すごい|素晴らし|ばっちり"),
-        "achievement" to Regex("できた|やったね|成功し|やりきった|やり遂げた"),
-        "effort" to Regex("頑張ってる|頑張っている|がんばってる|一生懸命|努力して"),
-        "encouragement" to Regex("頑張って(?:ね|よ|ください|$)|がんばって(?:ね|よ|$)|できるよ|その調子|焦らなく|ゆっくりでいい"),
-        "invitation" to Regex("しようか|やろうか|遊ぼうか|あそぼうか|一緒に|いっしょに|してみる"),
-        "start" to Regex("始める|はじめる|スタート|せーの|よーい|いくよ|始めよう"),
-        "finish" to Regex("終わった|終わり|おしまい|済んだ|終わりました|終わったよ"),
-        "finish_check" to Regex("終わったかな|終わった[?？]|終わりかな|おしまいかな|できたかな|終わりにしようか|終わったのかな"),
-        "care" to Regex("お疲れ|おつかれ|頑張った|がんばった|大変だった|頑張りました"),
-        "inquiry" to Regex("どうした|なあに|何があった|大丈夫[?？]|大丈夫かな|なにかあった"),
-        "reassurance" to Regex("大丈夫だよ|だいじょうぶだよ|そばにいる|ここにいる|安心して|一緒にいる"),
-        "repeat" to Regex("もう一回|もう一度|またやろう|もういっかい"),
-        "pause" to Regex("ちょっと待って|少し待って|待ってて|休もうか|ひと休み|一休み|休憩しよう")
-    )
-    private val negation = Regex("終わってない|終わらな|できなかった|できてない|まだできない|泣いてない|笑ってない|起きてない|眠くない|大丈夫じゃない|大丈夫ではない")
-    private val question = Regex("(?:かな|かしら|でしょうか|[?？])\\s*$")
-
-    fun choose(text: String, semantic: SemanticTopicPrediction?, explicitCurrentTopic: Boolean): String? {
-        if (semantic == null || explicitCurrentTopic) return null
-        val label = semantic.interaction ?: return null
-        if (label !in replies || semantic.interactionProbability < 0.40 || semantic.interactionMargin < 0.0) return null
-        val normalized = text.replace(Regex("[\\s、。!！]"), "")
-        if (negation.containsMatchIn(normalized)) return null
-        if (patterns[label]?.containsMatchIn(normalized) != true) return null
-        if (label in setOf("finish","achievement","reassurance") && question.containsMatchIn(normalized)) return null
-        if (label == "finish_check" && !question.containsMatchIn(normalized)) return null
-        return label
+    /** Classification decision comes exclusively from Ruri head outputs. */
+    fun choose(_text: String, semantic: SemanticTopicPrediction?, _unused: Boolean): String? {
+        val label = semantic?.interaction
+        return if (label != null && label in replies && semantic.interactionProbability >= 0.40)
+            label else null
     }
+
 }
