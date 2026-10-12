@@ -209,7 +209,7 @@ internal class RuriSemanticClassifier(
         private const val EMBEDDING_DIMENSIONS = 384
         private const val HEAD_WIDTH = EMBEDDING_DIMENSIONS + 1
         private const val TOPIC_MARGIN = 0.05
-        private const val INTERACTION_SHA256 = "d65b1e4e7ac4c4b73a2410f0213dd478aa745b22a82ad998393b745c66045582"
+        private const val INTERACTION_SHA256 = "e0968799d9e477d512f0312350be458b8b3a84f6322fad8564bed7ff4645a464"
         private val INTERACTIONS = listOf(
             "affection", "praise", "achievement", "effort", "encouragement", "invitation",
             "start", "finish", "finish_check", "care", "inquiry", "reassurance",
