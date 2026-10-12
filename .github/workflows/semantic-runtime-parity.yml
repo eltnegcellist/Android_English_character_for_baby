@@ -74,6 +74,19 @@ jobs:
           gradle-version: '9.5.0'
           cache-disabled: true
 
+      - name: Capture Native ORT runner fingerprint for intermittent parity
+        shell: bash
+        run: |
+          echo "=== Runner ==="
+          uname -a
+          lscpu | grep -E 'Architecture:|Model name:|CPU\(s\):|Thread\(s\) per core:|NUMA|Flags:' | head -n 12 || true
+          echo "=== JVM ==="
+          java -version
+          echo "=== Thread/ORT environment ==="
+          env | sort | grep -E '^(OMP|OPENBLAS|MKL|ONNX|ORT|JAVA_TOOL_OPTIONS|_JAVA_OPTIONS)=' || true
+          echo "=== Model checksum ==="
+          sha256sum .web-parity/semantic-assets/ruri70-int8-bd500193/model.onnx
+
       - name: Compare actual Android and Web Semantic inference
         shell: bash
         run: |
