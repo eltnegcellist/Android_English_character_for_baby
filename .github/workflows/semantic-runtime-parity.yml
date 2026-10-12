@@ -38,6 +38,19 @@ jobs:
       - name: Checkout Android
         uses: actions/checkout@v5
 
+      - name: Guard against fixed Native ORT threads that broke Ruri parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in \
+            app/src/main/java/com/eltnegcellist/emma/ai/RuriSemanticClassifier.kt \
+            semantic-parity-host/src/main/kotlin/com/eltnegcellist/emma/ai/SemanticParityHost.kt; do
+            if grep -nE '^[[:space:]]*set(Intra|Inter)OpNumThreads\\(' "$source"; then
+              echo "::error::Explicit Native ORT thread count previously caused Ruri embedding mismatch. Restore defaults or validate with a separate controlled experiment."
+              exit 1
+            fi
+          done
+
       - name: Checkout Web Semantic runtime
         uses: actions/checkout@v5
         with:
