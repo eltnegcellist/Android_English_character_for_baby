@@ -51,12 +51,13 @@ internal class LiteResponseEngine {
             semantic.interaction
         } else null
         val pair = RuriCompositeReplies.forAxes(topic?.id, interaction)
-        val replies = pair ?: interaction?.let { InteractionReplyBank.replies[it] }
-            ?: topic?.replies ?: genericReplies
+        val replies = pair ?: topic?.replies
+            ?: interaction?.let { InteractionReplyBank.replies[it] } ?: genericReplies
         val route = when {
             pair != null -> "combined:${topic!!.id}:${interaction}"
+            topic != null -> topic.id
             interaction != null -> "interaction:${interaction}"
-            else -> topic?.id ?: "generic"
+            else -> "generic"
         }
         activeSceneId = null
         activeSceneTurnsRemaining = 0
