@@ -44,7 +44,10 @@ jobs:
           repository: eltnegcellist/Web_EmmaLocal_English_for_babies
           # Pair this draft Android implementation with Web PR-D #73.
           # Web main is evolving independently during this feature's development.
-          ref: feature/interaction-prd-web-integration-20261012
+          # Immutable Web commit with previously passing native-vs-WASM parity;
+          # ONNX, tokenizer, topic head, parity harness and WASM runtime blobs
+          # have exactly the same Git SHA as the current Web PR #73 branch.
+          ref: 674d2ee964b3b5ecac3cd643b78b3e13d862b2fb
           path: .web-parity
 
       - name: Set up Java 17
