@@ -88,7 +88,7 @@ internal object RuriCompositeReplies {
             "Let's rest a little. We have time. I'm here with you."
         ),
         "wake|affection" to listOf(
-            "Hello, sleepyhead! You're awake now. I love seeing you.",
+            "Hello, my treasure! You're awake now. I love seeing you.",
             "You're awake, sweetheart! What a lovely surprise. I love you.",
             "Hello, little one! I love you, sweetheart. I'm right here."
         ),
@@ -428,7 +428,7 @@ internal object RuriCompositeReplies {
             "A fresh diaper now. We can get cozy. I'll stay with you."
         ),
         "hug|affection" to listOf(
-            "I love this cuddle. You're my sweetheart. Stay close, little one.",
+            "I love this cuddle. You're my treasure. Stay close, little one.",
             "A cuddle for you! I love being together. You're so precious.",
             "Hugs together, sweetheart! I love you, sweetheart. I'm right here."
         ),
