@@ -56,7 +56,10 @@ fun main(rawArgs: Array<String>) {
     val tokenizer = RuriSemanticTokenizer(tokenizerFile)
     val head = readHead(headFile)
     val environment = OrtEnvironment.getEnvironment()
-    val options = OrtSession.SessionOptions()
+    val options = OrtSession.SessionOptions().apply {
+        setIntraOpNumThreads(1)
+        setInterOpNumThreads(1)
+    }
     val session = environment.createSession(modelFile.absolutePath, options)
 
     var maxEmbeddingDrift = 0.0
