@@ -152,7 +152,7 @@ internal object InteractionReplyBank {
     /** Classification decision comes exclusively from Ruri head outputs. */
     fun choose(_text: String, semantic: SemanticTopicPrediction?, _unused: Boolean): String? {
         val label = semantic?.interaction
-        return if (label != null && label in replies && semantic.interactionProbability >= 0.40)
+        return if (label != null && label in replies && semantic.interactionProbability >= 0.50)
             label else null
     }
 
