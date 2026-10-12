@@ -74,7 +74,7 @@ internal object RuriCompositeReplies {
         ),
         "cry|inquiry" to listOf(
             "I hear you crying. What's the matter? I'm listening, sweetheart.",
-            "I hear you crying. What do you notice? Let's find out together.",
+            "I hear you crying. What's bothering you? I'm here to listen.",
             "I hear those tears. Let's take a look. I'm listening, sweetheart."
         ),
         "sleep|invitation" to listOf(
@@ -139,7 +139,7 @@ internal object RuriCompositeReplies {
         ),
         "food|praise" to listOf(
             "You took a bite! Good job, little one. That was lovely.",
-            "Here's a little food. That was lovely! Well done, sweetheart.",
+            "Look at your food! You're doing so well. Well done, sweetheart.",
             "A little food together. You're doing so well. I'm proud of you."
         ),
         "outside|invitation" to listOf(
@@ -289,13 +289,13 @@ internal object RuriCompositeReplies {
         ),
         "tummy|reassurance" to listOf(
             "Let's rest a little. I'll hold you close. You're not alone.",
-            "I'm here, little tummy. I'll stay close. You're not alone.",
+            "I'm here, sweetheart. I'll stay close. You're not alone.",
             "Let's rest your tummy. We have time. I'm here with you."
         ),
         "tummy|care" to listOf(
             "That was a lot. Let's rest your tummy. I'm right here.",
-            "Time to rest, tummy. That took some effort. Let's rest together.",
-            "Your tummy can rest. You did a lot. I'll stay with you."
+            "Let's rest your tummy. We can rest together. I'll stay with you.",
+            "Your tummy can rest. I'm here with you. Let's take time."
         ),
         "rain|inquiry" to listOf(
             "Can you hear rain? What's that sound? Let's listen together.",
@@ -329,8 +329,8 @@ internal object RuriCompositeReplies {
         ),
         "smile|repeat" to listOf(
             "Another little smile? I'll smile at you. Your turn again.",
-            "Want to smile again? Let's try once more. Ready when you are?",
-            "Shall we smile together? Shall we go again? I'll stay close."
+            "Want to smile together? Here's a smile. I'll smile with you.",
+            "Shall we smile together? Look at my face. I'll smile too."
         ),
         "wake|inquiry" to listOf(
             "You're awake now! How do you feel? Hello, sweetheart.",
@@ -349,8 +349,8 @@ internal object RuriCompositeReplies {
         ),
         "cry|care" to listOf(
             "I hear you crying. That was a lot. I'm here with you.",
-            "I hear your crying. That took some effort. Let's rest together.",
-            "Those tears are real. You did a lot. I'll stay with you."
+            "I hear you crying. We can rest now. I'll stay beside you.",
+            "Those tears are real. I'll stay with you. Let's rest together."
         ),
         "cry|affection" to listOf(
             "I hear you crying. I love you, sweetheart. I'm right here.",
@@ -369,8 +369,8 @@ internal object RuriCompositeReplies {
         ),
         "play|effort" to listOf(
             "You're working on this! I see you trying. No need to hurry.",
-            "You're trying to play. I see you trying. I'm here with you.",
-            "You're working on play. You're working so hard. I'll stay beside you."
+            "You're trying this game. I see your effort. I'm here with you.",
+            "You're trying this game. You're working so hard. I'll stay beside you."
         ),
         "book|inquiry" to listOf(
             "What's in the book? Let's turn a page. What do you see?",
@@ -405,7 +405,7 @@ internal object RuriCompositeReplies {
         "milk|care" to listOf(
             "That was milk time. You did a lot. Let's rest together.",
             "Milk time was busy. That took some effort. Let's rest together.",
-            "That was a feed! You did a lot. I'll stay with you."
+            "Milk time is over. I'll stay with you. Let's rest together."
         ),
         "milk|reassurance" to listOf(
             "Here comes your milk. I'll stay close. We can go slowly.",
@@ -424,8 +424,8 @@ internal object RuriCompositeReplies {
         ),
         "diaper|care" to listOf(
             "That change is over. Let's get cozy. I'm with you.",
-            "That diaper change! That took some effort. Let's rest together.",
-            "A fresh diaper now. You did a lot. I'll stay with you."
+            "Diaper time is over. Let's get cozy. I'm here with you.",
+            "A fresh diaper now. We can get cozy. I'll stay with you."
         ),
         "hug|affection" to listOf(
             "I love this cuddle. You're my sweetheart. Stay close, little one.",
@@ -444,8 +444,123 @@ internal object RuriCompositeReplies {
         ),
         "bath|care" to listOf(
             "That was a bath! Now we can rest. I'm right here.",
-            "All done with baths. That took some effort. Let's rest together.",
-            "That took bath time! You did a lot. I'll stay with you."
+            "All done with baths. That was a lot. Let's rest together.",
+            "Your bath is finished. Let's get cozy now. I'll stay with you."
+        ),
+        "milk|pause" to listOf(
+            "Let's pause the milk. We can wait now. I'll stay with you.",
+            "Milk time can wait. There's no hurry. I'm right here.",
+            "Another sip can wait. Let's take a break. I'll be close."
+        ),
+        "diaper|pause" to listOf(
+            "Let's pause the change. We have time. I'm right here.",
+            "Diaper time can wait. No need to rush. I'll stay beside you.",
+            "A moment during changing. We'll take it slowly. I'm here, sweetheart."
+        ),
+        "bath|pause" to listOf(
+            "Let's pause bath time. No need to rush. I'll stay close.",
+            "Bath time can wait. We'll go gently. I'm here with you.",
+            "Let's slow the bath. We have time. I'll stay with you."
+        ),
+        "book|pause" to listOf(
+            "Let's pause the book. We can read later. I'm right here.",
+            "A pause in reading. Let's rest a moment. We'll return soon.",
+            "Let's stop this page. No need to rush. I'll stay with you."
+        ),
+        "play|pause" to listOf(
+            "Let's pause our game. We can rest now. I'm right here.",
+            "Playtime can wait. Let's take a break. I'll stay beside you.",
+            "Shall we stop playing? We can rest together. I'm here, sweetheart."
+        ),
+        "outside|pause" to listOf(
+            "Let's stop a moment. Our walk can wait. I'll stay near.",
+            "Pause our little walk. Let's look around. We have time.",
+            "A break while outside. We can wait here. I'm with you."
+        ),
+        "food|pause" to listOf(
+            "Let's pause eating now. We can wait. I'm beside you.",
+            "Food time can wait. No need to hurry. I'm right here.",
+            "Another bite can wait. Let's take a break. I'll stay close."
+        ),
+        "drink|pause" to listOf(
+            "Let's pause your drink. More sips can wait. I'm right here.",
+            "No more sips yet. We can wait. I'll stay with you.",
+            "Your drink can wait. Let's rest a little. I'm right here."
+        ),
+        "music|pause" to listOf(
+            "Let's pause our song. We can listen later. I'll stay close.",
+            "A little music break. We have time. I'm here with you.",
+            "Let's stop the music. We'll sing again later. I'm right here."
+        ),
+        "cry|pause" to listOf(
+            "We can pause now. I hear you crying. I'm here with you.",
+            "Let's rest a moment. I hear your cries. I'll stay close.",
+            "No need to rush. I hear you crying. We're here together."
+        ),
+        "hands|encouragement" to listOf(
+            "Try reaching your hand. I'm right here. You can go slowly.",
+            "Those hands can try. Just one little reach. I'll stay close.",
+            "Give your hand time. You can try again. I'm cheering you on."
+        ),
+        "feet|encouragement" to listOf(
+            "Try kicking those feet! I'm right here. You can try again.",
+            "One little kick? Give it a try! I'll stay close.",
+            "Those little toes! Try moving them. I'm cheering you on."
+        ),
+        "play|encouragement" to listOf(
+            "Try the game again. You can do this. I'm here with you.",
+            "Let's try that toy. Go at your pace. I'll stay close.",
+            "Playing takes practice. Give it a try. I'm right here."
+        ),
+        "voice|encouragement" to listOf(
+            "Want to make sounds? Give it a try. I'll listen closely.",
+            "Try your little voice. I'm listening, sweetheart. Take your time.",
+            "Another little sound? You can try. I'm right here."
+        ),
+        "milk|effort" to listOf(
+            "You're trying your milk. I see your effort. We'll go gently.",
+            "Little sips take practice. I see you trying. I'm right here.",
+            "You're working on drinking. I see your effort. Take it slowly."
+        ),
+        "food|effort" to listOf(
+            "You're trying that food. I see you trying. I'll stay close.",
+            "A new little bite. You're working on it. I'm right here.",
+            "You're learning about food. I can see that. Keep taking time."
+        ),
+        "rain|start" to listOf(
+            "Rain is starting now. Can you hear it? Let's listen together.",
+            "Here comes the rain! Drip, drop, drip. Let's listen together.",
+            "The first raindrops fall. Can you hear them? Come listen with me."
+        ),
+        "sun|start" to listOf(
+            "Here comes the sunshine! Look at that light. Let's look together.",
+            "The sunshine is coming. Shall we look outside? Look at that glow.",
+            "Sunlight is showing now. Look at the sky. Here it comes."
+        ),
+        "music|finish" to listOf(
+            "Our song is finished! All done singing. Let's rest together.",
+            "Music time is over. That was lovely. I'm right here.",
+            "That's the last note! We finished our song. Hooray for us."
+        ),
+        "book|finish" to listOf(
+            "Our book is finished! That's the last page. Well done, sweetheart.",
+            "Story time is over. We read together. What a lovely book.",
+            "All done reading now! Let's close the book. We can rest."
+        ),
+        "outside|finish" to listOf(
+            "Our little walk finished! Here we are. Let's get cozy.",
+            "Outside time is over. We're back together. I'm right here.",
+            "Our outing is finished. Let's take a rest. Here we are."
+        ),
+        "drink|finish" to listOf(
+            "All done with drinks! Your sipping is finished. Let's rest now.",
+            "That little drink finished. We can pause now. I'm right here.",
+            "No more sips now. Drinking time is done. Let's relax together."
+        ),
+        "play|finish" to listOf(
+            "Our game is finished! All done playing now. Well done, sweetheart.",
+            "Playtime is over now. Let's take a break. That was lovely.",
+            "That's the last game. We're all finished. Time for a rest."
         )
     )
 
