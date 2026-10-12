@@ -18,6 +18,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.graphics.Color
@@ -169,9 +172,11 @@ private fun ConversationNotificationSettings(runtime: ConversationController, of
 internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) {
     val historyError by runtime.history.errorState
     var entries by remember { mutableStateOf(emptyList<HistoryEntry>()) }
-    var remove by remember { mutableStateOf<String?>(null) }
-    var confirm by remember { mutableStateOf(false) }
-    var speaking by runtime.statusState
+    var deleteMode by remember { mutableStateOf(false) }
+    var selectedIds by remember { mutableStateOf(emptySet<String>()) }
+    var confirmDelete by remember { mutableStateOf(false) }
+    var playingEntryId by remember { mutableStateOf<String?>(null) }
+    val status by runtime.statusState
     val zone = ZoneId.systemDefault()
     val dateFormat = DateTimeFormatter.ofPattern("yyyy年M月d日（E）", Locale.JAPAN)
     val timeFormat = DateTimeFormatter.ofPattern("HH:mm", Locale.JAPAN)
@@ -180,29 +185,136 @@ internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) 
     }
     fun refresh() = runtime.history.list { entries = it }
     fun exit() { runtime.stopSession(); onExit() }
-    BackHandler { exit() }
+    fun toggle(id: String) {
+        selectedIds = if (id in selectedIds) selectedIds - id else selectedIds + id
+    }
+    BackHandler {
+        if (deleteMode) { deleteMode = false; selectedIds = emptySet() }
+        else exit()
+    }
     LaunchedEffect(Unit) { refresh() }
-    if (confirm) AlertDialog(onDismissRequest={confirm=false}, title={Text(if(remove==null) "すべての履歴を削除しますか？" else "この履歴を削除しますか？")},
-        confirmButton={TextButton({ runtime.stopSession(); runtime.history.delete(remove) { refresh() }; confirm=false }) { Text("削除") }},
-        dismissButton={TextButton({confirm=false}) {Text("戻る")}})
-    Scaffold(topBar={Row(Modifier.fillMaxWidth().statusBarsPadding().padding(12.dp), verticalAlignment=Alignment.CenterVertically) {
-        TextButton({exit()}) {Text("← 戻る")}; Text("会話履歴",Modifier.weight(1f)); TextButton({remove=null;confirm=true},enabled=entries.isNotEmpty()) {Text("全件削除")}
-    }}) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement=Arrangement.spacedBy(12.dp)) {
-            if(historyError!=null) item { Text(historyError!!,color=MaterialTheme.colorScheme.error) }
-            if(entries.isEmpty()) item { Text("履歴はまだありません。会話の音声が再生を始めると、ここに残ります。") }
-            grouped.forEach { (date, dayEntries) ->
-                item(key="date-$date") { Text(date, style=MaterialTheme.typography.titleMedium) }
-                items(dayEntries,key={it.id}) { entry -> Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
-                    Text(runCatching { timeFormat.format(Instant.parse(entry.createdAt).atZone(zone)) }.getOrDefault(entry.createdAt),style=MaterialTheme.typography.bodySmall)
-                    Text("聞き取った言葉", style=MaterialTheme.typography.labelSmall)
-                    Text(entry.japaneseText)
-                    Text("再生した英語", style=MaterialTheme.typography.labelSmall)
-                    Text(entry.englishText,style=MaterialTheme.typography.titleMedium)
-                    Row { Button({runtime.replay(entry.englishText)},enabled=speaking!=ProductionEmmaStatus.SPEAKING) { Text("もう一度聞く") }
-                        TextButton({runtime.stopSession()}) {Text("停止")}; TextButton({remove=entry.id;confirm=true}) {Text("削除")}
+    LaunchedEffect(status) {
+        if (status != ProductionEmmaStatus.SPEAKING) playingEntryId = null
+    }
+    if (confirmDelete) AlertDialog(
+        onDismissRequest = { confirmDelete = false },
+        title = { Text("選択した${selectedIds.size}件の履歴を削除しますか？") },
+        text = { Text("削除後は元に戻せません。") },
+        confirmButton = {
+            TextButton({
+                val ids = selectedIds
+                confirmDelete = false
+                runtime.stopSession()
+                playingEntryId = null
+                runtime.history.deleteMany(ids) {
+                    refresh()
+                    deleteMode = false
+                    selectedIds = emptySet()
+                }
+            }) { Text("削除") }
+        },
+        dismissButton = { TextButton({ confirmDelete = false }) { Text("戻る") } },
+    )
+    Scaffold(topBar = {
+        Row(
+            Modifier.fillMaxWidth().statusBarsPadding().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextButton({
+                if (deleteMode) { deleteMode = false; selectedIds = emptySet() }
+                else exit()
+            }) { Text(if (deleteMode) "キャンセル" else "← 戻る") }
+            Text("会話履歴", Modifier.weight(1f))
+            if (!deleteMode) TextButton({
+                runtime.stopSession()
+                playingEntryId = null
+                selectedIds = emptySet()
+                deleteMode = true
+            }, enabled = entries.isNotEmpty()) { Text("削除") }
+        }
+    }) { padding ->
+        LazyColumn(
+            Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            if (historyError != null) item { Text(historyError!!, color = MaterialTheme.colorScheme.error) }
+            if (entries.isEmpty()) item { Text("履歴はまだありません。会話の音声が再生を始めると、ここに残ります。") }
+            if (deleteMode && entries.isNotEmpty()) item(key = "history-delete-actions") {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text("${selectedIds.size}件選択中", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                    TextButton({
+                        selectedIds = if (selectedIds.size == entries.size) emptySet() else entries.map { it.id }.toSet()
+                    }) { Text(if (selectedIds.size == entries.size) "選択解除" else "全選択") }
+                    Button({ confirmDelete = true }, enabled = selectedIds.isNotEmpty()) {
+                        Text("${selectedIds.size}件を削除")
                     }
-                } } }
+                }
+            }
+            grouped.forEach { (date, dayEntries) ->
+                item(key = "date-$date") {
+                    Text(date, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+                }
+                items(dayEntries, key = { it.id }) { entry ->
+                    Card(
+                        Modifier.fillMaxWidth().then(
+                            if (deleteMode) Modifier.clickable { toggle(entry.id) } else Modifier
+                        ),
+                    ) {
+                        Column(Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    runCatching { timeFormat.format(Instant.parse(entry.createdAt).atZone(zone)) }
+                                        .getOrDefault(entry.createdAt),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                if (deleteMode) {
+                                    Checkbox(
+                                        checked = entry.id in selectedIds,
+                                        onCheckedChange = { toggle(entry.id) },
+                                        modifier = Modifier.semantics { contentDescription = "この履歴を選択" },
+                                    )
+                                } else {
+                                    val isPlaying = playingEntryId == entry.id &&
+                                        status == ProductionEmmaStatus.SPEAKING
+                                    IconButton(
+                                        onClick = {
+                                            if (playingEntryId == entry.id) {
+                                                runtime.stopSession()
+                                                playingEntryId = null
+                                            } else {
+                                                runtime.replay(entry.englishText)
+                                                playingEntryId = if (runtime.status == ProductionEmmaStatus.SPEAKING) entry.id else null
+                                            }
+                                        },
+                                        modifier = Modifier.size(44.dp).semantics {
+                                            contentDescription = if (isPlaying) "再生を停止" else "もう一度聞く"
+                                        },
+                                    ) {
+                                        Text(
+                                            if (isPlaying) "■" else "▶",
+                                            color = MaterialTheme.colorScheme.primary,
+                                            style = MaterialTheme.typography.titleMedium,
+                                        )
+                                    }
+                                }
+                            }
+                            Text("聞き取った言葉", style = MaterialTheme.typography.labelSmall)
+                            Text(entry.japaneseText, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(Modifier.height(4.dp))
+                            Text("再生した英語", style = MaterialTheme.typography.labelSmall)
+                            Text(entry.englishText, style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
             }
         }
     }

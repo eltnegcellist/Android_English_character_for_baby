@@ -42,6 +42,24 @@ internal class ConversationHistory(context: Context) : SQLiteOpenHelper(context,
         }.onFailure(::failed).getOrDefault(emptyList())
         android.os.Handler(android.os.Looper.getMainLooper()).post { callback(entries) }
     } }
+    /** Remove a selection in one SQLite transaction, keeping the existing history schema. */
+    fun deleteMany(ids: Set<String>, callback: () -> Unit) {
+        if (ids.isEmpty()) {
+            android.os.Handler(android.os.Looper.getMainLooper()).post(callback)
+            return
+        }
+        worker.execute {
+            runCatching {
+                val db = writableDatabase
+                db.beginTransaction()
+                try {
+                    ids.forEach { db.delete("history", "id=?", arrayOf(it)) }
+                    db.setTransactionSuccessful()
+                } finally { db.endTransaction() }
+            }.onFailure(::failed)
+            android.os.Handler(android.os.Looper.getMainLooper()).post(callback)
+        }
+    }
     fun delete(id: String?, callback: () -> Unit) { worker.execute {
         runCatching { writableDatabase.delete("history", if (id == null) null else "id=?", if (id == null) null else arrayOf(id)) }.onFailure(::failed)
         android.os.Handler(android.os.Looper.getMainLooper()).post(callback)
