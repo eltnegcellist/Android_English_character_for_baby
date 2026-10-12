@@ -41,7 +41,7 @@ class InteractionReplyBankTest {
         assertEquals("combined:book:invitation",
             engine.respondRuri("日本語にミルクと書いてもRuri判定が絵本", semantic=axes("book","invitation"), interactionEnabled=true).scene)
         assertEquals("milk",
-            engine.respondRuri("ミルクなんて書いてない", semantic=axes("milk","pause"), interactionEnabled=true).scene)
+            engine.respondRuri("ミルクなんて書いてない", semantic=axes("milk","inquiry"), interactionEnabled=true).scene)
         assertEquals("interaction:affection",
             engine.respondRuri("単語とは無関係", semantic=axes("generic","affection"), interactionEnabled=true).scene)
         assertEquals("generic",
