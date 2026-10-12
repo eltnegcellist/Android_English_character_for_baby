@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_DIR="$ROOT/app/libs"
 OUT="$OUT_DIR/moonshine-voice-0.1.5-no-ort.aar"
-URL="https://repo1.maven.org/maven2/ai/moonshine/moonshine-voice/0.1.5/moonshine-voice-0.1.5.aar"
+URL="https://repo.maven.apache.org/maven2/ai/moonshine/moonshine-voice/0.1.5/moonshine-voice-0.1.5.aar"
 
 mkdir -p "$OUT_DIR"
 WORK="$(mktemp -d)"
