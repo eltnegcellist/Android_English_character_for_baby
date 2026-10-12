@@ -1,11 +1,12 @@
 package com.eltnegcellist.emma.ai
 
 /**
- * Runtime Lite replies are intentionally shorter than Full.
+ * Ordinary Lite conversation: three short, independently meaningful sentences
+ * (6–12 words total, at most 4 words per sentence).
  *
- * The reply bank is meant to be generated offline during development with the
- * same Gemma Baby-mode intent, then baked into the APK. Runtime Lite never
- * loads Gemma just to choose a reply.
+ * The bank is hand-curated, not constrained by Gemma/Full. "Press to listen"
+ * uses a separate phrase catalog with its own 1/3-sentence toggle.
+ * Never add empty filler merely to reach three sentences.
  */
 internal object LiteSpeechStyle {
     const val MIN_WORDS = 6
