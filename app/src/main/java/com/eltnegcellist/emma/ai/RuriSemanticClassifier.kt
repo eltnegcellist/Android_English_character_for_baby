@@ -42,7 +42,10 @@ internal class RuriSemanticClassifier(
         }
 
         val dir = RuriSemanticModelStore.directory(appContext)
-        val options = OrtSession.SessionOptions()
+        val options = OrtSession.SessionOptions().apply {
+        setIntraOpNumThreads(1)
+        setInterOpNumThreads(1)
+    }
         try {
             val nextSession = environment.createSession(
                 File(dir, "model.onnx").absolutePath,
