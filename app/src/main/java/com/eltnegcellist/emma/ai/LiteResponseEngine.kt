@@ -32,6 +32,53 @@ internal class LiteResponseEngine {
     private var activeSceneId: String? = null
     private var activeSceneTurnsRemaining = 0
 
+    /**
+     * LIVE Lite reply selection. The single Ruri embedding supplies BOTH axes.
+     * The Japanese transcript is only a stable reply-variation seed; never
+     * inspected for keyword/negation/phonetic topic or Interaction classification.
+     */
+    fun respondRuri(
+        transcript: String,
+        spokenBabyName: String = "",
+        semantic: SemanticTopicPrediction? = null,
+        interactionEnabled: Boolean = false,
+    ): LiteResponse {
+        val topic = findScene(semantic?.topic?.takeUnless { it == "generic" })
+        val interaction = if (interactionEnabled && semantic != null &&
+            semantic.interactionProbability >= 0.40 &&
+            semantic.interaction != "none" &&
+            semantic.interaction in InteractionReplyBank.replies) {
+            semantic.interaction
+        } else null
+        val pair = RuriCompositeReplies.forAxes(topic?.id, interaction)
+        val replies = pair ?: interaction?.let { InteractionReplyBank.replies[it] }
+            ?: topic?.replies ?: genericReplies
+        val route = when {
+            pair != null -> "combined:${topic!!.id}:${interaction}"
+            interaction != null -> "interaction:${interaction}"
+            else -> topic?.id ?: "generic"
+        }
+        activeSceneId = null
+        activeSceneTurnsRemaining = 0
+        val safeName = sanitizeName(spokenBabyName)
+        val allowName = pair == null && interaction == null
+        val forceName = allowName && safeName.isNotBlank() &&
+            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW
+        val suppressName = allowName && safeName.isNotBlank() &&
+            turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
+        val raw = chooseReply(replies, transcript, forceName, suppressName)
+        val named = if (allowName) applyName(raw, safeName, forceName) else raw
+        val styled = alignToBabyStyle(named, transcript, topic?.id)
+        remember(raw, styled)
+        if (safeName.isNotBlank() && containsName(styled, safeName)) turnsSinceName = 0
+        else turnsSinceName++
+        turnCounter++
+        return LiteResponse(
+            english = styled, scene = route, score = 0,
+            ruleScene = "unused", semanticUsed = true, contextUsed = false,
+        )
+    }
+
     fun respond(
         transcript: String,
         spokenBabyName: String = "",
