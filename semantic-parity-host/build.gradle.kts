@@ -16,7 +16,7 @@ sourceSets {
 }
 
 dependencies {
-    implementation("com.microsoft.onnxruntime:onnxruntime:1.23.2")
+    implementation("com.microsoft.onnxruntime:onnxruntime:1.30.0")
     implementation("org.json:json:20240303")
 }
 
