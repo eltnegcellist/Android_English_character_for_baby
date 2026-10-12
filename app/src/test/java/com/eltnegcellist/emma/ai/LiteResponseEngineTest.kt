@@ -216,6 +216,38 @@ class LiteResponseEngineTest {
         }
     }
 
+
+    @Test
+    fun litePhraseBankAvoidsLowInformationStockFillers() {
+        val stockFillers = listOf(
+            "nice and slow", "nice and easy", "take your time",
+            "here we go", "near and far", "let's wonder",
+        )
+        LiteResponseEngine.allTemplatesForValidation().forEach { reply ->
+            stockFillers.forEach { filler ->
+                assertFalse("Unexpected filler in: $reply", reply.lowercase().contains(filler))
+            }
+        }
+        val engine = LiteResponseEngine()
+        val examples = listOf("ミルク飲もうね", "ごはん食べようか", "げっぷ出たね")
+        examples.forEach { input ->
+            val response = engine.respond(input).english.lowercase()
+            stockFillers.forEach { filler ->
+                assertFalse("Unexpected filler in: $response", response.contains(filler))
+            }
+        }
+    }
+
+    @Test
+    fun genericRepliesStayVariedAcrossConsecutiveTurns() {
+        val engine = LiteResponseEngine()
+        val outputs = (0 until 24).map { engine.respondGeneric().english }
+        assertTrue("Generic variety: ${outputs.toSet().size}/24", outputs.toSet().size >= 20)
+        outputs.zipWithNext().forEach { (first, second) ->
+            assertFalse("Consecutive duplicate reply: $first", first == second)
+        }
+    }
+
     @Test
     fun configuredNameIsReusedAtFullLikeCadence() {
         val engine = LiteResponseEngine()
