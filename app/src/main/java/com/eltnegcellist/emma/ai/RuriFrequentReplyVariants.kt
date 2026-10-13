@@ -17,7 +17,7 @@ internal object RuriFrequentReplyVariants {
             "Such careful little sips! You worked so well. High five, sweetheart!",
             "That was lovely drinking! Every sip matters. Well done today!",
             "See what you did! Milk time went well. What a happy moment!",
-            "Your tiny mouth worked! You managed those sips. Good work, baby!"
+            "Those sips went well! You managed those sips. Good work, baby!"
         ),
         "milk|invitation" to listOf(
             "Shall we sit together? Your milk is waiting. Ready to try?",
@@ -31,12 +31,12 @@ internal object RuriFrequentReplyVariants {
             "Milk time is finished. Put the bottle down. Let's get cozy.",
             "That was your milk. We're all done now. Here comes a cuddle.",
             "No more milk now. What a lovely break. Let's rest a while.",
-            "Your bottle is finished. We can take five. Snuggle up with me."
+            "Your bottle is finished. Let's relax together. Snuggle up with me."
         ),
         "milk|finish_check" to listOf(
             "Have you had enough? Is your bottle finished? Let's have a look.",
             "All done with milk? Want another small sip? You can choose.",
-            "Was that your last? Shall we put down? Let's see together.",
+            "Was that your last? Shall we stop now? Let's see together.",
             "Is your tummy happy? Have you finished drinking? Tell me, sweetheart.",
             "More milk or finished? What do you think? We can check."
         ),
@@ -62,9 +62,9 @@ internal object RuriFrequentReplyVariants {
             "Fresh diaper on yet? Shall we get dressed? Are we all done?"
         ),
         "sleep|invitation" to listOf(
-            "Shall we close eyes? The room feels calm. Let's rest together.",
-            "Ready for a nap? Your blanket feels soft. Settle in, sweetheart.",
-            "Let's find your pillow. We can rest now. Sweet dreams, baby.",
+            "Let's close our eyes. The room feels calm. Let's rest together.",
+            "Ready for a nap? Your bed feels cozy. Settle in, sweetheart.",
+            "Let's settle down now. We can rest now. Sweet dreams, baby.",
             "Would you like sleep? I'll sing softly. Let's get peaceful.",
             "Time to slow down. Let's snuggle up. Ready to dream?"
         ),
@@ -78,7 +78,7 @@ internal object RuriFrequentReplyVariants {
         "play|invitation" to listOf(
             "Shall we roll together? Here comes your ball. Catch it, sweetheart!",
             "Want to play peekaboo? Where did I go? Here I am!",
-            "Let's play with blocks. One goes on top. Your turn now.",
+            "Let's watch that toy. It moves so slowly. Your turn now.",
             "Ready for some fun? I'll show a toy. Take a look.",
             "How about a game? We can laugh together. Let's start small."
         ),
