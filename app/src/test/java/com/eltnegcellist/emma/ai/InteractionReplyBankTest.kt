@@ -34,6 +34,23 @@ class InteractionReplyBankTest {
         }
     }
 
+    @Test fun curatedEnglishIsConcreteAndNoOldAwkwardSentencesRemain() {
+        val all = InteractionReplyBank.replies.values.flatten() + RuriCompositeReplies.combinations.values.flatten()
+        assertTrue(InteractionReplyBank.replies["affection"]!!.contains("Look at you! My sweet baby. I love you!"))
+        assertTrue(InteractionReplyBank.replies["effort"]!!.contains("You're trying again! Look at you go! I'm here!"))
+        assertTrue(RuriCompositeReplies.forAxes("milk","achievement")!!.contains(
+            "You drank some milk! Good job, baby! I'm right here."
+        ))
+        assertTrue(RuriCompositeReplies.forAxes("milk","repeat")!!.contains(
+            "Want more milk? Just a little? Take your time."
+        ))
+        assertTrue(RuriCompositeReplies.forAxes("book","inquiry")!!.contains(
+            "Look at this picture! What do you see? Let's look again!"
+        ))
+        val phrases=Regex("that worked out|i see your effort|you can decide|absolutely adorable",RegexOption.IGNORE_CASE)
+        assertTrue("Awkward phrases should have been removed",all.none { phrases.containsMatchIn(it) })
+    }
+
     @Test fun allFourRoutingCasesUseRuriAxesWithoutKeywordRules() {
         val engine=LiteResponseEngine()
         assertEquals("combined:milk:praise",
