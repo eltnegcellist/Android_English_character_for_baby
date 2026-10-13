@@ -837,28 +837,6 @@ internal fun EmmaSettingsScreen(
                             enabled = enabled,
                         )
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("話題と呼びかけの両方を判定する（標準）")
-                            Text(
-                                "Ruriで「ミルク」などの話題と「かわいいね」「よくできたね」などを組み合わせて英文を選びます。オフにすると話題中心の返答になります。",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        Switch(
-                            checked = interactionEnabled,
-                            onCheckedChange = { value ->
-                                interactionEnabled = value
-                                interactionPreferences.edit().putBoolean(InteractionFeatureSettings.KEY, value).apply()
-                            },
-                            enabled = enabled,
-                        )
-                    }
                     Text(
                         "話題が曖昧な場合は直前の話題を最大6回使い、明確な別の話題で切り替えます。",
                         style = MaterialTheme.typography.bodySmall,
@@ -1022,6 +1000,29 @@ internal fun EmmaSettingsScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("新Interaction（Topic＋Interaction）")
+                                Text(
+                                    "ON（標準）：話題＋働きかけに合う英文を選びます。OFF（開発者用）：話題だけで英文を選びます。保存したOFF設定は再起動後も維持されます。",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Switch(
+                                checked = interactionEnabled,
+                                onCheckedChange = { value ->
+                                    interactionEnabled = value
+                                    interactionPreferences.edit().putBoolean(InteractionFeatureSettings.KEY, value).apply()
+                                },
+                                enabled = enabled,
+                            )
+                        }
 
                         Text("モデル・実行状態", style = MaterialTheme.typography.titleSmall)
                         Text(
