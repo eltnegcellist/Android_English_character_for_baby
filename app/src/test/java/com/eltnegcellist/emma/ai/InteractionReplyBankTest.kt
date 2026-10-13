@@ -51,6 +51,15 @@ class InteractionReplyBankTest {
         assertTrue("Awkward phrases should have been removed",all.none { phrases.containsMatchIn(it) })
     }
 
+    @Test fun infantPhraseRefinementsStayWithinExistingCombinedBank() {
+        assertTrue(RuriCompositeReplies.forAxes("milk", "praise")!!.contains(
+            "You drank your milk! Little sips are great. Well done today!"
+        ))
+        assertTrue(RuriCompositeReplies.forAxes("milk", "invitation")!!.any { it.contains("Want a little sip?") })
+        assertTrue(RuriCompositeReplies.forAxes("cry", "reassurance")!!.any { it.contains("Are you upset, baby?") })
+        assertTrue(RuriCompositeReplies.forAxes("smile", "affection")!!.any { it.contains("I love that smile!") })
+    }
+
     @Test fun allFourRoutingCasesUseRuriAxesWithoutKeywordRules() {
         val engine=LiteResponseEngine()
         assertEquals("combined:milk:praise",
