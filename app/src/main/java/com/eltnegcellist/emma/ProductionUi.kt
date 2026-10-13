@@ -413,7 +413,7 @@ private fun EmmaCoachMarkOverlay(
                 Text(
                     when (step) {
                         0 -> "1 / 3　${aiName}と会おう"
-                        1 -> "2 / 3　ここから会話を始めます"
+                        1 -> "2 / 3　ここから呼びかけを始めます"
                         else -> "3 / 3　話しかけてみよう"
                     },
                     style = MaterialTheme.typography.titleMedium,
@@ -426,7 +426,7 @@ private fun EmmaCoachMarkOverlay(
                         } else {
                             "${aiName}が自己紹介しています。声が終わるまでそのまま聞いてください。"
                         }
-                        1 -> "画面下で光っている「会話を始める」を実際に押してください。押すとマイクが始まり、会話を開始します。"
+                        1 -> "画面下で光っている「呼びかけを始める」を押してください。マイクが始まり、親子の場面に合わせた英語の呼びかけを開始します。"
                         else -> "赤ちゃんへ普段どおり日本語で話しかけてみてください。話し終わったら、必要に応じて明るく表示されている「今すぐAIが返事する」を押すと、その時点までの言葉をもとに${aiName}が返事します。「自動で返事」がオンの場合は、押さなくても話し終わりを検出して自動で返事します。"
                     },
                     style = MaterialTheme.typography.bodyMedium,
