@@ -103,7 +103,7 @@ internal class LiteResponseEngine {
         val named = if (allowName) applyName(raw, safeName, forceName) else raw
         val styledBase = alignToBabyStyle(named, transcript, topic?.id)
         val styled = if (chosen?.reason == "combined" && safeName.isNotBlank() &&
-            replyDiversity.canUsePairedName()) {
+            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW) {
             RuriPairedBabyName.insert(styledBase, safeName)
         } else styledBase
         val nameUsed = safeName.isNotBlank() && containsName(styled, safeName)
