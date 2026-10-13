@@ -13,6 +13,9 @@ internal class RuriReplyDiversity {
     private val history = ArrayDeque<String>()
     private val phraseHistory = ArrayDeque<List<String>>()
     private val cycles = linkedMapOf<String, Cycle>()
+    private var nameGap = 0
+    fun canUsePairedName(): Boolean = nameGap >= RuriPairedBabyName.MIN_GAP
+    fun recordName(used: Boolean) { nameGap = if (used) 0 else (nameGap + 1).coerceAtMost(RuriPairedBabyName.MIN_GAP) }
 
     private fun grams(text: String): List<String> {
         val words = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?").findAll(text.lowercase()).map { it.value }.toList()
@@ -24,7 +27,10 @@ internal class RuriReplyDiversity {
     fun restore(value: String?) {
         if (value.isNullOrBlank()) return
         val parts = value.split("\n")
-        if (parts.size != 4 || parts[0] != "v1") return
+        if (parts.size != 4 && parts.size != 5) return
+        if (parts[0] != "v1" && parts[0] != "v2") return
+        nameGap = if (parts[0] == "v2" && parts.size == 5)
+            (parts[4].toIntOrNull() ?: 0).coerceIn(0, RuriPairedBabyName.MIN_GAP) else 0
         history.clear(); phraseHistory.clear(); cycles.clear()
         val idPattern = Regex("[a-z0-9_:|#-]+")
         parts[1].split(',').filter { it.matches(idPattern) }.takeLast(60).forEach(history::addLast)
@@ -41,12 +47,13 @@ internal class RuriReplyDiversity {
         }
     }
     fun snapshot(): String = listOf(
-        "v1",
+        "v2",
         history.joinToString(","),
         phraseHistory.joinToString(";") { it.joinToString(".") },
         cycles.entries.toList().takeLast(135).joinToString(";") { (key, cycle) ->
             key + "=" + cycle.used.joinToString(".") + "~" + cycle.fallbackStep
-        }
+        },
+        nameGap.toString(),
     ).joinToString("\n")
 
     private fun pick(pool: String?, replies: List<String>?, excluded: Set<Int> = emptySet()): Pick? {
