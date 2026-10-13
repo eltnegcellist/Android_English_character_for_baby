@@ -73,7 +73,9 @@ internal class LiteResponseEngine {
             interaction != null -> "interaction:${interaction}"
             else -> "generic"
         }
-        val routingReason = chosen?.reason ?: when {
+        // A topic-only pick describes the selected pool, not why the other axis was rejected.
+        // Keep the classifier's rejection reason (e.g. low Interaction confidence).
+        val routingReason = chosen?.reason?.takeUnless { it == "topic_only" } ?: when {
             pair != null -> "combined"
             topic != null && interaction != null -> "pair_missing"
             topic != null && !interactionEnabled -> "interaction_disabled"
