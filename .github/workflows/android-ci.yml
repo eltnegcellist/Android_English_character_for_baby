@@ -133,7 +133,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.44-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.45-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -181,7 +181,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.44
+          name: Mitsukotoba-v1.9.45
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -197,7 +197,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.44"
+          TAG="mitsukotoba-v1.9.45"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -215,5 +215,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.44" \
-            --notes "Mitsukotoba v1.9.44 includes the 914-set infant-directed English bank, 55 reviewed phrase improvements, and six further natural-speech revisions. Frequent Topic×Interaction pairs now have eight variants with durable 60-turn repetition avoidance and single-axis interludes. Lite callouts remain the public default; Full/dialogue are developer-only. Ruri, Kitten Kiki TTS and offline ASR are unchanged."
+            --title "みつことば v1.9.45" \
+            --notes "Mitsukotoba v1.9.45 adds rare baby-name personalization to Topic×Interaction callouts, preserving three short sentences and the full 914-set bank. The name is reused at most once per eight paired replies with an additional cross-route cooldown, and only when the word limits allow. Baby name settings, long-term 60-turn phrase diversity, Lite-only public experience, hidden developer Full, Ruri and offline Kiki TTS remain unchanged."

@@ -12,6 +12,61 @@ class InteractionReplyBankTest {
             interaction = interaction, interactionProbability = interactionProbability, interactionMargin = 0.5,
         )
 
+    @Test fun pairedBabyNameIsRareLengthSafeAndPersistsAcrossRestarts() {
+        val template = "Milk time, sweetheart! You're so lovely. I love you."
+        assertEquals("Milk time, Hana! You're so lovely. I love you.",
+            RuriPairedBabyName.insert(template, "Hana"))
+        assertEquals("Milk time, Hana-chan! You're so lovely. I love you.",
+            RuriPairedBabyName.insert(template, "Hana-chan"))
+        assertEquals(template, RuriPairedBabyName.insert(template, "Hana".repeat(25)))
+        val cadence = RuriReplyDiversity()
+        repeat(8) { cadence.recordName(used = false, paired = true) }
+        assertTrue(cadence.canUsePairedName())
+        cadence.recordName(used = true, paired = false)
+        assertFalse(cadence.canUsePairedName())
+        repeat(2) { cadence.recordName(used = false, paired = false) }
+        assertTrue(cadence.canUsePairedName())
+        cadence.recordName(used = true, paired = true)
+        assertFalse(cadence.canUsePairedName())
+        val saved = cadence.snapshot()
+        assertTrue(saved.startsWith("v2\n"))
+        val restored = RuriReplyDiversity()
+        restored.restore(saved)
+        assertFalse(restored.canUsePairedName())
+        repeat(8) { restored.recordName(used = false, paired = true) }
+        assertTrue(restored.canUsePairedName())
+        val oldState = RuriReplyDiversity()
+        oldState.restore("v1\ncombined:milk|affection#0\n\nmilk|affection=0~0")
+        assertTrue(oldState.snapshot().contains("combined:milk|affection#0"))
+        assertFalse(oldState.canUsePairedName())
+
+        val word = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
+        val parts = Regex("(?<=[.!?])\\s+")
+        var matched = false
+        for (key in RuriCompositeReplies.combinations.keys) {
+            val topic = key.substringBefore('|')
+            val interaction = key.substringAfter('|')
+            val engine = LiteResponseEngine()
+            // Six-field v2 state: blank lists and cycles, eight prior combined
+            // turns, and two turns since any other personalized reply.
+            engine.restoreRuriReplyDiversity("v2\n\n\n\n8\n2")
+            val response = engine.respondRuri("試験用", "Hana", axes(topic, interaction), true)
+            if (!response.english.contains("Hana")) continue
+            assertEquals("combined:$topic:$interaction", response.scene)
+            val sentences = response.english.split(parts)
+            assertEquals(3, sentences.size)
+            assertTrue(sentences.all { word.findAll(it).count() <= 4 })
+            assertTrue(word.findAll(response.english).count() <= 12)
+            val engineReloaded = LiteResponseEngine()
+            engineReloaded.restoreRuriReplyDiversity(engine.exportRuriReplyDiversity())
+            val next = engineReloaded.respondRuri("次の日本語", "Hana", axes(topic, interaction), true)
+            assertFalse("Name must not repeat on immediate next turn", next.english.contains("Hana"))
+            matched = true
+            break
+        }
+        assertTrue("at least one combined English set can safely insert baby's name", matched)
+    }
+
     @Test fun allCombinedRepliesAreNaturalLengthAndThreeSentences() {
         assertEquals(135, RuriCompositeReplies.combinations.size)
         assertEquals(495, RuriCompositeReplies.combinations.values.sumOf { it.size })

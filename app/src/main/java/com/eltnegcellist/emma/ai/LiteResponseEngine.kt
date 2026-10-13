@@ -101,10 +101,15 @@ internal class LiteResponseEngine {
             turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
         val raw = chosen?.text ?: chooseReply(replies, transcript, forceName, suppressName)
         val named = if (allowName) applyName(raw, safeName, forceName) else raw
-        val styled = alignToBabyStyle(named, transcript, topic?.id)
+        val styledBase = alignToBabyStyle(named, transcript, topic?.id)
+        val styled = if (chosen?.reason == "combined" && safeName.isNotBlank() &&
+            replyDiversity.canUsePairedName()) {
+            RuriPairedBabyName.insert(styledBase, safeName)
+        } else styledBase
+        val nameUsed = safeName.isNotBlank() && containsName(styled, safeName)
+        replyDiversity.recordName(nameUsed, paired = chosen?.reason == "combined")
         remember(raw, styled)
-        if (safeName.isNotBlank() && containsName(styled, safeName)) turnsSinceName = 0
-        else turnsSinceName++
+        if (nameUsed) turnsSinceName = 0 else turnsSinceName++
         turnCounter++
         return LiteResponse(
             english = styled, scene = route, score = 0,
