@@ -4,6 +4,7 @@ import android.content.Context
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineJapaneseAsr
 import com.eltnegcellist.emma.tts.DiagnosticStore
+import java.util.Locale
 
 internal data class LiteDiagnosticComparison(
     val ruleScene: String,
@@ -89,6 +90,7 @@ class LiteEmmaClient(
         // Privacy-safe per-turn audit: no Japanese transcript or baby name.
         val rawTopic = semanticPrediction?.topic ?: "none"
         val rawInteraction = semanticPrediction?.interaction ?: "none"
+        val score = { value: Double? -> "%.3f".format(Locale.US, value ?: 0.0) }
         val topicAccepted = selected.scene == rawTopic || selected.scene.startsWith("combined:${rawTopic}:")
         val interactionAccepted = selected.scene == "interaction:${rawInteraction}" ||
             (selected.scene.startsWith("combined:") && selected.scene.endsWith(":${rawInteraction}"))
@@ -96,10 +98,10 @@ class LiteEmmaClient(
             appContext,
             "ruri_route",
             "route=${selected.scene} reason=${selected.routingReason} " +
-                "topic=${rawTopic} tP=${semanticPrediction?.probability ?: 0.0} " +
-                "tM=${semanticPrediction?.margin ?: 0.0} tOK=${topicAccepted} " +
-                "interaction=${rawInteraction} iP=${semanticPrediction?.interactionProbability ?: 0.0} " +
-                "iM=${semanticPrediction?.interactionMargin ?: 0.0} iOK=${interactionAccepted} " +
+                "topic=${rawTopic} tP=${score(semanticPrediction?.probability)} " +
+                "tM=${score(semanticPrediction?.margin)} tOK=${topicAccepted} " +
+                "interaction=${rawInteraction} iP=${score(semanticPrediction?.interactionProbability)} " +
+                "iM=${score(semanticPrediction?.interactionMargin)} iOK=${interactionAccepted} " +
                 "iOn=${interactionEnabled}",
         )
         val adjusted = fitLevel(selected.english, level)
