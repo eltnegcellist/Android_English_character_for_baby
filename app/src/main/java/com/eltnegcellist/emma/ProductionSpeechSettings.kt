@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.eltnegcellist.emma.ai.BabyNamePronunciation
 import com.eltnegcellist.emma.ai.EnglishLevel
+import com.eltnegcellist.emma.ai.LiteInteractionSetting
 import java.util.Locale
 
 @Composable
@@ -40,6 +42,7 @@ internal fun ProductionSpeechSettings(
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
     var babyName by remember { mutableStateOf(preferences.getString("baby_name", "").orEmpty()) }
     var spokenBabyName by remember { mutableStateOf(preferences.getString("baby_spoken_name", "").orEmpty()) }
+    var interactionEnabled by remember { mutableStateOf(LiteInteractionSetting.isEnabled(preferences)) }
     val resolvedSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, spokenBabyName)
 
     Card(Modifier.fillMaxWidth()) {
@@ -88,6 +91,25 @@ internal fun ProductionSpeechSettings(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("新しい呼びかけ分類", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "標準オン。「かわいいね」「よくできたね」などを、ミルクやおむつ等の話題と組み合わせて英語を選びます。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = interactionEnabled,
+                    onCheckedChange = { checked ->
+                        interactionEnabled = checked
+                        LiteInteractionSetting.setEnabled(preferences, checked)
+                    },
+                    enabled = enabled,
+                )
+            }
 
             Text("英語のむずかしさ", style = MaterialTheme.typography.titleSmall)
             EnglishLevel.entries.forEach { option ->
