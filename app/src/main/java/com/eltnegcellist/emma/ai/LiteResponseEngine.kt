@@ -32,6 +32,10 @@ internal class LiteResponseEngine {
     private var turnsSinceName = BabySpeechStyle.NAME_REPEAT_WINDOW
     private var activeSceneId: String? = null
     private var activeSceneTurnsRemaining = 0
+    private val replyDiversity = RuriReplyDiversity()
+
+    fun restoreRuriReplyDiversity(state: String?) = replyDiversity.restore(state)
+    fun exportRuriReplyDiversity(): String = replyDiversity.snapshot()
 
     /**
      * LIVE Lite reply selection. The single Ruri embedding supplies BOTH axes.
@@ -54,15 +58,22 @@ internal class LiteResponseEngine {
             semantic.interaction
         } else null
         val pair = RuriCompositeReplies.forAxes(topic?.id, interaction)
+        val chosen = replyDiversity.select(
+            topic = topic?.id, interaction = interaction, pair = pair,
+            topicReplies = topic?.replies,
+            interactionReplies = interaction?.let { InteractionReplyBank.replies[it] },
+        )
         val replies = pair ?: topic?.replies
             ?: interaction?.let { InteractionReplyBank.replies[it] } ?: genericReplies
         val route = when {
+            chosen?.reason == "diversity_interaction" -> "interaction:${interaction}"
+            chosen?.reason == "diversity_topic" -> topic!!.id
             pair != null -> "combined:${topic!!.id}:${interaction}"
             topic != null -> topic.id
             interaction != null -> "interaction:${interaction}"
             else -> "generic"
         }
-        val routingReason = when {
+        val routingReason = chosen?.reason ?: when {
             pair != null -> "combined"
             topic != null && interaction != null -> "pair_missing"
             topic != null && !interactionEnabled -> "interaction_disabled"
@@ -76,12 +87,12 @@ internal class LiteResponseEngine {
         activeSceneId = null
         activeSceneTurnsRemaining = 0
         val safeName = sanitizeName(spokenBabyName)
-        val allowName = pair == null && interaction == null
+        val allowName = (pair == null && interaction == null) || chosen?.reason == "diversity_topic"
         val forceName = allowName && safeName.isNotBlank() &&
             turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW
         val suppressName = allowName && safeName.isNotBlank() &&
             turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
-        val raw = chooseReply(replies, transcript, forceName, suppressName)
+        val raw = chosen?.text ?: chooseReply(replies, transcript, forceName, suppressName)
         val named = if (allowName) applyName(raw, safeName, forceName) else raw
         val styled = alignToBabyStyle(named, transcript, topic?.id)
         remember(raw, styled)
