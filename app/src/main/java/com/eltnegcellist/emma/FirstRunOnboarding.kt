@@ -30,11 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eltnegcellist.emma.ai.AiCharacterName
-import com.eltnegcellist.emma.ai.ConversationEngineMode
 
 @Composable
 internal fun FirstRunOnboardingScreen(
-    selectedMode: ConversationEngineMode,
     busy: Boolean,
     ready: Boolean,
     phase: String,
@@ -44,7 +42,6 @@ internal fun FirstRunOnboardingScreen(
     onAiNameChange: (String) -> Unit,
     highPerformance: Boolean,
     onHighPerformanceChange: (Boolean) -> Unit,
-    onModeSelected: (ConversationEngineMode) -> Unit,
     onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
 ) {
@@ -144,47 +141,6 @@ internal fun FirstRunOnboardingScreen(
                 }
             }
 
-            Text(
-                "Lite / Fullを選ぶ",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            ConversationEngineMode.entries.forEach { option ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text("みつことば ${option.label}", style = MaterialTheme.typography.titleMedium)
-                        Text(option.description, style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            when (option) {
-                                ConversationEngineMode.LITE ->
-                                    if (highPerformance) "Moonshine Small + Ruri Semantic + LiteResponseEngine + Kitten TTS Nano / 完全ローカル" else "Moonshine Tiny + LiteResponseEngine + Kitten TTS Nano / 完全ローカル"
-                                ConversationEngineMode.FULL ->
-                                    "Moonshine ${if (highPerformance) "Small" else "Tiny"} + Gemma + Kitten TTS Nano / 2GB超 / 完全ローカル"
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (selectedMode == option) {
-                            Button(
-                                onClick = {},
-                                enabled = !busy,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("選択中") }
-                        } else {
-                            OutlinedButton(
-                                onClick = { onModeSelected(option) },
-                                enabled = !busy,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("このモードを選ぶ") }
-                        }
-                    }
-                }
-            }
-
             Card(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -196,9 +152,9 @@ internal fun FirstRunOnboardingScreen(
                         Text("高性能モデルを使う", style = MaterialTheme.typography.labelLarge)
                         Text(
                             if (highPerformance) {
-                                "Moonshine Smallを使い、Liteでは意味で話題を理解するモデルも使います。"
+                                "Moonshine Smallで日本語を聞き取り、意味で育児の話題を理解します。"
                             } else {
-                                "Moonshine Tinyを使い、Liteでは軽量な従来判定を使います。"
+                                "Moonshine Tinyで日本語を聞き取り、軽量な従来判定を使います。"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -226,23 +182,15 @@ internal fun FirstRunOnboardingScreen(
                 )
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text("選択中：みつことば ${selectedMode.label}", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        when (selectedMode) {
-                            ConversationEngineMode.LITE ->
-                                if (highPerformance) "Moonshine日本語Smallで聞き取り、Ruri Semanticで話題を理解し、LiteResponseEngineで返答を選び、Kitten TTS Nano / Kikiで話します。" else "Moonshine日本語Tinyで聞き取り、軽量な従来判定で返答を選び、Kitten TTS Nano / Kikiで話します。"
-                            ConversationEngineMode.FULL ->
-                                "Moonshine日本語${if (highPerformance) "Small" else "Tiny"}で聞き取り、KittenはLiteと共通です。Gemmaが文字起こし・元音声・直前の会話から返答を生成します。"
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
+            Text(
+                if (highPerformance) {
+                    "Moonshine Smallで聞き取り、Ruri Semanticで話題を理解し、短い英語をKitten TTS / Kikiで読み上げます。"
+                } else {
+                    "Moonshine Tinyで聞き取り、軽量な話題判定で英語を選び、Kitten TTS / Kikiで読み上げます。"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             when {
                 busy -> {
@@ -251,7 +199,7 @@ internal fun FirstRunOnboardingScreen(
                         Text("$it%", style = MaterialTheme.typography.titleMedium)
                     }
                     Text(
-                        phase.ifBlank { "みつことば ${selectedMode.label}を準備しています…" },
+                        phase.ifBlank { "みつことばのモデルを準備しています…" },
                         style = MaterialTheme.typography.titleSmall,
                     )
                     Text(
@@ -273,7 +221,7 @@ internal fun FirstRunOnboardingScreen(
                         onClick = onPrepare,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(if (errorMessage == null) "みつことば ${selectedMode.label}を準備する" else "もう一度準備する")
+                        Text(if (errorMessage == null) "みつことばを準備する" else "もう一度準備する")
                     }
                     errorMessage?.let {
                         Text(

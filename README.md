@@ -15,15 +15,15 @@ Sileroを標準の発話開始・終了判定として追加しました。設�
 
 ### 配布版
 
-**現在のAndroid配布版：v1.9.42**
+**現在のAndroid配布版：v1.9.43**
 
-**versionCode：125**
+**versionCode：126**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.42
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.42/Mitsukotoba-v1.9.42-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.43
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.43/Mitsukotoba-v1.9.43-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.42はSileroによる発話開始・終了判定を追加した版です。設定から従来RMSへ戻せ、選択は保存されます。終了待ちは1.1秒、Moonshine Japanese Smallと既存の録音音声処理を維持します。v1.9.41のSemantic実推論パリティと隠し診断機能も維持します。Android実機のマイク・CPU負荷・画面オフ会話は未確認で、静音の認識精度が全環境で維持される保証はまだありません。
+v1.9.43では公開機能をLiteの呼びかけへ一本化し、Fullと会話を開発者設定へ移動しました。旧Fullの設定は更新後に一度だけLiteへ切り替わります（モデル・履歴は保持）。v1.9.42で導入したSileroの発話開始・終了判定も維持します。設定から従来RMSへ戻せ、選択は保存されます。終了待ちは1.1秒、Moonshine Japanese Smallと既存の録音音声処理を維持します。v1.9.41のSemantic実推論パリティと隠し診断機能も維持します。Android実機のマイク・CPU負荷・画面オフ会話は未確認で、静音の認識精度が全環境で維持される保証はまだありません。
 
 > 現在配布しているAPKはCIによるdebug署名版です。Play Store向けproduction署名版ではありません。
 
@@ -126,14 +126,11 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 
 0〜2歳、とくに0歳児向けの機能設計について、自由会話・AIと乳児のインタラクション・月齢別最適化・親の英語復唱・Repetition Guardまで含めた検討記録を [RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md](RESEARCH_INFANT_ENGLISH_DESIGN_2026-10.md) にまとめています。これは実装仕様ではなく、将来の機能判断で再利用するための研究メモです。
 
-### 「呼びかけ」と「会話」
+### 呼びかけ（公開版）
 
-みつことばの2つのインタラクションは、相手を「赤ちゃん向け / 親向け」に分けるのではなく、**3人がどう関わるか**で分けます。
+公開するみつことばの基本体験は **Liteの「呼びかけ」だけ** です。親子の今の場面を手がかりに、AIが短い英語を差し込みます。親と赤ちゃんのやり取りが主役です。
 
-- **呼びかけ** — 親子の今の場面を手がかりに、AIが短い英語を差し込みます。親と赤ちゃんのやり取りが主役です。
-- **会話** — 親の発話や直前の流れを踏まえ、AIも親・赤ちゃんとの3者のやり取りに継続して参加します。
-
-Liteでは「呼びかけ」を利用できます。Fullでは「呼びかけ」と「会話」の両方を利用できます。内部の保存値は既存設定との互換性のため維持しています。
+実験用のFullと「会話」はコードから削除せず、Android設定画面の隠し開発者設定からだけ利用できるようにしています。通常のトップ画面・初回設定では選択できません。
 
 ### 会話を自分で区切る
 
@@ -141,12 +138,12 @@ Liteでは「呼びかけ」を利用できます。Fullでは「呼びかけ」
 
 ### エディション
 
-Android版みつことばには **Lite** と **Full** の2つがあります。
+通常ユーザー向けに提供するエディションは **Liteのみ** です。Fullは開発者設定でだけ有効化できる実験用エンジンとして維持します。
 
 | エディション | 応答方式 | 主な特徴 |
 | --- | --- | --- |
 | **Lite** | LiteResponseEngine | 軽量・予測可能・ローカル中心 |
-| **Full** | Gemma + 会話履歴 | より柔軟で文脈に応じた応答 |
+| **Full（開発者専用）** | Gemma + 会話履歴 | 実験用の生成応答 |
 
 LiteとFullは、音声認識と音声合成の基本構成を共有しています。主な違いは「みつことばが何を話すか」の決め方です。
 
@@ -172,7 +169,7 @@ Kitten TTS Nano 0.8 / Kiki
 
 Liteは、毎回生成AIに文章を作らせるのではなく、軽量な応答エンジンから場面に合う英語を選びます。
 
-### みつことば Full
+### みつことば Full（開発者専用）
 
 FullはLiteと同じ音声入出力の仕組みに、応答生成用のGemmaを追加します。
 
@@ -200,12 +197,9 @@ Fullでは追加で2GBを超えるGemmaモデルデータが必要です。
 
 ### 初回起動
 
-初回起動時に、次のどちらかを選びます。
+初回起動では自動的に **Lite**（既定はMoonshine Small + LiteResponseEngine + Kitten TTS）を選びます。Fullの案内や選択画面は表示しません。
 
-- **Lite** — 既定はMoonshine Small + LiteResponseEngine + Kitten TTS
-- **Full** — 既定はMoonshine Small + Gemma + Kitten TTS
-
-選択したエディションは保存され、後から設定画面で変更できます。旧バージョンの保存値は、現在のLite / Full構成へ移行されます。
+旧バージョンでFullを選択していた端末は、今回の変更後の初回起動時に一度だけLiteへ移行します。その後に開発者設定でFullを選び直した場合は保存されます。保存済みのGemmaモデルや会話履歴は移行時に削除しません。
 
 ### 共通機能
 
@@ -233,7 +227,7 @@ APKをインストールせずブラウザで使える **みつことば Web** �
 - Web版を開く: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 - Web版リポジトリ: https://github.com/eltnegcellist/Web_EmmaLocal_English_for_babies
 
-Web版はブラウザ向けの軽量構成です。Android版ではWeb版相当の軽量構成に加えて、Gemmaを使うFullも利用できます。
+Web版もブラウザで完結する呼びかけアプリとして提供しています。
 
 ### プライバシーとローカル処理
 
@@ -313,7 +307,7 @@ CIではSemantic実推論のAndroid/Web一致も検証します。固定14ケー
 
 ### 隠し開発者設定
 
-設定画面下部の「みつことば Android」を5回タップすると開発者設定を表示します。通常のKiki音声試聴とTTS実測に加え、Ruri Semantic / Guard / 従来Liteを同じ日本語で比較する診断、Semanticで選ばれた英語のKiki試聴、モデル準備状態、診断ログTXT、クラッシュトレースや診断用音声を含む詳細ZIP、完全リセットを利用できます。Semantic診断の会話文脈は通常会話とは分離しています。
+設定画面下部の「みつことば Android」を5回タップすると開発者設定を表示します。Lite / FullとFull専用の呼びかけ / 会話の切り替えはここに移動しました。通常のKiki音声試聴とTTS実測に加え、Ruri Semantic / Guard / 従来Liteを同じ日本語で比較する診断、Semanticで選ばれた英語のKiki試聴、モデル準備状態、診断ログTXT、クラッシュトレースや診断用音声を含む詳細ZIP、完全リセットを利用できます。Semantic診断の会話文脈は通常会話とは分離しています。
 
 ### 開発資料
 
@@ -343,15 +337,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Current Release
 
-**Current distributed Android release: v1.9.42**
+**Current distributed Android release: v1.9.43**
 
-**versionCode: 125**
+**versionCode: 126**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.42
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.42/Mitsukotoba-v1.9.42-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.43
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.43/Mitsukotoba-v1.9.43-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.42 adds Silero speech start/end detection with a saved Settings switch back to the original RMS detector. Endpoint waiting is 1.1 seconds; Moonshine Japanese Small and the existing captured-audio processing remain unchanged. Semantic runtime parity checks and diagnostics are retained. Physical-device microphone, CPU load and screen-off conversation checks remain outstanding; unchanged quiet-room ASR accuracy across environments has not been established.
+v1.9.43 makes Lite callouts the sole public Android experience while keeping Full/dialogue behind developer settings. Existing Full preferences migrate once to Lite without deleting model data or history. The Silero speech detection added in v1.9.42 remains available with a saved Settings rollback to RMS. Endpoint waiting is 1.1 seconds; Moonshine Japanese Small and the existing captured-audio processing remain unchanged. Semantic runtime parity checks and diagnostics are retained. Physical-device microphone, CPU load and screen-off conversation checks remain outstanding; unchanged quiet-room ASR accuracy across environments has not been established.
 
 > The distributed APK is currently CI debug-signed. It is not a Play Store production-signed build.
 
@@ -450,12 +444,12 @@ Mitsukotoba normally detects the end of speech automatically. If endpoint detect
 
 ### Editions
 
-Android Mitsukotoba has two editions: **Lite** and **Full**.
+The public Android experience uses **Lite only**. Full is retained as an experimental engine, accessible solely through hidden developer settings.
 
 | Edition | Response engine | Main purpose |
 | --- | --- | --- |
 | **Lite** | LiteResponseEngine | Lightweight, predictable, local-first |
-| **Full** | Gemma + recent conversation context | More flexible, context-aware responses |
+| **Full (developer-only)** | Gemma + recent conversation context | Experimental generated replies |
 
 Lite and Full share the same basic speech input/output stack. The main difference is how Mitsukotoba decides what to say.
 
@@ -481,7 +475,7 @@ Mitsukotoba avatar
 
 Lite stays compact and predictable by using a curated lightweight response engine instead of generating every utterance with a large model.
 
-### Mitsukotoba Full
+### Mitsukotoba Full (developer-only)
 
 Full uses the same speech stack as Lite and adds Gemma for response generation.
 
@@ -509,12 +503,9 @@ Full requires more than 2 GB of additional local Gemma model data.
 
 ### First Launch
 
-On first launch, the family selects one of the following:
+The first-run flow uses **Lite** by default (Moonshine Small + LiteResponseEngine + Kitten TTS), with no edition selector or Full promotion.
 
-- **Lite** — default: Moonshine Small + LiteResponseEngine + Kitten TTS
-- **Full** — default: Moonshine Small + Gemma + Kitten TTS
-
-The selected edition is saved and can later be changed from Settings. Legacy saved edition values are migrated to the current Lite / Full structure.
+An existing saved Full selection migrates to Lite once after the update. Full can still be reselected in hidden developer settings and will then persist. Existing Gemma models and history are not deleted.
 
 ### Shared Features
 
@@ -542,7 +533,7 @@ Mitsukotoba also has a browser-based **Web edition** that does not require APK i
 - Open Mitsukotoba Web: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 - Web repository: https://github.com/eltnegcellist/Web_EmmaLocal_English_for_babies
 
-The Web edition uses the lightweight browser configuration. Android provides the same lightweight style of interaction plus the Gemma-based Full mode.
+The Web edition is a standalone callout app that runs directly in the browser.
 
 ### Privacy and Local Processing
 

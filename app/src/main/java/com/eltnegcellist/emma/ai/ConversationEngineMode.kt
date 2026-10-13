@@ -17,6 +17,10 @@ enum class ConversationEngineMode(
     );
 
     companion object {
+        // Migrate pre-existing public Full selections once, preserve later developer selections.
+        fun forLaunch(value: String?, migrationComplete: Boolean): ConversationEngineMode =
+            if (migrationComplete) fromSaved(value) else LITE
+
         fun fromSaved(value: String?): ConversationEngineMode = when (value) {
             LITE.savedValue,
             "WEB_LITE",

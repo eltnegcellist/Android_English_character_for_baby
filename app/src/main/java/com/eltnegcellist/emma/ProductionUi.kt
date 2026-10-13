@@ -96,11 +96,9 @@ internal fun EmmaHomeScreen(
     latestTranscript: String,
     latestEmmaText: String,
     aiName: String,
-    engineMode: ConversationEngineMode,
     backgroundPreparationActive: Boolean,
     backgroundPreparationPhase: String,
     backgroundPreparationPercent: Int?,
-    onRequestParentFull: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenPlay: () -> Unit,
@@ -183,12 +181,12 @@ internal fun EmmaHomeScreen(
                                 enabled = tutorialStartButtonEnabled(modelReady, busy, tutorialStep),
                                 modifier = Modifier.weight(0.72f).heightIn(min = 64.dp)
                                     .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                            ) { Text("会話を始める", textAlign = TextAlign.Center) }
+                            ) { Text("呼びかけを始める", textAlign = TextAlign.Center) }
                         } else {
                             OutlinedButton(
                                 onClick = onStopSession,
                                 modifier = Modifier.weight(0.72f).heightIn(min = 64.dp),
-                            ) { Text("会話を止める", textAlign = TextAlign.Center) }
+                            ) { Text("呼びかけを止める", textAlign = TextAlign.Center) }
                         }
                     }
                 }
@@ -254,12 +252,6 @@ internal fun EmmaHomeScreen(
                     }
                 }
             }
-
-            AudienceSelector(
-                enabled = !busy && !recording,
-                engineMode = engineMode,
-                onRequestParentFull = onRequestParentFull,
-            )
 
             CompactEmmaAvatar(
                 state = visualState,
@@ -486,73 +478,6 @@ private fun EmmaCoachMarkOverlay(
 }
 
 @Composable
-private fun AudienceSelector(
-    enabled: Boolean,
-    engineMode: ConversationEngineMode,
-    onRequestParentFull: () -> Unit,
-) {
-    val context = LocalContext.current
-    val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
-    var mode by remember(engineMode) {
-        mutableStateOf(
-            if (engineMode != ConversationEngineMode.FULL) {
-                AudienceMode.BABY
-            } else {
-                AudienceMode.fromSaved(preferences.getString("audience_mode", null))
-            },
-        )
-    }
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
-        shape = MaterialTheme.shapes.large,
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AudienceMode.entries.forEach { option ->
-                    val selected = option == mode
-                    val onClick = {
-                        if (engineMode != ConversationEngineMode.FULL && option == AudienceMode.PARENT) {
-                            onRequestParentFull()
-                        } else {
-                            mode = option
-                            preferences.edit().putString("audience_mode", option.name).apply()
-                        }
-                    }
-                    if (selected) {
-                        Button(
-                            onClick = onClick,
-                            enabled = enabled,
-                            modifier = Modifier.weight(1f),
-                        ) { Text(option.label) }
-                    } else {
-                        OutlinedButton(
-                            onClick = onClick,
-                            enabled = enabled,
-                            modifier = Modifier.weight(1f),
-                        ) { Text(option.label) }
-                    }
-                }
-            }
-            Text(
-                if (engineMode != ConversationEngineMode.FULL) {
-                    "みつことば Liteでは「呼びかけ」を使えます。AIも3者のやり取りへ継続参加する「会話」はFullで利用できます。"
-                } else {
-                    mode.description
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
 private fun ConversationExchange(transcript: String, emmaText: String, aiName: String) {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (transcript.isNotBlank()) {
@@ -642,6 +567,9 @@ internal fun EmmaSettingsScreen(
     var topicGuideOpen by remember { mutableStateOf(false) }
     var developerTapCount by remember { mutableStateOf(0) }
     var developerToolsVisible by remember { mutableStateOf(false) }
+    var developerAudienceMode by remember(engineMode) {
+        mutableStateOf(AudienceMode.fromSaved(interactionPreferences.getString("audience_mode", null)))
+    }
     var resetConfirmOpen by remember { mutableStateOf(false) }
     var familySettingsOpen by remember { mutableStateOf(false) }
     var semanticDiagnosticInput by remember { mutableStateOf("お風呂入ろうね") }
@@ -768,7 +696,7 @@ internal fun EmmaSettingsScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("音声認識", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Lite・Full共通の、日本語の聞き取り設定です。",
+                        "日本語の聞き取り設定です。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -848,103 +776,14 @@ internal fun EmmaSettingsScreen(
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Lite / Full", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "返答の作り方を選びます。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    ConversationEngineMode.entries.forEach { option ->
-                        if (engineMode == option) {
-                            Button(
-                                onClick = {},
-                                enabled = enabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("みつことば ${option.label}（選択中）") }
-                        } else {
-                            OutlinedButton(
-                                onClick = { onEngineMode(option) },
-                                enabled = enabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) { Text("みつことば ${option.label}に切り替える") }
-                        }
-                    }
-
-                    Spacer(Modifier.height(4.dp))
-                    Text("LiteとFullの違い", style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        "Lite：親の言葉から育児の話題を選び、用意された短い英語で返します。軽量で、「呼びかけ」を使えます。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        "Full：AIが親の言葉や会話の流れを踏まえ、その場で英語を考えます。「呼びかけ」と「会話」を使えます。初回に2GB超の追加データが必要です。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            val editionReady = modelReady && kittenInstalled
-            if (!editionReady) {
+            // Model repair for ordinary users is always Lite-only.
+            if (engineMode == ConversationEngineMode.LITE && (!modelReady || !kittenInstalled)) {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("みつことば ${engineMode.label}の再準備", style = MaterialTheme.typography.titleMedium)
-                        Text("必要なモデルが不足しているため、ここから再準備できます。", style = MaterialTheme.typography.bodyMedium)
-
-                        when (engineMode) {
-                            ConversationEngineMode.LITE -> {
-                                Text(
-                                    if (asrModel == MoonshineAsrModel.TINY) {
-                                        "Moonshine 日本語Tiny 約32MB + Kitten TTS Nano / Kiki / CMUDict 約64MB。合計約96MBです。"
-                                    } else {
-                                        "Moonshine 日本語Smallの追加データ + Kitten TTS Nanoを準備します。"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                                Button(
-                                    onClick = onPrepareLite,
-                                    enabled = enabled,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) { Text("みつことば Liteを準備") }
-                            }
-
-                            ConversationEngineMode.FULL -> {
-                                if (!gemmaInstalled) {
-                                    Text("Gemmaは2GB超の追加データが必要です。", style = MaterialTheme.typography.bodySmall)
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    ) {
-                                        OutlinedButton(
-                                            onClick = onDownloadGemma,
-                                            enabled = enabled,
-                                            modifier = Modifier.weight(1f),
-                                        ) { Text("Gemmaを入手") }
-                                        Button(
-                                            onClick = onSelectGemma,
-                                            enabled = enabled,
-                                            modifier = Modifier.weight(1f),
-                                        ) { Text("Gemmaを選択") }
-                                    }
-                                }
-                                if (!asrInstalled || !kittenInstalled) {
-                                    Button(
-                                        onClick = onPrepareLite,
-                                        enabled = enabled,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) { Text("Moonshine ${asrModel.shortLabel} + Kittenを準備") }
-                                }
-                                if (gemmaInstalled && asrInstalled && kittenInstalled) {
-                                    Button(
-                                        onClick = onLoadGemma,
-                                        enabled = enabled,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) { Text("みつことば Fullを起動") }
-                                }
-                            }
+                        Text("音声モデルの再準備", style = MaterialTheme.typography.titleMedium)
+                        Text("必要なモデルが不足している場合は、ここから準備できます。", style = MaterialTheme.typography.bodySmall)
+                        Button(onClick = onPrepareLite, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                            Text("音声モデルを準備")
                         }
                     }
                 }
@@ -965,12 +804,6 @@ internal fun EmmaSettingsScreen(
             )
 
             Spacer(Modifier.height(8.dp))
-
-            Text(
-                "隠し設定を開くには、下の「みつことば Android」を5回タップしてください。",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
 
             Text(
                 "みつことば Android",
@@ -995,6 +828,62 @@ internal fun EmmaSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Text("開発者設定", style = MaterialTheme.typography.titleMedium)
+                        // Full and dialogue are only accessible after unlocking developer settings.
+                        Text("実験用エンジン（Lite / Full）", style = MaterialTheme.typography.titleSmall)
+                        Text("一般公開はLiteの呼びかけのみです。Fullと対話は開発・検証用に残します。", style = MaterialTheme.typography.bodySmall)
+                        ConversationEngineMode.entries.forEach { option ->
+                            if (engineMode == option) {
+                                Button(onClick = {}, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                                    Text("${option.label}（選択中）")
+                                }
+                            } else {
+                                OutlinedButton(onClick = { onEngineMode(option) }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                                    Text("${option.label}へ切り替える")
+                                }
+                            }
+                        }
+                        if (engineMode == ConversationEngineMode.FULL) {
+                            Text("Full専用：発話先（開発用）", style = MaterialTheme.typography.titleSmall)
+                            AudienceMode.entries.forEach { option ->
+                                if (developerAudienceMode == option) {
+                                    Button(onClick = {}, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                                        Text("${option.label}（選択中）")
+                                    }
+                                } else {
+                                    OutlinedButton(
+                                        onClick = {
+                                            developerAudienceMode = option
+                                            interactionPreferences.edit().putString("audience_mode", option.name).apply()
+                                        },
+                                        enabled = enabled,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("${option.label}に切り替える") }
+                                }
+                            }
+                            Text(developerAudienceMode.description, style = MaterialTheme.typography.bodySmall)
+                            if (!gemmaInstalled) {
+                                Text("FullのGemmaモデルは2GB超です。開発者向けのモデル準備が必要です。", style = MaterialTheme.typography.bodySmall)
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(onClick = onDownloadGemma, enabled = enabled, modifier = Modifier.weight(1f)) {
+                                        Text("Gemmaを入手")
+                                    }
+                                    OutlinedButton(onClick = onSelectGemma, enabled = enabled, modifier = Modifier.weight(1f)) {
+                                        Text("Gemmaを選択")
+                                    }
+                                }
+                            }
+                            if (!asrInstalled || !kittenInstalled) {
+                                OutlinedButton(onClick = onPrepareLite, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                                    Text("Moonshine / Kittenを準備")
+                                }
+                            }
+                            if (gemmaInstalled && asrInstalled && kittenInstalled && !modelReady) {
+                                OutlinedButton(onClick = onLoadGemma, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                                    Text("Fullを起動")
+                                }
+                            }
+                        }
+
                         Text(
                             "診断・音声試聴・完全リセットなど、通常利用では不要な項目です。",
                             style = MaterialTheme.typography.bodySmall,
