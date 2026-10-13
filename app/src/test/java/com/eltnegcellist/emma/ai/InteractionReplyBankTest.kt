@@ -51,6 +51,21 @@ class InteractionReplyBankTest {
         assertTrue("Awkward phrases should have been removed",all.none { phrases.containsMatchIn(it) })
     }
 
+    @Test fun latestInfantSpeechRefinementsMatchSimpleChildcareLanguage() {
+        val all=RuriCompositeReplies.combinations.values.flatten()
+        val expected=listOf(
+            "You drank your milk! Little sips add up. Well done, baby!",
+            "You took little sips! Look at you go! Good job, baby!",
+            "Let's sit together now. Your bottle is ready. Want a little sip?",
+            "Are you upset, baby? Come into my arms. I'll hold you.",
+            "Look at those dimples! What a happy face. I love you!",
+            "Let's take a break. Here's your little drink. Want a little sip?",
+        )
+        expected.forEach { assertTrue("Missing refined reply: $it", it in all) }
+        val old=Regex("fancy a sip|you managed those sips|having big feelings|i treasure you|lovely drinking", RegexOption.IGNORE_CASE)
+        assertTrue(all.none { old.containsMatchIn(it) })
+    }
+
     @Test fun allFourRoutingCasesUseRuriAxesWithoutKeywordRules() {
         val engine=LiteResponseEngine()
         assertEquals("combined:milk:praise",
