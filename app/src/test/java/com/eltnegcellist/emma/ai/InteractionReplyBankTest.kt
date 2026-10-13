@@ -53,11 +53,11 @@ class InteractionReplyBankTest {
 
     @Test fun infantPhraseRefinementsStayWithinExistingCombinedBank() {
         assertTrue(RuriCompositeReplies.forAxes("milk", "praise")!!.contains(
-            "You drank your milk! Little sips are great. Well done today!"
+            "You drank your milk! Little sips add up. Well done, baby!"
         ))
         assertTrue(RuriCompositeReplies.forAxes("milk", "invitation")!!.any { it.contains("Want a little sip?") })
         assertTrue(RuriCompositeReplies.forAxes("cry", "reassurance")!!.any { it.contains("Are you upset, baby?") })
-        assertTrue(RuriCompositeReplies.forAxes("smile", "affection")!!.any { it.contains("I love that smile!") })
+        assertTrue(RuriCompositeReplies.forAxes("smile", "affection")!!.any { it.contains("I love you!") })
     }
 
     @Test fun allFourRoutingCasesUseRuriAxesWithoutKeywordRules() {
