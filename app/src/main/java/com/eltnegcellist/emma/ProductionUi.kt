@@ -202,24 +202,6 @@ internal fun EmmaHomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
-                shape = MaterialTheme.shapes.extraLarge,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("端末内で処理", style = MaterialTheme.typography.labelLarge)
-                        Text("会話は外部へ送信しません", style = MaterialTheme.typography.bodySmall)
-                    }
-                    Text("●", color = MaterialTheme.colorScheme.primary)
-                }
-            }
-
             if (backgroundPreparationActive) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
