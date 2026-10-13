@@ -29,14 +29,14 @@ class InteractionReplyBankTest {
         cadence.recordName(used = true, paired = true)
         assertFalse(cadence.canUsePairedName())
         val saved = cadence.snapshot()
-        assertTrue(saved.startsWith("v2\\n"))
+        assertTrue(saved.startsWith("v2\n"))
         val restored = RuriReplyDiversity()
         restored.restore(saved)
         assertFalse(restored.canUsePairedName())
         repeat(8) { restored.recordName(used = false, paired = true) }
         assertTrue(restored.canUsePairedName())
         val oldState = RuriReplyDiversity()
-        oldState.restore("v1\\ncombined:milk|affection#0\\n\\nmilk|affection=0~0")
+        oldState.restore("v1\ncombined:milk|affection#0\n\nmilk|affection=0~0")
         assertTrue(oldState.snapshot().contains("combined:milk|affection#0"))
         assertFalse(oldState.canUsePairedName())
 
@@ -49,7 +49,7 @@ class InteractionReplyBankTest {
             val engine = LiteResponseEngine()
             // Six-field v2 state: blank lists and cycles, eight prior combined
             // turns, and two turns since any other personalized reply.
-            engine.restoreRuriReplyDiversity("v2\\n\\n\\n\\n8\\n2")
+            engine.restoreRuriReplyDiversity("v2\n\n\n\n8\n2")
             val response = engine.respondRuri("試験用", "Hana", axes(topic, interaction), true)
             if (!response.english.contains("Hana")) continue
             assertEquals("combined:$topic:$interaction", response.scene)
