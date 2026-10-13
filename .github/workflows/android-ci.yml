@@ -130,7 +130,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.43-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.44-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -178,7 +178,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.43
+          name: Mitsukotoba-v1.9.44
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -194,7 +194,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.43"
+          TAG="mitsukotoba-v1.9.44"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -212,5 +212,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.43" \
-            --notes "Mitsukotoba v1.9.43 makes Lite callouts the sole public Android experience. The first-run Full selector and home dialogue choice are removed; Full and conversation remain accessible in hidden developer settings. Existing Full preferences migrate once to Lite without deleting Gemma models or history. ASR, Ruri, Kitten TTS and play/history features remain available."
+            --title "みつことば v1.9.44" \
+            --notes "Mitsukotoba v1.9.44 includes the 914-set infant-directed English bank, 55 reviewed phrase improvements, and six further natural-speech revisions. Frequent Topic×Interaction pairs now have eight variants with durable 60-turn repetition avoidance and single-axis interludes. Lite callouts remain the public default; Full/dialogue are developer-only. Ruri, Kitten Kiki TTS and offline ASR are unchanged."
