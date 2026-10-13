@@ -46,7 +46,7 @@ internal class LiteResponseEngine {
         transcript: String,
         spokenBabyName: String = "",
         semantic: SemanticTopicPrediction? = null,
-        interactionEnabled: Boolean = false,
+        interactionEnabled: Boolean = true,
     ): LiteResponse {
         val topic = semantic?.let { p ->
             findScene(p.topic.takeUnless { it == "generic" || p.margin < 0.05 || p.probability < 0.50 })

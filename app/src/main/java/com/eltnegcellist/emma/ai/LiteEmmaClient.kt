@@ -84,7 +84,7 @@ class LiteEmmaClient(
         }
 
         // Topic × Interaction is enabled by default. Respect any explicit saved OFF.
-        val interactionEnabled = InteractionFeatureSettings.isEnabled(preferences)
+        val interactionEnabled = true // Topic and Interaction are inseparable in public Lite.
         // Live Lite never falls back to Japanese rule-based topic detection.
         // When Ruri is unavailable/disabled, select generic English instead.
         val selected = responses.respondRuri(transcript, spokenName, semanticPrediction, interactionEnabled)
