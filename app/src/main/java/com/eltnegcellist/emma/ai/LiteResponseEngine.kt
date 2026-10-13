@@ -73,7 +73,13 @@ internal class LiteResponseEngine {
             interaction != null -> "interaction:${interaction}"
             else -> "generic"
         }
-        val routingReason = chosen?.reason ?: when {
+        val routingReason = when {
+            chosen?.reason == "topic_only" && !interactionEnabled -> "interaction_disabled"
+            chosen?.reason == "topic_only" && semantic?.interaction == "none" -> "interaction_none"
+            chosen?.reason == "topic_only" && semantic?.interaction != null &&
+                semantic.interactionProbability < 0.50 -> "interaction_low_probability"
+            chosen != null -> chosen.reason
+            else -> when {
             pair != null -> "combined"
             topic != null && interaction != null -> "pair_missing"
             topic != null && !interactionEnabled -> "interaction_disabled"
@@ -83,6 +89,7 @@ internal class LiteResponseEngine {
             topic != null -> "topic_only"
             interaction != null -> "interaction_only"
             else -> "generic"
+            }
         }
         activeSceneId = null
         activeSceneTurnsRemaining = 0
