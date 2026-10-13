@@ -26,7 +26,7 @@ internal class RuriReplyDiversity {
         val parts = value.split("\n")
         if (parts.size != 4 || parts[0] != "v1") return
         history.clear(); phraseHistory.clear(); cycles.clear()
-        val idPattern = Regex("[a-z0-9_:\\-|#]+")
+        val idPattern = Regex("[a-z0-9_:|#-]+")
         parts[1].split(',').filter { it.matches(idPattern) }.takeLast(60).forEach(history::addLast)
         parts[2].split(';').filter { it.isNotBlank() }.takeLast(24).forEach { row ->
             phraseHistory.addLast(row.split('.').filter { it.matches(Regex("[0-9a-f]+")) }.take(32))
@@ -36,7 +36,7 @@ internal class RuriReplyDiversity {
             val fields = item.substringAfter('=').split('~')
             if (!key.matches(idPattern) || fields.size != 2) return@forEach
             val used = fields[0].split('.').mapNotNull(String::toIntOrNull).filter { it in 0..99 }.toMutableSet()
-            val step = fields[1].toIntOrNull()?.coerceIn(0, 2) ?: 0
+            val step = fields[1].toIntOrNull()?.coerceIn(0, 6) ?: 0
             cycles[key] = Cycle(used, step)
         }
     }
@@ -44,7 +44,7 @@ internal class RuriReplyDiversity {
         "v1",
         history.joinToString(","),
         phraseHistory.joinToString(";") { it.joinToString(".") },
-        cycles.entries.takeLast(135).joinToString(";") { (key, cycle) ->
+        cycles.entries.toList().takeLast(135).joinToString(";") { (key, cycle) ->
             key + "=" + cycle.used.joinToString(".") + "~" + cycle.fallbackStep
         }
     ).joinToString("\n")
@@ -78,9 +78,9 @@ internal class RuriReplyDiversity {
             val key = "$topic|$interaction"
             val cycle = cycles.getOrPut(key) { Cycle() }
             cycle.used.removeAll { it !in pair.indices }
-            if (cycle.used.size >= pair.size && cycle.fallbackStep < 2) {
+            if (cycle.used.size >= pair.size && cycle.fallbackStep < 6) {
                 val step = cycle.fallbackStep++
-                val primary = if (step == 0) pick(interactionKey, interactionReplies) else pick(topicKey, topicReplies)
+                val primary = if (step % 2 == 0) pick(interactionKey, interactionReplies) else pick(topicKey, topicReplies)
                 val secondary = if (primary == null) {
                     if (step == 0) pick(topicKey, topicReplies) else pick(interactionKey, interactionReplies)
                 } else null
@@ -90,7 +90,7 @@ internal class RuriReplyDiversity {
                     return picked.copy(reason = if (viaInteraction) "diversity_interaction" else "diversity_topic")
                 }
             }
-            if (cycle.fallbackStep >= 2) { cycle.used.clear(); cycle.fallbackStep = 0 }
+            if (cycle.fallbackStep >= 6) { cycle.used.clear(); cycle.fallbackStep = 0 }
             val picked = pick("combined:$key", pair, cycle.used)
             if (picked != null) { cycle.used.add(picked.index); return picked.copy(reason="combined") }
         }
