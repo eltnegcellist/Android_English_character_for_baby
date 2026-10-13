@@ -82,7 +82,7 @@ internal class RuriReplyDiversity {
                 val step = cycle.fallbackStep++
                 val primary = if (step % 2 == 0) pick(interactionKey, interactionReplies) else pick(topicKey, topicReplies)
                 val secondary = if (primary == null) {
-                    if (step == 0) pick(topicKey, topicReplies) else pick(interactionKey, interactionReplies)
+                    if (step % 2 == 0) pick(topicKey, topicReplies) else pick(interactionKey, interactionReplies)
                 } else null
                 val picked = primary ?: secondary
                 if (picked != null) {
