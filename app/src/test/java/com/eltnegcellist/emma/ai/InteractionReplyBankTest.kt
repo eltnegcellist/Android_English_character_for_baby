@@ -19,6 +19,9 @@ class InteractionReplyBankTest {
         assertEquals("Milk time, Hana-chan! You're so lovely. I love you.",
             RuriPairedBabyName.insert(template, "Hana-chan"))
         assertEquals(template, RuriPairedBabyName.insert(template, "Hana".repeat(25)))
+        assertEquals(template, RuriPairedBabyName.insert(template, ""))
+        val untargeted = "Hello there, sweetheart! Your eyes look bright. I love you!"
+        assertEquals(untargeted, RuriPairedBabyName.insert(untargeted, "Hana"))
         val cadence = RuriReplyDiversity()
         repeat(8) { cadence.recordName(used = false, paired = true) }
         assertTrue(cadence.canUsePairedName())
@@ -38,7 +41,7 @@ class InteractionReplyBankTest {
         val oldState = RuriReplyDiversity()
         oldState.restore("v1\ncombined:milk|affection#0\n\nmilk|affection=0~0")
         assertTrue(oldState.snapshot().contains("combined:milk|affection#0"))
-        assertFalse(oldState.canUsePairedName())
+        assertTrue(oldState.canUsePairedName())
 
         val word = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
         val parts = Regex("(?<=[.!?])\\s+")
@@ -47,8 +50,8 @@ class InteractionReplyBankTest {
             val topic = key.substringBefore('|')
             val interaction = key.substringAfter('|')
             val engine = LiteResponseEngine()
-            // Six-field v2 state: blank lists and cycles, eight prior combined
-            // turns, and two turns since any other personalized reply.
+            // Six-field v2 state: blank lists and cycles, last name not recent
+            // and a two-turn name-free gap.
             engine.restoreRuriReplyDiversity("v2\n\n\n\n8\n2")
             val response = engine.respondRuri("試験用", "Hana", axes(topic, interaction), true)
             if (!response.english.contains("Hana")) continue
