@@ -27,6 +27,7 @@ class ConversationEngineModeTest {
     fun developerFullSelectionPersistsAfterMigration() {
         assertEquals(ConversationEngineMode.FULL, ConversationEngineMode.forLaunch("FULL", true))
         assertEquals(ConversationEngineMode.LITE, ConversationEngineMode.forLaunch("LITE", true))
+        assertEquals(ConversationEngineMode.LITE, ConversationEngineMode.forLaunch(null, true))
     }
 
     @Test
