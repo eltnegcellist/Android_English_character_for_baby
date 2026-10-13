@@ -86,6 +86,22 @@ class LiteEmmaClient(
         // When Ruri is unavailable/disabled, select generic English instead.
         val selected = responses.respondRuri(transcript, spokenName, semanticPrediction, interactionEnabled)
         lastTopic = selected.scene
+        // Privacy-safe per-turn audit: no Japanese transcript or baby name.
+        val rawTopic = semanticPrediction?.topic ?: "none"
+        val rawInteraction = semanticPrediction?.interaction ?: "none"
+        val topicAccepted = selected.scene == rawTopic || selected.scene.startsWith("combined:${rawTopic}:")
+        val interactionAccepted = selected.scene == "interaction:${rawInteraction}" ||
+            (selected.scene.startsWith("combined:") && selected.scene.endsWith(":${rawInteraction}"))
+        DiagnosticStore.mark(
+            appContext,
+            "ruri_route",
+            "route=${selected.scene} reason=${selected.routingReason} " +
+                "topic=${rawTopic} tP=${semanticPrediction?.probability ?: 0.0} " +
+                "tM=${semanticPrediction?.margin ?: 0.0} tOK=${topicAccepted} " +
+                "interaction=${rawInteraction} iP=${semanticPrediction?.interactionProbability ?: 0.0} " +
+                "iM=${semanticPrediction?.interactionMargin ?: 0.0} iOK=${interactionAccepted} " +
+                "iOn=${interactionEnabled}",
+        )
         val adjusted = fitLevel(selected.english, level)
 
         DiagnosticStore.mark(
