@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.eltnegcellist.emma.ai.AudienceMode
+import com.eltnegcellist.emma.ai.InteractionFeatureSettings
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.tts.KittenSpeaker
@@ -637,7 +638,7 @@ internal fun EmmaSettingsScreen(
     onResetAllData: () -> Unit,
 ) {
     val interactionPreferences = LocalContext.current.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
-    var experimentalInteraction by remember { mutableStateOf(interactionPreferences.getBoolean("interaction_experimental_enabled", false)) }
+    var interactionEnabled by remember { mutableStateOf(InteractionFeatureSettings.isEnabled(interactionPreferences)) }
     var topicGuideOpen by remember { mutableStateOf(false) }
     var developerTapCount by remember { mutableStateOf(0) }
     var developerToolsVisible by remember { mutableStateOf(false) }
@@ -836,6 +837,28 @@ internal fun EmmaSettingsScreen(
                             enabled = enabled,
                         )
                     }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("話題と呼びかけの両方を判定する（標準）")
+                            Text(
+                                "Ruriで「ミルク」などの話題と「かわいいね」「よくできたね」などを組み合わせて英文を選びます。オフにすると話題中心の返答になります。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = interactionEnabled,
+                            onCheckedChange = { value ->
+                                interactionEnabled = value
+                                interactionPreferences.edit().putBoolean(InteractionFeatureSettings.KEY, value).apply()
+                            },
+                            enabled = enabled,
+                        )
+                    }
                     Text(
                         "話題が曖昧な場合は直前の話題を最大6回使い、明確な別の話題で切り替えます。",
                         style = MaterialTheme.typography.bodySmall,
@@ -994,24 +1017,6 @@ internal fun EmmaSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Text("開発者設定", style = MaterialTheme.typography.titleMedium)
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("新しい呼びかけ分類を試す")
-                                Text(
-                                    "試験機能：褒める・愛情・提案など14分類。未検証のため標準ではオフです。",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Switch(
-                                checked = experimentalInteraction,
-                                onCheckedChange = { value ->
-                                    experimentalInteraction = value
-                                    interactionPreferences.edit().putBoolean("interaction_experimental_enabled", value).apply()
-                                },
-                            )
-                        }
-
                         Text(
                             "診断・音声試聴・完全リセットなど、通常利用では不要な項目です。",
                             style = MaterialTheme.typography.bodySmall,
