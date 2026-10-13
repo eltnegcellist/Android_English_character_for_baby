@@ -104,19 +104,9 @@ private fun ProductionEmmaApp() {
     }
     var englishLevel by runtime.englishLevelState
     val initialEngineMode = remember {
-        val saved = preferences.getString("conversation_engine_mode", null)
-        when {
-            saved != null -> ConversationEngineMode.fromSaved(saved)
-            GemmaModelStore.hasUsableModel(context) -> ConversationEngineMode.FULL
-            else -> ConversationEngineMode.LITE
-        }.also { resolved ->
-            preferences.edit()
-                .putString("conversation_engine_mode", resolved.savedValue)
-                .apply()
-        }
+        ConversationEngineMode.fromSaved(preferences.getString("conversation_engine_mode", null))
     }
     var engineMode by runtime.engineModeState
-    var onboardingMode by remember { mutableStateOf(initialEngineMode) }
     var highPerformance by remember {
         mutableStateOf(
             if (preferences.contains("first_run_high_performance")) {
@@ -148,7 +138,6 @@ private fun ProductionEmmaApp() {
     var featureScreen by remember { mutableStateOf<String?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
     var aboutOpen by remember { mutableStateOf(false) }
-    var parentFullPromptOpen by remember { mutableStateOf(false) }
     var onboardingOpen by remember {
         mutableStateOf(!preferences.getBoolean("onboarding_completed_v4", false))
     }
@@ -940,7 +929,6 @@ private fun ProductionEmmaApp() {
         )
     } else if (onboardingOpen) {
         FirstRunOnboardingScreen(
-            selectedMode = onboardingMode,
             busy = firstRunBusy,
             ready = firstRunReady,
             phase = firstRunPhase,
@@ -961,16 +949,7 @@ private fun ProductionEmmaApp() {
                     .apply()
                 firstRunReady = false
             },
-            onModeSelected = { selected ->
-                if (!firstRunBusy) {
-                    onboardingMode = selected
-                    firstRunReady = false
-                    firstRunError = null
-                    firstRunProgressPercent = null
-                    firstRunPhase = ""
-                }
-            },
-            onPrepare = { startFirstRunSetup(onboardingMode) },
+            onPrepare = { startFirstRunSetup(ConversationEngineMode.LITE) },
             onOpenAbout = { aboutOpen = true },
         )
     } else if (liteSetupBusy && liteSetupDialogOpen) {
@@ -1164,11 +1143,9 @@ private fun ProductionEmmaApp() {
             latestTranscript = latestTranscript,
             latestEmmaText = latestEmmaText,
             aiName = resolvedAiName,
-            engineMode = engineMode,
             backgroundPreparationActive = backgroundPreparationActive,
             backgroundPreparationPhase = backgroundPreparationPhase,
             backgroundPreparationPercent = backgroundPreparationPercent,
-            onRequestParentFull = { parentFullPromptOpen = true },
             onOpenAbout = { aboutOpen = true },
             onOpenSettings = {
                 if (recording || generating || pendingStartAfterPermission || status == ProductionEmmaStatus.SPEAKING) {
@@ -1216,32 +1193,5 @@ private fun ProductionEmmaApp() {
             },
         )
 
-        if (parentFullPromptOpen) {
-            ParentFullPrompt(
-                onUseFull = {
-                    parentFullPromptOpen = false
-                    preferences.edit()
-                        .putString("audience_mode", "PARENT")
-                        .apply()
-
-                    val targetAsr = if (asrModelManuallySelected) asrModel else MoonshineAsrModel.SMALL
-                    if (!asrModelManuallySelected) asrModel = targetAsr
-                    val fullNeedsSetup =
-                        !GemmaModelStore.hasUsableModel(context) ||
-                        !MoonshineModelStore.isInstalled(context, targetAsr) ||
-                        !KittenModelStore.isInstalled(context)
-
-                    if (fullNeedsSetup) {
-                        fullSetupError = null
-                        fullSetupProgressPercent = null
-                        fullSetupPhase = ""
-                        fullSetupOpen = true
-                    } else {
-                        activateEngineMode(ConversationEngineMode.FULL)
-                    }
-                },
-                onDismiss = { parentFullPromptOpen = false },
-            )
-        }
     }
 }

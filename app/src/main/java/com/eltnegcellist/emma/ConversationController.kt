@@ -34,7 +34,20 @@ internal object ConversationRuntime {
 
 internal class ConversationController(val context: Context) {
     private val preferences = context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
-    private val initialEngineMode = preferences.getString("conversation_engine_mode", null)?.let { ConversationEngineMode.fromSaved(it) } ?: if (GemmaModelStore.hasUsableModel(context)) ConversationEngineMode.FULL else ConversationEngineMode.LITE
+    private val initialEngineMode = run {
+        val migrationComplete = preferences.getBoolean("full_hidden_from_public_v1", false)
+        val resolved = ConversationEngineMode.forLaunch(
+            preferences.getString("conversation_engine_mode", null), migrationComplete,
+        )
+        if (!migrationComplete) {
+            preferences.edit()
+                .putBoolean("full_hidden_from_public_v1", true)
+                .putString("conversation_engine_mode", ConversationEngineMode.LITE.savedValue)
+                .putString("audience_mode", "BABY")
+                .apply()
+        }
+        resolved
+    }
     private val initialAsrModel = if (preferences.getBoolean("asr_model_manual", false)) MoonshineAsrModel.fromSaved(preferences.getString("asr_model", null)) else MoonshineAsrModel.SMALL
     private val onboardingOpen = !preferences.getBoolean("onboarding_completed_v4", false)
     val continueScreenOffState = mutableStateOf(preferences.getBoolean("continue_screen_off", false))
