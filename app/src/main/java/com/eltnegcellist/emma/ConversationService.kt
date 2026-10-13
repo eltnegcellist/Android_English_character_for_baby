@@ -49,7 +49,7 @@ class ConversationService : Service() {
         } catch (error: Exception) {
             finishConversation()
             runtime.status = ProductionEmmaStatus.ERROR
-            runtime.statusMessage = "画面オフ会話を開始できません: ${error.message}"
+            runtime.statusMessage = "画面オフ中の呼びかけを開始できません: ${error.message}"
         }
         return START_NOT_STICKY
     }
@@ -58,11 +58,11 @@ class ConversationService : Service() {
         val open = PendingIntent.getActivity(this, 0, Intent(this, ProductionMainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val controls = getSharedPreferences("emma_speech", 0).getBoolean("conversation_notification_controls", getSharedPreferences("emma_speech", 0).getBoolean("conversation_notification_permission_requested", false))
         val builder = Notification.Builder(this, "conversation")
-            .setSmallIcon(android.R.drawable.ic_btn_speak_now).setContentTitle("みつことばの会話中")
-            .setContentText(if (controls) "通知から会話を止められます。" else "アプリの「会話を止める」で終了できます。")
+            .setSmallIcon(android.R.drawable.ic_btn_speak_now).setContentTitle("みつことばの呼びかけ中")
+            .setContentText(if (controls) "通知から呼びかけを止められます。" else "アプリの「呼びかけを止める」で終了できます。")
             .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true)
         if (Build.VERSION.SDK_INT >= 31) builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
-        if (controls) builder.addAction(Notification.Action.Builder(null, "会話を止める", stop).build())
+        if (controls) builder.addAction(Notification.Action.Builder(null, "呼びかけを止める", stop).build())
         return builder.build()
     }
     private fun updateNotification() {
