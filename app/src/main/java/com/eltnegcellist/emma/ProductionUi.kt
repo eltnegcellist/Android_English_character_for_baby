@@ -60,7 +60,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.eltnegcellist.emma.ai.AudienceMode
-import com.eltnegcellist.emma.ai.InteractionFeatureSettings
 import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.tts.KittenSpeaker
@@ -545,7 +544,6 @@ internal fun EmmaSettingsScreen(
     onResetAllData: () -> Unit,
 ) {
     val interactionPreferences = LocalContext.current.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
-    var interactionEnabled by remember { mutableStateOf(InteractionFeatureSettings.isEnabled(interactionPreferences)) }
     var topicGuideOpen by remember { mutableStateOf(false) }
     var developerTapCount by remember { mutableStateOf(0) }
     var developerToolsVisible by remember { mutableStateOf(false) }
@@ -871,29 +869,6 @@ internal fun EmmaSettingsScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("新Interaction（Topic＋Interaction）")
-                                Text(
-                                    "ON（標準）：話題＋働きかけに合う英文を選びます。OFF（開発者用）：話題だけで英文を選びます。保存したOFF設定は再起動後も維持されます。",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Switch(
-                                checked = interactionEnabled,
-                                onCheckedChange = { value ->
-                                    interactionEnabled = value
-                                    interactionPreferences.edit().putBoolean(InteractionFeatureSettings.KEY, value).apply()
-                                },
-                                enabled = enabled,
-                            )
-                        }
 
                         Text("モデル・実行状態", style = MaterialTheme.typography.titleSmall)
                         Text(
