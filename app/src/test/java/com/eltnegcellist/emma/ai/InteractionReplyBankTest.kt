@@ -14,13 +14,13 @@ class InteractionReplyBankTest {
 
     @Test fun allCombinedRepliesAreNaturalLengthAndThreeSentences() {
         assertEquals(135, RuriCompositeReplies.combinations.size)
-        assertEquals(405, RuriCompositeReplies.combinations.values.sumOf { it.size })
+        assertEquals(495, RuriCompositeReplies.combinations.values.sumOf { it.size })
         assertEquals(21, RuriCompositeReplies.combinations.keys.map { it.substringBefore('|') }.toSet().size)
         val seen=mutableSetOf<String>()
         val word = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
         val segments = Regex("(?<=[.!?])\\s+")
         for ((pair, phrases) in RuriCompositeReplies.combinations) {
-            assertEquals(pair,3,phrases.size)
+            assertEquals(pair,if (pair in RuriFrequentReplyVariants.combinations) 8 else 3,phrases.size)
             val interaction=pair.substringAfter('|')
             assertTrue(pair, InteractionReplyBank.replies.containsKey(interaction))
             for (phrase in phrases) {
@@ -59,6 +59,35 @@ class InteractionReplyBankTest {
         val missing=engine.respondRuri("雨の話", semantic=axes("rain","praise"),interactionEnabled=true)
         assertEquals("rain",missing.scene)
         assertEquals("pair_missing",missing.routingReason)
+    }
+
+    @Test fun repeatedPairedRuriTurnsCycleToSingleAxesAndPersistTheirHistory() {
+        val engine = LiteResponseEngine()
+        val candidates = mutableSetOf<String>()
+        repeat(8) {
+            val r=engine.respondRuri("ミルクかわいいね",semantic=axes("milk","affection"),interactionEnabled=true)
+            assertEquals("combined:milk:affection",r.scene)
+            assertEquals("combined",r.routingReason)
+            assertTrue("repeated combination before exhaustion",candidates.add(r.english))
+        }
+        repeat(6) { i ->
+            val r=engine.respondRuri("ミルクかわいいね",semantic=axes("milk","affection"),interactionEnabled=true)
+            assertEquals(if (i % 2 == 0) "diversity_interaction" else "diversity_topic",r.routingReason)
+            assertEquals(if (i % 2 == 0) "interaction:affection" else "milk",r.scene)
+        }
+        val next=engine.respondRuri("ミルクかわいいね",semantic=axes("milk","affection"),interactionEnabled=true)
+        assertEquals("combined:milk:affection",next.scene)
+        val restored=LiteResponseEngine()
+        restored.restoreRuriReplyDiversity(engine.exportRuriReplyDiversity())
+        val after=restored.respondRuri("ミルクかわいいね",semantic=axes("milk","affection"),interactionEnabled=true)
+        assertEquals("combined:milk:affection",after.scene)
+        assertFalse("must avoid most recently spoken phrase after restart", after.english == next.english)
+        val baseline=LiteResponseEngine()
+        val first=baseline.respondRuri("ミルクかわいいね",semantic=axes("milk","affection"),interactionEnabled=true)
+        val resumed=LiteResponseEngine()
+        resumed.restoreRuriReplyDiversity(baseline.exportRuriReplyDiversity())
+        val second=resumed.respondRuri("ミルクかわいいね",semantic=axes("milk","affection"),interactionEnabled=true)
+        assertFalse("persistent cycles should rotate eight pairs", first.english == second.english)
     }
 
     @Test fun lowConfidenceAndNoneNeverInventPairings() {

@@ -28,7 +28,9 @@ class LiteEmmaClient(
     private val preferences = appContext.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
     private val asr = MoonshineJapaneseAsr(appContext)
     private val semantic = RuriSemanticClassifier(appContext)
-    private val responses = LiteResponseEngine()
+    private val responses = LiteResponseEngine().also {
+        it.restoreRuriReplyDiversity(preferences.getString("ruri_reply_diversity_v1", null))
+    }
     private val debugRuleResponses = LiteResponseEngine()
     private val debugSemanticResponses = LiteResponseEngine()
     private val debugGuardResponses = LiteResponseEngine()
@@ -86,6 +88,8 @@ class LiteEmmaClient(
         // Live Lite never falls back to Japanese rule-based topic detection.
         // When Ruri is unavailable/disabled, select generic English instead.
         val selected = responses.respondRuri(transcript, spokenName, semanticPrediction, interactionEnabled)
+        // Save the rotated template IDs between sessions, not the parent's Japanese speech.
+        preferences.edit().putString("ruri_reply_diversity_v1", responses.exportRuriReplyDiversity()).apply()
         lastTopic = selected.scene
         // Privacy-safe per-turn audit: no Japanese transcript or baby name.
         val rawTopic = semanticPrediction?.topic ?: "none"

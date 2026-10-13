@@ -562,7 +562,9 @@ internal object RuriCompositeReplies {
             "Playtime is over now. Let's take a break. That was lovely.",
             "That's the last game. We're all finished. Time for a rest."
         )
-    ) + RuriSupplementalReplies.combinations
+    ).plus(RuriSupplementalReplies.combinations).mapValues { (key, replies) ->
+        replies + RuriFrequentReplyVariants.combinations[key].orEmpty()
+    }
 
     fun forAxes(topic: String?, interaction: String?): List<String>? =
         if (topic == null || interaction == null) null else combinations["$topic|$interaction"]
