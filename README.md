@@ -15,15 +15,15 @@ Sileroを標準の発話開始・終了判定として追加しました。設�
 
 ### 配布版
 
-**現在のAndroid配布版：v1.9.42**
+**現在のAndroid配布版：v1.9.43**
 
-**versionCode：125**
+**versionCode：126**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.42
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.42/Mitsukotoba-v1.9.42-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.43
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.43/Mitsukotoba-v1.9.43-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.42はSileroによる発話開始・終了判定を追加した版です。設定から従来RMSへ戻せ、選択は保存されます。終了待ちは1.1秒、Moonshine Japanese Smallと既存の録音音声処理を維持します。v1.9.41のSemantic実推論パリティと隠し診断機能も維持します。Android実機のマイク・CPU負荷・画面オフ会話は未確認で、静音の認識精度が全環境で維持される保証はまだありません。
+v1.9.43では公開機能をLiteの呼びかけへ一本化し、Fullと会話を開発者設定へ移動しました。旧Fullの設定は更新後に一度だけLiteへ切り替わります（モデル・履歴は保持）。v1.9.42で導入したSileroの発話開始・終了判定も維持します。設定から従来RMSへ戻せ、選択は保存されます。終了待ちは1.1秒、Moonshine Japanese Smallと既存の録音音声処理を維持します。v1.9.41のSemantic実推論パリティと隠し診断機能も維持します。Android実機のマイク・CPU負荷・画面オフ会話は未確認で、静音の認識精度が全環境で維持される保証はまだありません。
 
 > 現在配布しているAPKはCIによるdebug署名版です。Play Store向けproduction署名版ではありません。
 
@@ -169,7 +169,7 @@ Kitten TTS Nano 0.8 / Kiki
 
 Liteは、毎回生成AIに文章を作らせるのではなく、軽量な応答エンジンから場面に合う英語を選びます。
 
-### みつことば Full
+### みつことば Full（開発者専用）
 
 FullはLiteと同じ音声入出力の仕組みに、応答生成用のGemmaを追加します。
 
@@ -337,15 +337,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Current Release
 
-**Current distributed Android release: v1.9.42**
+**Current distributed Android release: v1.9.43**
 
-**versionCode: 125**
+**versionCode: 126**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.42
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.42/Mitsukotoba-v1.9.42-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.43
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.43/Mitsukotoba-v1.9.43-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
 
-v1.9.42 adds Silero speech start/end detection with a saved Settings switch back to the original RMS detector. Endpoint waiting is 1.1 seconds; Moonshine Japanese Small and the existing captured-audio processing remain unchanged. Semantic runtime parity checks and diagnostics are retained. Physical-device microphone, CPU load and screen-off conversation checks remain outstanding; unchanged quiet-room ASR accuracy across environments has not been established.
+v1.9.43 makes Lite callouts the sole public Android experience while keeping Full/dialogue behind developer settings. Existing Full preferences migrate once to Lite without deleting model data or history. The Silero speech detection added in v1.9.42 remains available with a saved Settings rollback to RMS. Endpoint waiting is 1.1 seconds; Moonshine Japanese Small and the existing captured-audio processing remain unchanged. Semantic runtime parity checks and diagnostics are retained. Physical-device microphone, CPU load and screen-off conversation checks remain outstanding; unchanged quiet-room ASR accuracy across environments has not been established.
 
 > The distributed APK is currently CI debug-signed. It is not a Play Store production-signed build.
 
@@ -475,7 +475,7 @@ Mitsukotoba avatar
 
 Lite stays compact and predictable by using a curated lightweight response engine instead of generating every utterance with a large model.
 
-### Mitsukotoba Full
+### Mitsukotoba Full (developer-only)
 
 Full uses the same speech stack as Lite and adds Gemma for response generation.
 
