@@ -107,7 +107,7 @@ internal class LiteResponseEngine {
             RuriPairedBabyName.insert(styledBase, safeName)
         } else styledBase
         val nameUsed = safeName.isNotBlank() && containsName(styled, safeName)
-        replyDiversity.recordName(nameUsed)
+        replyDiversity.recordName(nameUsed, paired = chosen?.reason == "combined")
         remember(raw, styled)
         if (nameUsed) turnsSinceName = 0 else turnsSinceName++
         turnCounter++
