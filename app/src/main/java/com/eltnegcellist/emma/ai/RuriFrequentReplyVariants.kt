@@ -15,16 +15,16 @@ internal object RuriFrequentReplyVariants {
         "milk|praise" to listOf(
             "You took another sip! Look how you're learning. Wonderful little steps!",
             "Such careful little sips! You worked so well. High five, sweetheart!",
-            "You drank your milk! Little sips are great. Well done today!",
+            "You drank your milk! Little sips add up. Well done, baby!",
             "See what you did! Milk time went well. What a happy moment!",
-            "Those sips went well! You took little sips! Good job, baby!"
+            "You took little sips! Look at you go! Good job, baby!"
         ),
         "milk|invitation" to listOf(
             "Shall we sit together? Your milk is waiting. Ready to try?",
             "Come closer, little one. Milk time is here. Let's get comfortable.",
             "Feeling hungry, sweetheart? Here's your warm milk. Shall we begin?",
             "Would milk sound good? Take a little look. We can start.",
-            "Let's settle down together. Your bottle is ready. Want a little sip?"
+            "Let's sit together now. Your bottle is ready. Want a little sip?"
         ),
         "milk|finish" to listOf(
             "The last sip's done! Your tummy can rest. Time for cuddles.",
@@ -87,11 +87,11 @@ internal object RuriFrequentReplyVariants {
             "Crying is okay, sweetheart. I'll hold you gently. We'll stay together.",
             "That feels hard, huh? You can cry here. I'm listening closely.",
             "Let those tears come. I'll stay very near. You're safe, darling.",
-            "Are you upset, baby? Come for a cuddle. I'm here with you."
+            "Are you upset, baby? Come into my arms. I'll hold you."
         ),
         "smile|affection" to listOf(
             "That little smile shines! You've brightened my morning. My lovely baby.",
-            "Look at those dimples! What a happy face. I love that smile!",
+            "Look at those dimples! What a happy face. I love you!",
             "Your grin is wonderful. It makes me smile. Hello, sunshine!",
             "Such a cheerful face! Those eyes look bright. My darling baby.",
             "That smile feels magical. You're my little joy. What a lovely sight."
@@ -129,7 +129,7 @@ internal object RuriFrequentReplyVariants {
             "Shall we take sips? Sit here with me. Ready for one?",
             "Feeling a little thirsty? Let's get your drink. Here you go.",
             "Want to drink together? I'll hold your cup. Shall we begin?",
-            "Let's take a break. There's a drink here. Want a little sip?"
+            "Let's take a break. Here's your little drink. Want a little sip?"
         ),
     )
 }
