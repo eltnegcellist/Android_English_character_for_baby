@@ -41,7 +41,7 @@ class InteractionReplyBankTest {
         assertFalse(oldState.canUsePairedName())
 
         val word = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?")
-        val parts = Regex("(?<=[.!?])\\\\s+")
+        val parts = Regex("(?<=[.!?])\\s+")
         var matched = false
         for (key in RuriCompositeReplies.combinations.keys) {
             val topic = key.substringBefore('|')
