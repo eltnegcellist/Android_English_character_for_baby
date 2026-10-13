@@ -10,6 +10,7 @@ internal data class LiteResponse(
     val ruleScene: String = "generic",
     val semanticUsed: Boolean = false,
     val contextUsed: Boolean = false,
+    val routingReason: String = "unknown",
 )
 
 internal data class LiteTopicDetection(
@@ -61,6 +62,17 @@ internal class LiteResponseEngine {
             interaction != null -> "interaction:${interaction}"
             else -> "generic"
         }
+        val routingReason = when {
+            pair != null -> "combined"
+            topic != null && interaction != null -> "pair_missing"
+            topic != null && !interactionEnabled -> "interaction_disabled"
+            topic != null && semantic == null -> "ruri_unavailable"
+            topic != null && (semantic.interaction == null || semantic.interaction == "none") -> "interaction_none"
+            topic != null && semantic.interactionProbability < 0.50 -> "interaction_low_probability"
+            topic != null -> "topic_only"
+            interaction != null -> "interaction_only"
+            else -> "generic"
+        }
         activeSceneId = null
         activeSceneTurnsRemaining = 0
         val safeName = sanitizeName(spokenBabyName)
@@ -79,6 +91,7 @@ internal class LiteResponseEngine {
         return LiteResponse(
             english = styled, scene = route, score = 0,
             ruleScene = "unused", semanticUsed = true, contextUsed = false,
+            routingReason = routingReason,
         )
     }
 
