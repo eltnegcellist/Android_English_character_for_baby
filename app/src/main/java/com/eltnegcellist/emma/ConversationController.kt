@@ -324,7 +324,7 @@ internal class ConversationController(val context: Context) {
         endpointStartedNanos = null
         ttsRequestedAfterEndpointMillis = null
         status = ProductionEmmaStatus.IDLE
-        statusMessage = "会話を止めました。"
+        statusMessage = "呼びかけを止めました。"
         onStopped?.invoke()
     }
 
@@ -547,7 +547,7 @@ internal class ConversationController(val context: Context) {
         if (enabled && recording && !conversationServiceActiveState.value && !startRequested) {
             startRequested = true
             runCatching { context.startForegroundService(Intent(context, ConversationService::class.java)) }
-                .onFailure { stopSession(); status = ProductionEmmaStatus.ERROR; statusMessage = "画面オフ会話を開始できません: ${it.message}" }
+                .onFailure { stopSession(); status = ProductionEmmaStatus.ERROR; statusMessage = "画面オフ中の呼びかけを開始できません: ${it.message}" }
         } else if (!enabled && (conversationServiceActiveState.value || startRequested)) {
             stopSession()
         }
@@ -561,7 +561,7 @@ internal class ConversationController(val context: Context) {
         startRequested = true
         if (continueScreenOff) {
             runCatching { context.startForegroundService(Intent(context, ConversationService::class.java)) }
-                .onFailure { stopSession(); status = ProductionEmmaStatus.ERROR; statusMessage = "画面オフ会話を開始できません: ${it.message}" }
+                .onFailure { stopSession(); status = ProductionEmmaStatus.ERROR; statusMessage = "画面オフ中の呼びかけを開始できません: ${it.message}" }
         } else if (requestAudio()) beginRecording() else { stopSession(); status = ProductionEmmaStatus.ERROR; statusMessage="音声を使えません。" }
     }
     fun replay(text: String) {

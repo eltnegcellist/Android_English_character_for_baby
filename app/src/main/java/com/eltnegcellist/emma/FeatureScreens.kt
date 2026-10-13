@@ -55,18 +55,18 @@ internal fun FeatureSettings(runtime: ConversationController, onHistory: () -> U
 
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("画面オフ中の会話", style = MaterialTheme.typography.titleMedium)
+            Text("画面オフ中の呼びかけ", style = MaterialTheme.typography.titleMedium)
             Text(
-                "画面を閉じた後も会話を続けるか、通知から停止できるようにするかを設定します。",
+                "画面を閉じた後も呼びかけを続けるか、通知から停止できるようにするかを設定します。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("画面を閉じても会話を続ける", Modifier.weight(1f))
+                Text("画面を閉じても呼びかけを続ける", Modifier.weight(1f))
                 Switch(screenOff, { runtime.applyContinueScreenOff(it); if (it) offerNotifications=true })
             }
             Text(
-                "初期設定はオフです。オンにすると、開始した会話だけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。アプリの「会話を止める」で終了できます。",
+                "初期設定はオフです。オンにすると、開始した呼びかけだけを画面オフ中や他のアプリの使用中も継続し、周囲の会話に応答することがあります。アプリの「呼びかけを止める」で終了できます。",
                 style = MaterialTheme.typography.bodySmall,
             )
             ConversationNotificationSettings(runtime, offerNotifications, { offerNotifications=false })
@@ -149,22 +149,22 @@ private fun ConversationNotificationSettings(runtime: ConversationController, of
     }
     if (offerNotifications && (!controls || !allowed)) AlertDialog(
         onDismissRequest=onOfferHandled,
-        title={Text("通知から会話を停止できるようにしますか？")},
-        text={Text("「はい」を選ぶと、必要な場合に通知の許可を求めます。開始した会話の通知に「会話を止める」を表示します。通知を使わなくても会話は続けられます。")},
+        title={Text("通知から呼びかけを停止できるようにしますか？")},
+        text={Text("「はい」を選ぶと、必要な場合に通知の許可を求めます。呼びかけ中の通知に「呼びかけを止める」を表示します。通知を使わなくても呼びかけは続けられます。")},
         confirmButton={TextButton({onOfferHandled(); enableControls()}) {Text("はい")}},
         dismissButton={TextButton(onOfferHandled) {Text("いいえ")}},
     )
     Row(verticalAlignment=Alignment.CenterVertically) {
-        Text("通知から会話を止める", Modifier.weight(1f))
+        Text("通知から呼びかけを止める", Modifier.weight(1f))
         Switch(controls, { if (it) enableControls() else saveControls(false) })
     }
     Text(when {
         !controls -> if (allowed) "停止ボタンの表示：オフ" else "停止ボタンの表示：オフ（Androidの通知許可なし）"
         !allowed -> "Androidで通知が許可されていないため、表示できません。"
-        !serviceActive -> "待機中：バックグラウンド会話を始めると通知に停止ボタンを表示します。"
-        else -> "会話中：通知に停止ボタンを表示しています。"
+        !serviceActive -> "待機中：画面オフ中の呼びかけを始めると通知に停止ボタンを表示します。"
+        else -> "呼びかけ中：通知に停止ボタンを表示しています。"
     }, style=MaterialTheme.typography.bodySmall)
-    Text("この設定はアプリ内でオン・オフできます。オフの場合はアプリ内で会話を止めてください。Androidが要求する動作中の通知・表示は残ることがあります。", style=MaterialTheme.typography.bodySmall)
+    Text("この設定はアプリ内でオン・オフできます。オフの場合はアプリ内で呼びかけを止めてください。Androidが要求する動作中の通知・表示は残ることがあります。", style=MaterialTheme.typography.bodySmall)
     if (!allowed) TextButton({openSettings()}) { Text("Androidの通知許可を確認") }
 }
 

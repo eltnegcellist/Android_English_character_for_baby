@@ -203,7 +203,7 @@ internal fun FirstRunOnboardingScreen(
                         style = MaterialTheme.typography.titleSmall,
                     )
                     Text(
-                        "準備が終わると、そのまま会話を始められます。",
+                        "準備が終わると、そのまま呼びかけを始められます。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
