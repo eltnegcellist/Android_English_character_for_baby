@@ -17,13 +17,13 @@ internal object RuriSupplementalReplies {
         ),
         "milk|inquiry" to listOf(
             "Want some more milk? Are you still hungry? Let's check together.",
-            "How is your milk? Is it yummy? I'm listening, sweetheart.",
+            "How is your milk? Is it yummy? Smack those little lips!",
             "Need another little sip? Shall we try? Take your time."
         ),
         "milk|repeat" to listOf(
             "Want another sip? We can try. No need to hurry.",
             "More milk, little one? Only if you like. I'm right here.",
-            "Another little sip? Let's see together. You can decide."
+            "Want more milk? Just a little? Take your time."
         ),
         "drink|affection" to listOf(
             "A drink with you. My sweet little one. I love you.",
@@ -116,7 +116,7 @@ internal object RuriSupplementalReplies {
             "We play together. You're my sweetheart. What lovely fun!"
         ),
         "play|finish_check" to listOf(
-            "Are we done playing? One more game? Let's decide together.",
+            "All done playing? One more game? Let's play or rest.",
             "Is playtime over? Shall we stop? We can choose.",
             "All finished playing? One last turn? What do you think?"
         ),
