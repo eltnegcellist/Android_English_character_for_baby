@@ -28,13 +28,15 @@ Sileroを標準の発話開始・終了判定として追加しました。設�
 
 ### 配布版
 
-**現在のAndroid配布版：v1.9.43**
+**現在のAndroid配布版：v1.9.47**
 
-**versionCode：126**
+**versionCode：130**
 
-- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.43
-- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.43/Mitsukotoba-v1.9.43-android-arm-debug.apk
+- リリース: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.47
+- APK直接リンク: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.47/Mitsukotoba-v1.9.47-android-arm-debug.apk
 - Web版: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
+
+v1.9.47では採用したQwen3-TTSの声・生成seed1202で作成した全1,105音源を同梱し、現在の固定英文・1文／3文モード・自己紹介を再生します。Qwen3モデル本体は端末へ入れません。
 
 v1.9.43では公開機能をLiteの呼びかけへ一本化し、Fullと会話を開発者設定へ移動しました。旧Fullの設定は更新後に一度だけLiteへ切り替わります（モデル・履歴は保持）。v1.9.42で導入したSileroの発話開始・終了判定も維持します。設定から従来RMSへ戻せ、選択は保存されます。終了待ちは1.1秒、Moonshine Japanese Smallと既存の録音音声処理を維持します。v1.9.41のSemantic実推論パリティと隠し診断機能も維持します。Android実機のマイク・CPU負荷・画面オフ会話は未確認で、静音の認識精度が全環境で維持される保証はまだありません。
 
@@ -350,13 +352,15 @@ Research on infant foreign-language learning suggests that passive audio or vide
 
 ### Current Release
 
-**Current distributed Android release: v1.9.43**
+**Current distributed Android release: v1.9.47**
 
-**versionCode: 126**
+**versionCode: 130**
 
-- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.43
-- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.43/Mitsukotoba-v1.9.43-android-arm-debug.apk
+- Release: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/tag/mitsukotoba-v1.9.47
+- Direct APK: https://github.com/eltnegcellist/Android_English_character_for_baby/releases/download/mitsukotoba-v1.9.47/Mitsukotoba-v1.9.47-android-arm-debug.apk
 - Web edition: https://eltnegcellist.github.io/Web_EmmaLocal_English_for_babies/
+
+v1.9.47 bundles all 1,105 clips generated with the adopted Qwen3 voice and per-utterance seed1202 for the fixed English bank, one/three-sentence play mode, and introduction. The Qwen3 model is not included on the device.
 
 v1.9.43 makes Lite callouts the sole public Android experience while keeping Full/dialogue behind developer settings. Existing Full preferences migrate once to Lite without deleting model data or history. The Silero speech detection added in v1.9.42 remains available with a saved Settings rollback to RMS. Endpoint waiting is 1.1 seconds; Moonshine Japanese Small and the existing captured-audio processing remain unchanged. Semantic runtime parity checks and diagnostics are retained. Physical-device microphone, CPU load and screen-off conversation checks remain outstanding; unchanged quiet-room ASR accuracy across environments has not been established.
 
