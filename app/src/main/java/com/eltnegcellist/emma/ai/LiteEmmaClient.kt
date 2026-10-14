@@ -58,13 +58,6 @@ class LiteEmmaClient(
             "みつことば Liteでは「呼びかけ」を使えます。AIも3者のやり取りへ継続参加する「会話」はFullを使ってください。"
         }
 
-        val babyName = preferences.getString("baby_name", "").orEmpty()
-        val explicitSpokenName = preferences.getString("baby_spoken_name", "").orEmpty()
-        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, explicitSpokenName)
-        val spokenName = BabyNamePronunciation.withChanSuffix(
-            baseSpokenName,
-            preferences.getBoolean("use_chan_suffix", true),
-        )
         val semanticRequested = preferences.getBoolean("semantic_enabled", true)
         val semanticPrediction = if (
             semanticRequested &&
@@ -87,7 +80,7 @@ class LiteEmmaClient(
         val interactionEnabled = true // Topic and Interaction are inseparable in public Lite.
         // Live Lite never falls back to Japanese rule-based topic detection.
         // When Ruri is unavailable/disabled, select generic English instead.
-        val selected = responses.respondRuri(transcript, spokenName, semanticPrediction, interactionEnabled)
+        val selected = responses.respondRuri(transcript, "", semanticPrediction, interactionEnabled)
         // Save the rotated template IDs between sessions, not the parent's Japanese speech.
         preferences.edit().putString("ruri_reply_diversity_v1", responses.exportRuriReplyDiversity()).apply()
         lastTopic = selected.scene
@@ -129,13 +122,6 @@ class LiteEmmaClient(
         val transcript = text.trim()
         require(transcript.isNotBlank()) { "日本語を入力してください。" }
 
-        val babyName = preferences.getString("baby_name", "").orEmpty()
-        val explicitSpokenName = preferences.getString("baby_spoken_name", "").orEmpty()
-        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, explicitSpokenName)
-        val spokenName = BabyNamePronunciation.withChanSuffix(
-            baseSpokenName,
-            preferences.getBoolean("use_chan_suffix", true),
-        )
         check(RuriSemanticModelStore.isInstalled(appContext)) {
             "Ruri Semanticモデルが未準備です。設定からSemanticを有効にしてモデルを準備してください。"
         }
@@ -143,15 +129,15 @@ class LiteEmmaClient(
             "Semantic診断では長すぎる入力を判定できません。短い日本語でお試しください。"
         }
 
-        val rule = debugRuleResponses.respond(transcript, spokenName)
+        val rule = debugRuleResponses.respond(transcript, "")
         val semanticResponse = debugSemanticResponses.respond(
             transcript,
-            spokenName,
+            "",
             prediction.copy(mode = "semantic"),
         )
         val guardResponse = debugGuardResponses.respond(
             transcript,
-            spokenName,
+            "",
             prediction.copy(mode = "guard"),
         )
 
@@ -178,14 +164,7 @@ class LiteEmmaClient(
     fun createGenericEnglishIsland(
         level: EnglishLevel,
     ): Result<String> = runCatching {
-        val babyName = preferences.getString("baby_name", "").orEmpty()
-        val explicitSpokenName = preferences.getString("baby_spoken_name", "").orEmpty()
-        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, explicitSpokenName)
-        val spokenName = BabyNamePronunciation.withChanSuffix(
-            baseSpokenName,
-            preferences.getBoolean("use_chan_suffix", true),
-        )
-        val selected = responses.respondGeneric(spokenName)
+        val selected = responses.respondGeneric()
         lastTopic = selected.scene
         val adjusted = fitLevel(selected.english, level)
 
