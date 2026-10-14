@@ -18,7 +18,7 @@ internal object RuriSupplementalReplies {
         "milk|inquiry" to listOf(
             "Want some more milk? Are you still hungry? Let's check together.",
             "How is your milk? Is it yummy? Smack those little lips!",
-            "One more little sip? Want to try? I'm right here!"
+            "One more little sip? Want to try? I'm with you!"
         ),
         "milk|repeat" to listOf(
             "Want another sip? We can try. No need to hurry.",
