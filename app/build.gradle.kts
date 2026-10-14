@@ -101,8 +101,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 129
-        versionName = "1.9.46"
+        versionCode = 130
+        versionName = "1.9.47"
         // Research instrumentation exists only in a separate test APK.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -130,6 +130,10 @@ android {
                 signingConfig = prototypeSigningConfig
             }
         }
+    }
+
+    androidResources {
+        noCompress += "m4a"
     }
 
     buildFeatures {

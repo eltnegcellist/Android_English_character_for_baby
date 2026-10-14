@@ -41,6 +41,7 @@ import com.eltnegcellist.emma.model.ModelPreparationKind
 import com.eltnegcellist.emma.model.ModelPreparationManager
 import com.eltnegcellist.emma.model.ModelPreparationStatus
 import com.eltnegcellist.emma.tts.DiagnosticStore
+import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
 import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.ui.EmmaTheme
@@ -287,7 +288,7 @@ private fun ProductionEmmaApp() {
         selectedAsr: MoonshineAsrModel = asrModel,
     ): Boolean = when (mode) {
         ConversationEngineMode.LITE ->
-            MoonshineModelStore.isInstalled(context, selectedAsr) && KittenModelStore.isInstalled(context)
+            MoonshineModelStore.isInstalled(context, selectedAsr) && PrerecordedVoiceStore.isReady(context)
         ConversationEngineMode.FULL ->
             MoonshineModelStore.isInstalled(context, selectedAsr) &&
                 KittenModelStore.isInstalled(context) &&
@@ -331,7 +332,7 @@ private fun ProductionEmmaApp() {
                 if (disposed || engineMode != requestedMode || asrModel != requestedAsr) return@post
                 result.onSuccess {
                     modelReady = true
-                    kittenInstalled = KittenModelStore.isInstalled(context)
+                    kittenInstalled = PrerecordedVoiceStore.isReady(context)
                     status = ProductionEmmaStatus.IDLE
                     statusMessage = "みつことば ${requestedMode.label}の準備ができました。"
                 }.onFailure { error ->
@@ -356,7 +357,7 @@ private fun ProductionEmmaApp() {
             preferences.edit().putString("audience_mode", "BABY").apply()
         }
         modelReady = false
-        kittenInstalled = KittenModelStore.isInstalled(context)
+        kittenInstalled = PrerecordedVoiceStore.isReady(context)
         modelPresent = modeModelsPresent(selected)
         status = ProductionEmmaStatus.IDLE
         statusMessage = when (selected) {
@@ -500,7 +501,7 @@ private fun ProductionEmmaApp() {
             onFinished = { result ->
                 liteSetupBusy = false
                 liteSetupDialogOpen = false
-                kittenInstalled = KittenModelStore.isInstalled(context)
+                kittenInstalled = PrerecordedVoiceStore.isReady(context)
                 modelPresent = modeModelsPresent(engineMode)
                 if (result.isSuccess) {
                     if (kittenInstalled) kitten.resetModel()
@@ -619,7 +620,7 @@ private fun ProductionEmmaApp() {
                 statusMessage = phase
             },
             onFinished = { result ->
-                kittenInstalled = KittenModelStore.isInstalled(context)
+                kittenInstalled = PrerecordedVoiceStore.isReady(context)
                 modelPresent = modeModelsPresent(selectedMode, requestedAsr)
                 firstRunBusy = false
                 if (result.isSuccess) {
@@ -684,7 +685,7 @@ private fun ProductionEmmaApp() {
             },
             onFinished = { result ->
                 fullSetupBusy = false
-                kittenInstalled = KittenModelStore.isInstalled(context)
+                kittenInstalled = PrerecordedVoiceStore.isReady(context)
                 modelPresent = modeModelsPresent(ConversationEngineMode.FULL, requestedAsr)
                 if (result.isSuccess) {
                     if (kittenInstalled) kitten.resetModel()
@@ -761,7 +762,7 @@ private fun ProductionEmmaApp() {
     fun startSession() {
         if (!kittenInstalled) {
             status = ProductionEmmaStatus.ERROR
-            statusMessage = "Kitten TTS Nano / Kikiを準備してください。"
+            statusMessage = "音声を準備してください。"
             settingsOpen = true
             return
         }
@@ -960,7 +961,7 @@ private fun ProductionEmmaApp() {
             gemmaNeeded = !GemmaModelStore.hasUsableModel(context),
             moonshineNeeded = !MoonshineModelStore.isInstalled(context, asrModel),
             asrModel = asrModel,
-            kittenNeeded = !kittenInstalled,
+            kittenNeeded = !KittenModelStore.isInstalled(context),
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
                 fullSetupOpen = false

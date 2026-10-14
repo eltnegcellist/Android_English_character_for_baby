@@ -4,6 +4,7 @@ import android.content.Context
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.ai.RuriSemanticModelStore
+import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
 import com.eltnegcellist.emma.tts.KittenModelStore
 
 internal object ModelPreparationTask {
@@ -41,7 +42,7 @@ internal object ModelPreparationTask {
         when (kind) {
             ModelPreparationKind.LITE -> {
                 moonshine()
-                kitten()
+                if (!PrerecordedVoiceStore.isAvailable(context)) kitten()
                 val semanticEnabled = context
                     .getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
                     .getBoolean("semantic_enabled", true)

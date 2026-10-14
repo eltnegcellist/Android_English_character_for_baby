@@ -1,9 +1,25 @@
 # Third-party components
 
-Updated: 2026-10-03
+Updated: 2026-10-14
 
 Mitsukotoba Android downloads or uses third-party software, models, and data.
 Each component remains subject to its own license. See also `LICENSE_AUDIT.md`.
+
+## Adopted prerecorded voice
+
+The current fixed English bank uses audio generated locally with Qwen3-TTS.
+The APK bundles AAC audio and its provenance manifest; it does not bundle the
+Qwen3 model weights or MLX runtime. Android decodes AAC with platform media APIs.
+The Kitten generation path described below remains for uncatalogued free text
+when its model is installed.
+
+- Reference: synthesized VoiceDesign `surprise_02`, selected by the user, seed1202.
+- Generation: `mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit`, revision
+  `e7dd0585652209fa0d7783659aad4e8a324de11c`, seed1202 per utterance.
+- Model card license: Apache-2.0; [pinned model card](https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit/blob/e7dd0585652209fa0d7783659aad4e8a324de11c/README.md).
+- Upstream: https://github.com/QwenLM/Qwen3-TTS
+- Full text/audio hashes, reference hash, source commits, and encoding details:
+  `app/src/main/assets/voice-1202/manifest.json`.
 
 ## GPL / eSpeak NG status
 

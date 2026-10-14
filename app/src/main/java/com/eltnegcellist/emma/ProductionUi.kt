@@ -850,7 +850,7 @@ internal fun EmmaSettingsScreen(
                             }
                             if (!asrInstalled || !kittenInstalled) {
                                 OutlinedButton(onClick = onPrepareLite, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                    Text("Moonshine / Kittenを準備")
+                                    Text("音声認識と声を準備")
                                 }
                             }
                             if (gemmaInstalled && asrInstalled && kittenInstalled && !modelReady) {
@@ -873,7 +873,7 @@ internal fun EmmaSettingsScreen(
                                 append(if (asrInstalled) " / 準備済み" else " / 未準備")
                                 append("\nSemantic: ")
                                 append(if (semanticInstalled) "Ruri 70M INT8 / 準備済み" else "Ruri 70M INT8 / 未準備")
-                                append("\nKitten TTS: ").append(if (kittenInstalled) "準備済み" else "未準備")
+                                append("\n音声: ").append(if (kittenInstalled) "準備済み" else "未準備")
                                 append("\nGemma: ").append(if (gemmaInstalled) "準備済み" else "未準備")
                                 append("\n現在のモード: みつことば ").append(engineMode.label)
                             },
@@ -930,7 +930,7 @@ internal fun EmmaSettingsScreen(
                                 enabled = enabled && !semanticDebugBusy,
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Text("Semantic英語をKikiで試聴")
+                                Text("Semantic英語を採用音声で試聴")
                             }
                         }
 
@@ -941,11 +941,11 @@ internal fun EmmaSettingsScreen(
                                 enabled = enabled || previewing,
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Text(if (previewing) "試聴を停止" else "Kikiの声を試聴")
+                                Text(if (previewing) "試聴を停止" else "採用した声を試聴")
                             }
                         } else {
                             Text(
-                                "Kitten TTSが未準備のため試聴できません。",
+                                "音声が未準備のため試聴できません。",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -956,14 +956,11 @@ internal fun EmmaSettingsScreen(
                             style = MaterialTheme.typography.labelLarge,
                         )
                         Text(
-                            "Model: Kitten TTS Nano FP32\n" +
-                                "Voice: Kiki (expr-voice-5-f)\n" +
-                                "Runtime: ONNX Runtime Android\n" +
-                                "Phonemizer: CMUDict\n" +
-                                "Speed: ${KittenSpeaker.KITTEN_SPEED} (effective ${KittenSpeaker.EFFECTIVE_SPEED})\n" +
-                                "Target peak: ${KittenSpeaker.TTS_TARGET_PEAK}\n" +
-                                "Max volume boost: ${KittenSpeaker.TTS_MAX_VOLUME_BOOST}x\n" +
-                                "Playback chunk: ${KittenSpeaker.PLAYBACK_CHUNK_SAMPLES} samples",
+                            "Voice: 採用音声（参照元seed1202）\n" +
+                                "Generation: Qwen3-TTS 1.7B Base 8bit / seed1202固定\n" +
+                                "Playback: 事前生成したAAC / 24,000Hz\n" +
+                                "Listening loudness: -20 LUFS\n" +
+                                "登録外の自由文: Kitten / Kiki（モデル準備時）",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -974,9 +971,9 @@ internal fun EmmaSettingsScreen(
                         )
                         Text(
                             buildString {
-                                append("Kitten生成: ")
+                                append("音声準備: ")
                                 append(lastTtsGenerationMillis?.let { "${it}ms" } ?: "未計測")
-                                append("\nKitten→初音: ")
+                                append("\n音声要求→初音: ")
                                 append(lastSpeechMillis?.let { "${it}ms" } ?: "未計測")
                                 append("\nTTS全体: ")
                                 append(lastTtsTotalMillis?.let { "${it}ms" } ?: "未計測")
@@ -990,7 +987,7 @@ internal fun EmmaSettingsScreen(
                         )
 
                         Text(
-                            "試聴ではKitten生成・初音・TTS全体を確認できます。発話終了からの2項目は、通常会話を1回行うと更新されます。",
+                            "試聴では音声準備・初音・TTS全体を確認できます。発話終了からの2項目は、通常会話を1回行うと更新されます。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

@@ -1,3 +1,16 @@
+
+## 採用した事前生成音声（seed1202）
+
+現在の固定英文セットと「押して聞く」の1文・3文モード、自己紹介・通常試聴は、Macで事前生成したQwen3-TTS音声を再生します。参照音声はVoiceDesign seed1202のsurprise_02、Base1.7B8bitの各生成seedも1202に固定しています。現在の英文は変更していません。音源は `assets/voice-1202/`（Androidでは `app/src/main/assets/voice-1202/`）のmanifest.jsonとAAC-LC 96kbps / 24kHz monoです。
+
+Webでは初回準備時に全音源をSHA256検証してCacheStorageへ保存し、以後はオフラインで再生します。AndroidではAPKへ同梱し、Lite初回準備でKittenモデルの取得を省きます。停止・中断・口の動き・履歴再生は既存処理を使用します。
+
+登録済みの固定英文は採用声を優先します。登録外の自由文（任意のFull/Gemma出力や旧履歴等）は、従来のKittenモデルが準備済みの場合の既存生成経路を維持しています。Qwen3のモデル本体はスマートフォンやブラウザには入れません。
+
+生成条件・モデルrevision・参照SHA256・元英文と音源の対応はmanifest.jsonに記録しています。アプリ用音源は-20 LUFSを目標とした音量調整版をAACへ変換したものです。元の無加工FLOAT WAVはMacの実験成果物に保存しています。
+
+音声バンクの整合性・現行英文の収録漏れは `python3 scripts/verify-prerecorded-voice.py` で確認します。AACは `noCompress` でAPKへ格納し、MediaExtractor / MediaCodecから既存のAudioTrack再生へ渡します。英文セットを変更した場合は、同じ採用条件で対応音声を生成して同梱してください。
+
 # みつことば — 親と赤ちゃんとAI、3人でつくる英語の時間
 
 ## 話し終わりの判定（Silero・従来方式）
