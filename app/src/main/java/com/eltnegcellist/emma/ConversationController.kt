@@ -19,6 +19,7 @@ import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
 import com.eltnegcellist.emma.tts.DiagnosticStore
+import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
 import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
 
@@ -139,7 +140,7 @@ internal class ConversationController(val context: Context) {
     val modelPresentState = mutableStateOf(
             when (initialEngineMode) {
                 ConversationEngineMode.LITE ->
-                    MoonshineModelStore.isInstalled(context, initialAsrModel) && KittenModelStore.isInstalled(context)
+                    MoonshineModelStore.isInstalled(context, initialAsrModel) && PrerecordedVoiceStore.isReady(context)
                 ConversationEngineMode.FULL ->
                     MoonshineModelStore.isInstalled(context, initialAsrModel) &&
                         KittenModelStore.isInstalled(context) &&
@@ -151,7 +152,7 @@ internal class ConversationController(val context: Context) {
     val modelReadyState = mutableStateOf(false)
     var modelReady by modelReadyState
 
-    val kittenInstalledState = mutableStateOf(KittenModelStore.isInstalled(context))
+    val kittenInstalledState = mutableStateOf(PrerecordedVoiceStore.isReady(context))
     var kittenInstalled by kittenInstalledState
 
     val lastSpeechMillisState = mutableStateOf<Long?>(null)
@@ -265,7 +266,7 @@ internal class ConversationController(val context: Context) {
                     }
                     if (recording) recorder.resumeBuffering(clearExisting = true)
                     status = ProductionEmmaStatus.ERROR
-                    statusMessage = "Kitten TTS Nanoの生成または再生に失敗しました: $message"
+                    statusMessage = "音声の読み込みまたは再生に失敗しました: $message"
                 }
             },
             onAmplitude = { amplitude -> if (!disposed && uiVisible) mouthLevel = amplitude },

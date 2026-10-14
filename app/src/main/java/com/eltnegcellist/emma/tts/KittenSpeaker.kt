@@ -36,16 +36,21 @@ class KittenSpeaker(
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ShortArray>?) = size > 24
     }
     fun prepare(texts: List<String>, onReady: (Boolean) -> Unit = {}) {
-        if (closed || !KittenModelStore.isInstalled(context)) { main.post { onReady(false) }; return }
+        if (closed || !PrerecordedVoiceStore.isReady(context)) { main.post { onReady(false) }; return }
         val generation = ++warmGeneration
         worker.execute {
             var success = true
             texts.forEach { text ->
                 if (!closed && generation == warmGeneration && !cache.containsKey(text.trim())) runCatching {
-                    val active = engine ?: Engine(context).also { engine = it }
-                    val generated = active.generate(text.trim())
-                    require(generated.isNotEmpty() && generated.all(Float::isFinite))
-                    cache[text.trim()] = toPcm16(generated)
+                    val recorded = PrerecordedVoiceStore.loadPcm(context, text)
+                    if (recorded != null) cache[text.trim()] = recorded
+                    else {
+                        check(KittenModelStore.isInstalled(context)) { "この英文の音声がありません。" }
+                        val active = engine ?: Engine(context).also { engine = it }
+                        val generated = active.generate(text.trim())
+                        require(generated.isNotEmpty() && generated.all(Float::isFinite))
+                        cache[text.trim()] = toPcm16(generated)
+                    }
                 }.onFailure { success = false }
             }
             main.post { if (!closed && generation == warmGeneration) onReady(success) }
@@ -53,7 +58,7 @@ class KittenSpeaker(
     }
 
     fun speak(text: String): Boolean {
-        if (closed || text.isBlank() || !KittenModelStore.isInstalled(context)) return false
+        if (closed || text.isBlank() || !PrerecordedVoiceStore.isReady(context)) return false
 
         stop()
         val id = UUID.randomUUID().toString()
@@ -64,30 +69,24 @@ class KittenSpeaker(
             val started = System.nanoTime()
 
             runCatching {
-                val active = engine ?: Engine(context).also {
-                    engine = it
-                    DiagnosticStore.mark(
-                        context,
-                        "kitten_runtime_initialized",
-                        "runtime=onnxruntime-android phonemizer=cmudict model=Nano-FP32 voice=Kiki speed=" +
-                            KITTEN_SPEED + " effectiveSpeed=" + EFFECTIVE_SPEED,
-                    )
-                }
-
                 val generationStarted = System.nanoTime()
-                val pcm = cache[text.trim()] ?: active.generate(text.trim()).let { generated ->
-                    require(generated.isNotEmpty() && generated.all(Float::isFinite)) { "Kitten TTS Nano returned invalid audio." }
-                    toPcm16(generated).also { cache[text.trim()] = it }
-                }
+                val isRecorded = PrerecordedVoiceStore.hasText(context, text)
+                val pcm = cache[text.trim()] ?: (PrerecordedVoiceStore.loadPcm(context, text) ?: run {
+                    check(KittenModelStore.isInstalled(context)) { "この英文の音声がありません。" }
+                    val active = engine ?: Engine(context).also { engine = it }
+                    val generated = active.generate(text.trim())
+                    require(generated.isNotEmpty() && generated.all(Float::isFinite)) { "TTS returned invalid audio." }
+                    toPcm16(generated)
+                }).also { cache[text.trim()] = it }
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
                 val firstAudioMs = play(id, pcm, SAMPLE_RATE, started)
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
 
                 DiagnosticStore.mark(
                     context,
-                    "kitten_generation",
-                    "runtime=onnxruntime voice=Kiki speed=" + KITTEN_SPEED +
-                        " effectiveSpeed=" + EFFECTIVE_SPEED +
+                    "voice_playback",
+                    (if (isRecorded) "engine=prerecorded voice=Qwen3-1202 generationSeed=1202 playbackSpeed=1.0"
+                        else "engine=kitten voice=Kiki speed=$KITTEN_SPEED effectiveSpeed=$EFFECTIVE_SPEED") +
                         " chars=" + text.length +
                         " samples=" + pcm.size +
                         " generationMs=" + generationMs +
@@ -109,7 +108,7 @@ class KittenSpeaker(
                         requestId = null
                         onAmplitude(0f)
                         onError(
-                            "Kitten TTS Nano生成に失敗しました: " +
+                            "音声の読み込みまたは再生に失敗しました: " +
                                 (error.message ?: error.javaClass.simpleName),
                         )
                     }

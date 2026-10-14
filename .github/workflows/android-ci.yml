@@ -34,6 +34,9 @@ jobs:
       - name: Verify Lite-only public callout labels
         run: python3 scripts/test-public-callout-copy.py
 
+      - name: Verify adopted voice coverage and audio integrity
+        run: python3 scripts/verify-prerecorded-voice.py
+
       - name: Set up Java 17
         uses: actions/setup-java@v5
         with:
@@ -133,7 +136,7 @@ jobs:
           set -euo pipefail
           OUT="app/build/outputs/apk/debug"
           SOURCE="$OUT/app-debug.apk"
-          APK="$OUT/Mitsukotoba-v1.9.46-android-arm-debug.apk"
+          APK="$OUT/Mitsukotoba-v1.9.47-android-arm-debug.apk"
           cp "$SOURCE" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > "$APK.apksigner.txt"
           sha256sum "$APK" | tee "$APK.sha256"
@@ -181,7 +184,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mitsukotoba-v1.9.46
+          name: Mitsukotoba-v1.9.47
           path: |
             ${{ steps.apk.outputs.apk }}
             ${{ steps.apk.outputs.apk }}.sha256
@@ -197,7 +200,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="mitsukotoba-v1.9.46"
+          TAG="mitsukotoba-v1.9.47"
           APK="${{ steps.apk.outputs.apk }}"
           HASH="$APK.sha256"
           CERT="$APK.apksigner.txt"
@@ -215,5 +218,5 @@ jobs:
           gh release create "$TAG" "$APK" "$HASH" "$CERT" \
             --verify-tag \
             --latest \
-            --title "みつことば v1.9.46" \
-            --notes "Mitsukotoba v1.9.46 adds preauthored baby-name placeholders to Topic×Interaction callouts, preserving three short sentences and the full 914-set bank. Original English is kept when no baby name is configured; names are substituted only at twelve explicitly authored slots and subject to the original two-turn anti-repeat cooldown. Baby name settings, long-term 60-turn phrase diversity, Lite-only public experience, hidden developer Full, Ruri and offline Kiki TTS remain unchanged."
+            --title "みつことば v1.9.47" \
+            --notes "Mitsukotoba v1.9.47 plays the current fixed English bank, one/three-sentence play mode, introduction and preview using locally generated Qwen3-TTS audio. The user-selected reference and per-utterance generation seed1202 are fixed. All 1,105 AAC clips are bundled for offline playback; the APK does not include the Qwen3 model. Existing interruption, mouth animation and history playback use the same audio path. Uncatalogued developer Full text retains optional Kitten synthesis. Audio coverage and SHA256 integrity are checked in CI."
