@@ -13,14 +13,6 @@ internal class RuriReplyDiversity {
     private val history = ArrayDeque<String>()
     private val phraseHistory = ArrayDeque<List<String>>()
     private val cycles = linkedMapOf<String, Cycle>()
-    private var nameGap = 0
-    private var recentNameGap = 2
-    fun canUsePairedName(): Boolean = recentNameGap >= 2
-    fun recordName(used: Boolean, paired: Boolean = false) {
-        recentNameGap = if (used) 0 else (recentNameGap + 1).coerceAtMost(2)
-        if (paired) nameGap = if (used) 0 else (nameGap + 1).coerceAtMost(8)
-    }
-
     private fun grams(text: String): List<String> {
         val words = Regex("[A-Za-z]+(?:['’][A-Za-z]+)?").findAll(text.lowercase()).map { it.value }.toList()
         return (0 until (words.size - 2).coerceAtLeast(0))
@@ -32,11 +24,7 @@ internal class RuriReplyDiversity {
         if (value.isNullOrBlank()) return
         val parts = value.split("\n")
         if (parts.size !in 4..6) return
-        if (parts[0] != "v1" && parts[0] != "v2") return
-        nameGap = if (parts[0] == "v2" && parts.size >= 5)
-            (parts[4].toIntOrNull() ?: 0).coerceIn(0, 8) else 0
-        recentNameGap = if (parts[0] == "v2" && parts.size >= 6)
-            (parts[5].toIntOrNull() ?: 2).coerceIn(0, 2) else 2
+        if (parts[0] !in listOf("v1", "v2", "v3")) return
         history.clear(); phraseHistory.clear(); cycles.clear()
         val idPattern = Regex("[a-z0-9_:|#-]+")
         parts[1].split(',').filter { it.matches(idPattern) }.takeLast(60).forEach(history::addLast)
@@ -53,14 +41,12 @@ internal class RuriReplyDiversity {
         }
     }
     fun snapshot(): String = listOf(
-        "v2",
+        "v3",
         history.joinToString(","),
         phraseHistory.joinToString(";") { it.joinToString(".") },
         cycles.entries.toList().takeLast(135).joinToString(";") { (key, cycle) ->
             key + "=" + cycle.used.joinToString(".") + "~" + cycle.fallbackStep
         },
-        nameGap.toString(),
-        recentNameGap.toString(),
     ).joinToString("\n")
 
     private fun pick(pool: String?, replies: List<String>?, excluded: Set<Int> = emptySet()): Pick? {

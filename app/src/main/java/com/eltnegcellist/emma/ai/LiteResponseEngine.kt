@@ -29,7 +29,6 @@ internal class LiteResponseEngine {
     private val recentReplies = ArrayDeque<String>()
     private val recentOpeners = ArrayDeque<String>()
     private var turnCounter = 0
-    private var turnsSinceName = BabySpeechStyle.NAME_REPEAT_WINDOW
     private var activeSceneId: String? = null
     private var activeSceneTurnsRemaining = 0
     private val replyDiversity = RuriReplyDiversity()
@@ -93,23 +92,10 @@ internal class LiteResponseEngine {
         }
         activeSceneId = null
         activeSceneTurnsRemaining = 0
-        val safeName = sanitizeName(spokenBabyName)
-        val allowName = (pair == null && interaction == null) || chosen?.reason == "diversity_topic"
-        val forceName = allowName && safeName.isNotBlank() &&
-            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW
-        val suppressName = allowName && safeName.isNotBlank() &&
-            turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
-        val raw = chosen?.text ?: chooseReply(replies, transcript, forceName, suppressName)
-        val named = if (allowName) applyName(raw, if (forceName && replyDiversity.canUsePairedName()) safeName else "", false) else raw
-        val styledBase = alignToBabyStyle(named, transcript, topic?.id)
-        val styled = if (chosen?.reason == "combined" && safeName.isNotBlank() &&
-            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW && replyDiversity.canUsePairedName()) {
-            RuriPairedBabyName.insert(styledBase, safeName)
-        } else styledBase
-        val nameUsed = safeName.isNotBlank() && containsName(styled, safeName)
-        replyDiversity.recordName(nameUsed, paired = chosen?.reason == "combined")
+        // All Lite replies are fixed English lines suitable for pre-generated audio.
+        val raw = chosen?.text ?: chooseReply(replies, transcript)
+        val styled = alignToBabyStyle(raw, transcript, topic?.id)
         remember(raw, styled)
-        if (nameUsed) turnsSinceName = 0 else turnsSinceName++
         turnCounter++
         return LiteResponse(
             english = styled, scene = route, score = 0,
@@ -266,21 +252,9 @@ internal class LiteResponseEngine {
         }
 
         val replies = scene?.replies ?: genericReplies
-        val safeName = sanitizeName(spokenBabyName)
-        val forceName = safeName.isNotBlank() &&
-            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW
-        val suppressName = safeName.isNotBlank() &&
-            turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
-        val raw = chooseReply(replies, normalized, forceName, suppressName)
-        val named = applyName(raw, safeName, forceName)
-        val styled = alignToBabyStyle(named, normalized, scene?.id)
-
+        val raw = chooseReply(replies, normalized)
+        val styled = alignToBabyStyle(raw, normalized, scene?.id)
         remember(raw, styled)
-        if (safeName.isNotBlank() && containsName(styled, safeName)) {
-            turnsSinceName = 0
-        } else {
-            turnsSinceName++
-        }
         turnCounter++
         return LiteResponse(
             english = styled,
@@ -295,9 +269,8 @@ internal class LiteResponseEngine {
     private fun respondInteraction(id: String, normalized: String): LiteResponse {
         activeSceneId = null
         activeSceneTurnsRemaining = 0
-        val raw = chooseReply(InteractionReplyBank.replies.getValue(id), normalized, false, false)
+        val raw = chooseReply(InteractionReplyBank.replies.getValue(id), normalized)
         remember(raw, raw)
-        turnsSinceName++
         turnCounter++
         return LiteResponse(
             english = raw, scene = "interaction:" + id, score = 0,
@@ -306,21 +279,9 @@ internal class LiteResponseEngine {
     }
 
     fun respondGeneric(spokenBabyName: String = ""): LiteResponse {
-        val safeName = sanitizeName(spokenBabyName)
-        val forceName = safeName.isNotBlank() &&
-            turnsSinceName >= BabySpeechStyle.NAME_REPEAT_WINDOW
-        val suppressName = safeName.isNotBlank() &&
-            turnsSinceName < BabySpeechStyle.NAME_REPEAT_WINDOW
-        val raw = chooseReply(genericReplies, "", forceName, suppressName)
-        val named = applyName(raw, safeName, forceName)
-        val styled = alignToBabyStyle(named, "", null)
-
+        val raw = chooseReply(genericReplies, "")
+        val styled = alignToBabyStyle(raw, "", null)
         remember(raw, styled)
-        if (safeName.isNotBlank() && containsName(styled, safeName)) {
-            turnsSinceName = 0
-        } else {
-            turnsSinceName++
-        }
         turnCounter++
         return LiteResponse(
             english = styled,
@@ -438,17 +399,8 @@ internal class LiteResponseEngine {
         return total
     }
 
-    private fun chooseReply(
-        replies: List<String>,
-        transcript: String,
-        forceName: Boolean,
-        suppressName: Boolean,
-    ): String {
-        val eligible = when {
-            forceName -> replies.filter { "{name}" in it }.ifEmpty { replies }
-            suppressName -> replies.filterNot { "{name}" in it }.ifEmpty { replies }
-            else -> replies
-        }
+    private fun chooseReply(replies: List<String>, transcript: String): String {
+        val eligible = replies
         if (eligible.size == 1) return eligible.first()
 
         val start = ((transcript.hashCode().toLong() + turnCounter.toLong()).let {
@@ -476,21 +428,6 @@ internal class LiteResponseEngine {
         while (recentOpeners.size > RECENT_OPENER_WINDOW) recentOpeners.removeFirst()
     }
 
-    private fun sanitizeName(spokenBabyName: String): String = spokenBabyName.trim()
-        .filter { it.isLetter() || it == '\'' || it == '’' || it == '-' || it == ' ' }
-        .take(40)
-
-    private fun applyName(reply: String, safeName: String, forceName: Boolean): String {
-        return when {
-            "{name}" in reply && safeName.isBlank() ->
-                reply.replace("{name}, ", "").replace("{name}", "little one")
-            "{name}" in reply ->
-                reply.replace("{name}", safeName)
-            forceName && safeName.isNotBlank() ->
-                "$safeName! $reply"
-            else -> reply
-        }
-    }
 
     private fun alignToBabyStyle(reply: String, transcript: String, sceneId: String?): String {
         val sentences = splitSentences(reply).toMutableList()
@@ -541,16 +478,12 @@ internal class LiteResponseEngine {
         splitSentences(text)
             .firstOrNull()
             .orEmpty()
-            .replace("{name}", "")
             .lowercase()
             .replace(Regex("[^a-z]+"), " ")
             .trim()
             .split(Regex("\\s+"))
             .take(3)
             .joinToString(" ")
-
-    private fun containsName(text: String, safeName: String): Boolean =
-        safeName.isNotBlank() && text.contains(safeName, ignoreCase = true)
 
     private fun positiveIndex(value: Int, size: Int): Int {
         if (size <= 0) return 0
@@ -575,8 +508,8 @@ internal class LiteResponseEngine {
                 "Drink time! One little sip. How does it taste?",
                 "Want a little sip? Here's your drink. Sip if you like!",
                 "Want another sip? No need to hurry. Here you go!",
-                "{name}, your drink! Here's a little sip. There you go!",
-                "{name}, thirsty? Let's have a drink. Sip when you're ready!",
+                "Baby, your drink! Here's a little sip. There you go!",
+                "Baby, thirsty? Let's have a drink. Sip when you're ready!",
             ),
         )
         private const val MIN_SCENE_SCORE = 3
@@ -700,12 +633,12 @@ internal class LiteResponseEngine {
             "Can you see me? Here I am! Hello, hello!",
             "Ooh, ahh, ooh! Talk to me! I'm listening!",
             "Do you hear that? That's my voice! Hello, baby!",
-            "{name}, hello there! I'm here with you. Big hugs!",
-            "{name}, my sweetheart! You're so loved. Hello, baby!",
-            "{name}, look here! It's me again. Hello there!",
-            "{name}, hello, hello! Ooh, ahh, ooh! Your turn!",
-            "{name}, my little star! I love you. Hello, sweetheart!",
-            "{name}, hello again! I'm happy you're here. Big hugs!",
+            "Baby, hello there! I'm here with you. Big hugs!",
+            "Baby, my sweetheart! You're so loved. Hello, baby!",
+            "Baby, look here! It's me again. Hello there!",
+            "Baby, hello, hello! Ooh, ahh, ooh! Your turn!",
+            "Baby, my little star! I love you. Hello, sweetheart!",
+            "Baby, hello again! I'm happy you're here. Big hugs!",
         )
 
         private val sceneFillers = mapOf(
@@ -742,8 +675,8 @@ internal class LiteResponseEngine {
                     "Feel the warm water. Can you hear it? Splish, splash!",
                     "We're taking a bath. Listen to the water. Splash, splash!",
                     "Let's wash your tummy. A little splash. There you go!",
-                    "{name}, bath time! Feel the warm water. Splash, splash!",
-                    "{name}, look! Water on your toes. Splish, splash!",
+                    "Baby, bath time! Feel the warm water. Splash, splash!",
+                    "Baby, look! Water on your toes. Splish, splash!",
                 ),
             ),
             Scene(
@@ -756,8 +689,8 @@ internal class LiteResponseEngine {
                     "Are you still hungry? We can have more. I'm here!",
                     "It's milk time! Take little sips. I'm here with you.",
                     "Milk time! Are you hungry? Let's have some!",
-                    "{name}, your milk! Here's a little sip. Mmm, yummy!",
-                    "{name}, milk time! Take a little sip. I'm here!",
+                    "Baby, your milk! Here's a little sip. Mmm, yummy!",
+                    "Baby, milk time! Take a little sip. I'm here!",
                 ),
             ),
             Scene(
@@ -774,8 +707,8 @@ internal class LiteResponseEngine {
                     "Shh, little one. Let's have quiet time. I'm right here.",
                     "Getting sleepy? I'll stay with you. Rest well!",
                     "Rest well, baby. I'll stay close by. Sweet dreams!",
-                    "{name}, sleep well. I'm right here. Sweet dreams!",
-                    "{name}, night-night! Let's get cozy. Rest well!",
+                    "Baby, sleep well. I'm right here. Sweet dreams!",
+                    "Baby, night-night! Let's get cozy. Rest well!",
                 ),
             ),
             Scene(
@@ -788,8 +721,8 @@ internal class LiteResponseEngine {
                     "Hello again! Did you rest well? I'm glad you're awake.",
                     "Look who's awake! Did you rest well? Hello there!",
                     "Hello there! You're awake now. Let's say hello!",
-                    "{name}, you're awake! How was your rest? Hello, sweetheart!",
-                    "{name}, you're awake! How are you? Hello again!",
+                    "Baby, you're awake! How was your rest? Hello, sweetheart!",
+                    "Baby, you're awake! How are you? Hello again!",
                 ),
             ),
             Scene(
@@ -802,8 +735,8 @@ internal class LiteResponseEngine {
                     "Off comes your diaper. Let's clean you up. There!",
                     "Let's change your diaper. I'll be gentle. Nice and fresh!",
                     "Diaper change! I'll be gentle. You're doing great!",
-                    "{name}, diaper time! Let's get you clean. All fresh!",
-                    "{name}, let's change you. One little wipe. All clean!",
+                    "Baby, diaper time! Let's get you clean. All fresh!",
+                    "Baby, let's change you. One little wipe. All clean!",
                 ),
             ),
             Scene(
@@ -816,8 +749,8 @@ internal class LiteResponseEngine {
                     "Time to get dressed. Arms through the sleeves. All ready!",
                     "Let's change your clothes. This arm first. There you go!",
                     "Look, your little shirt! One arm in! Let's get dressed!",
-                    "{name}, clothes on! One arm in. Looking lovely!",
-                    "{name}, let's get dressed. Socks on next. All ready!",
+                    "Baby, clothes on! One arm in. Looking lovely!",
+                    "Baby, let's get dressed. Socks on next. All ready!",
                 ),
             ),
             Scene(
@@ -830,8 +763,8 @@ internal class LiteResponseEngine {
                     "Let's have a hug. Close to my heart. I love you!",
                     "Here are my arms. Come close, sweetheart. Big hug!",
                     "Hug time! You're warm and cozy. I'm here!",
-                    "{name}, come here! A big warm hug. I love you!",
-                    "{name}, cuddle time! I'll hold you close. So cozy!",
+                    "Baby, come here! A big warm hug. I love you!",
+                    "Baby, cuddle time! I'll hold you close. So cozy!",
                 ),
             ),
             Scene(
@@ -844,8 +777,8 @@ internal class LiteResponseEngine {
                     "Here's your little hand. Hold my finger. So tiny!",
                     "One hand, two hands! Let's wave hello. Hi there!",
                     "Your fingers are moving! Open and close. Look at that!",
-                    "{name}, tiny hands! Hold my finger. Hello there!",
-                    "{name}, look! Your hands are moving. Wiggle, wiggle!",
+                    "Baby, tiny hands! Hold my finger. Hello there!",
+                    "Baby, look! Your hands are moving. Wiggle, wiggle!",
                 ),
             ),
             Scene(
@@ -858,8 +791,8 @@ internal class LiteResponseEngine {
                     "Let's count your toes. One, two, three. More to go!",
                     "Little feet up! Little feet down! Kick, kick!",
                     "Can you kick? There go your feet! Good job!",
-                    "{name}, little feet! Kick, kick! Look at you!",
-                    "{name}, tiny toes! Wiggle those feet. So cute!",
+                    "Baby, little feet! Kick, kick! Look at you!",
+                    "Baby, tiny toes! Wiggle those feet. So cute!",
                 ),
             ),
             Scene(
@@ -872,8 +805,8 @@ internal class LiteResponseEngine {
                     "Such a big smile! Your cheeks look lovely. Hello, baby!",
                     "I see a smile! Are you happy? I am too!",
                     "Hello, little smiler! That's a lovely grin. I see you!",
-                    "{name}, that smile! You make me happy. Hello, sweetheart!",
-                    "{name}, you're smiling! I love that smile. So sweet!",
+                    "Baby, that smile! You make me happy. Hello, sweetheart!",
+                    "Baby, you're smiling! I love that smile. So sweet!",
                 ),
             ),
             Scene(
@@ -886,8 +819,8 @@ internal class LiteResponseEngine {
                     "I hear you crying. Would a cuddle help? I'm here.",
                     "Are you upset? I'm here with you. Big hugs!",
                     "You can cry. I'll stay beside you. I love you.",
-                    "{name}, I'm here. I hear you crying. Big hugs!",
-                    "{name}, it's okay. I'm listening to you. I'm here!",
+                    "Baby, I'm here. I hear you crying. Big hugs!",
+                    "Baby, it's okay. I'm listening to you. I'm here!",
                 ),
             ),
             Scene(
@@ -900,8 +833,8 @@ internal class LiteResponseEngine {
                     "Ooh, ahh! I hear you! Hello there!",
                     "You're making sounds! I love your voice. Talk to me!",
                     "Was that a coo? I heard you! Hello, baby!",
-                    "{name}, I hear you! Tell me more. I'm listening!",
-                    "{name}, your voice! I love hearing it. Hello, sweetheart!",
+                    "Baby, I hear you! Tell me more. I'm listening!",
+                    "Baby, your voice! I love hearing it. Hello, sweetheart!",
                 ),
             ),
             Scene(
@@ -914,8 +847,8 @@ internal class LiteResponseEngine {
                     "Is that a burp? Let's take it slowly. I'm right here.",
                     "Let's get comfortable. I'll hold you close. Big hugs!",
                     "Full tummy? We can rest now. I'm right here.",
-                    "{name}, little tummy! Let's get comfortable. Big hugs!",
-                    "{name}, feeling full? I'll hold you close. So cozy!",
+                    "Baby, little tummy! Let's get comfortable. Big hugs!",
+                    "Baby, feeling full? I'll hold you close. So cozy!",
                 ),
             ),
             Scene(
@@ -928,8 +861,8 @@ internal class LiteResponseEngine {
                     "Peekaboo! Where did I go? Here I am!",
                     "Let's shake the rattle. Can you hear it? Shake, shake!",
                     "Look at this toy! It's here for you. Let's play!",
-                    "{name}, let's play! Here's your toy. Look at that!",
-                    "{name}, peekaboo! Where am I? Here I am!",
+                    "Baby, let's play! Here's your toy. Look at that!",
+                    "Baby, peekaboo! Where am I? Here I am!",
                 ),
             ),
             Scene(
@@ -942,8 +875,8 @@ internal class LiteResponseEngine {
                     "We're going outside! Let's look all around. What do you see?",
                     "Look up, baby! There's the sky. So big!",
                     "Out we go! What can you hear? Let's listen!",
-                    "{name}, outside time! Look at the sky. Hello, world!",
-                    "{name}, let's stroll! What can you see? Look around!",
+                    "Baby, outside time! Look at the sky. Hello, world!",
+                    "Baby, let's stroll! What can you see? Look around!",
                 ),
             ),
             Scene(
@@ -956,8 +889,8 @@ internal class LiteResponseEngine {
                     "It's raining outside. Look at the drops. Drip, drop!",
                     "The rain sounds soft. Listen with me. Pitter-patter!",
                     "Raindrops are falling. Listen to their sound. Drip, drop!",
-                    "{name}, it's raining! Listen to the drops. Drip, drop!",
-                    "{name}, hear that? It's the rain. Pitter-patter!",
+                    "Baby, it's raining! Listen to the drops. Drip, drop!",
+                    "Baby, hear that? It's the rain. Pitter-patter!",
                 ),
             ),
             Scene(
@@ -970,8 +903,8 @@ internal class LiteResponseEngine {
                     "A sunny day! Let's look outside. Can you see?",
                     "See the bright sky? The sun is out. Hello, sunshine!",
                     "Look at the sunshine! Can you see it? So bright!",
-                    "{name}, it's sunny! Look at the light. So bright!",
-                    "{name}, sunshine today! The sky is bright. Hello, sunshine!",
+                    "Baby, it's sunny! Look at the light. So bright!",
+                    "Baby, sunshine today! The sky is bright. Hello, sunshine!",
                 ),
             ),
             Scene(
@@ -984,8 +917,8 @@ internal class LiteResponseEngine {
                     "Do you like it? Want another bite? No need to hurry.",
                     "Here's a little bite. Let's taste it. Mmm, yummy!",
                     "All done eating? Wipe, wipe, wipe! Nice and clean!",
-                    "{name}, food time! One little spoonful. Is it yummy?",
-                    "{name}, let's eat! Here's your spoon. Open wide!",
+                    "Baby, food time! One little spoonful. Is it yummy?",
+                    "Baby, let's eat! Here's your spoon. Open wide!",
                 ),
             ),
             Scene(
@@ -998,8 +931,8 @@ internal class LiteResponseEngine {
                     "One more page! Let's see what's there. Turn, turn!",
                     "Story time! Listen to my voice. Here comes a story!",
                     "Look at this! See that picture? Look, look, look!",
-                    "{name}, book time! Look at the pictures. What's that?",
-                    "{name}, let's read! Turn the page. What comes next?",
+                    "Baby, book time! Look at the pictures. What's that?",
+                    "Baby, let's read! Turn the page. What comes next?",
                 ),
             ),
             Scene(
@@ -1012,8 +945,8 @@ internal class LiteResponseEngine {
                     "Hear the music? Tap, tap! Let's sing!",
                     "Let's make some music! Clap, clap! What fun!",
                     "A song for you! La, la, la! Sing with me!",
-                    "{name}, let's sing! La, la, la! Your turn!",
-                    "{name}, hear that song? Let's listen together. Tap, tap!",
+                    "Baby, let's sing! La, la, la! Your turn!",
+                    "Baby, hear that song? Let's listen together. Tap, tap!",
                 ),
             ),
         )

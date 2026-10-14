@@ -133,8 +133,7 @@ private fun ProductionEmmaApp() {
     var latestTranscript by runtime.latestTranscriptState
     var autoRespond by runtime.autoRespondState
     var keepScreenOn by remember { mutableStateOf(preferences.getBoolean("keep_screen_on", true)) }
-    var aiName by runtime.aiNameState
-    val resolvedAiName = AiCharacterName.resolve(aiName)
+    val resolvedAiName = AiCharacterName.DEFAULT
     var featureScreen by remember { mutableStateOf<String?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
     var aboutOpen by remember { mutableStateOf(false) }
@@ -934,12 +933,6 @@ private fun ProductionEmmaApp() {
             phase = firstRunPhase,
             progressPercent = firstRunProgressPercent,
             errorMessage = firstRunError,
-            aiName = aiName,
-            onAiNameChange = { value ->
-                aiName = value
-                preferences.edit().putString("ai_character_name", value).apply()
-                screenIntroductionPlayed = false
-            },
             highPerformance = highPerformance,
             onHighPerformanceChange = { enabled ->
                 highPerformance = enabled
@@ -1019,12 +1012,6 @@ private fun ProductionEmmaApp() {
             semanticDebugResult = semanticDebugResult,
             semanticDebugEnglish = semanticDebugEnglish,
             keepScreenOn = keepScreenOn,
-            aiName = aiName,
-            onAiNameChange = { value ->
-                aiName = value
-                preferences.edit().putString("ai_character_name", value).apply()
-                screenIntroductionPlayed = false
-            },
             onBack = { settingsOpen = false },
             onOpenAbout = { aboutOpen = true },
             onEngineMode = { selected ->
@@ -1087,7 +1074,7 @@ private fun ProductionEmmaApp() {
                 status = ProductionEmmaStatus.SPEAKING
                 voiceError = null
                 statusMessage = "声を試聴しています。"
-                latestEmmaText = "Hi, I'm $resolvedAiName. Hello, little one!"
+                latestEmmaText = "Hi, I'm Emma. Hello, little one!"
                 if (!speakEmma(latestEmmaText)) status = ProductionEmmaStatus.ERROR
             },
             onStopPreview = ::stopSession,

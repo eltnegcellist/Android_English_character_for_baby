@@ -520,8 +520,6 @@ internal fun EmmaSettingsScreen(
     semanticDebugResult: String?,
     semanticDebugEnglish: String?,
     keepScreenOn: Boolean,
-    aiName: String,
-    onAiNameChange: (String) -> Unit,
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onEngineMode: (ConversationEngineMode) -> Unit,
@@ -619,13 +617,11 @@ internal fun EmmaSettingsScreen(
                 enabled = enabled,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(if (familySettingsOpen) "赤ちゃん・AIの名前設定を閉じる ▲" else "赤ちゃん・AIの名前を設定 ▼")
+                Text(if (familySettingsOpen) "赤ちゃんの設定を閉じる ▲" else "赤ちゃんの性別を設定 ▼")
             }
             if (familySettingsOpen) {
                 ProductionFamilySettings(
                     enabled = enabled,
-                    aiName = aiName,
-                    onAiNameChange = onAiNameChange,
                 )
             }
             AppearanceSettings(enabled = enabled)

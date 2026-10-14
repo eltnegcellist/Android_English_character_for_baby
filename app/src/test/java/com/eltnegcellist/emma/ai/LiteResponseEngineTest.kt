@@ -139,13 +139,17 @@ class LiteResponseEngineTest {
     }
 
     @Test
-    fun configuredNameCanBeInserted() {
-        val engine = LiteResponseEngine()
-        val outputs = (0 until 8).map { engine.respond("お風呂の時間だよ", "Hana").english }
-        assertTrue(outputs.any { it.contains("Hana") })
-        assertFalse(outputs.any { it.contains("{name}") })
+    fun fixedRepliesIgnoreConfiguredBabyName() {
+        val plain = LiteResponseEngine()
+        val named = LiteResponseEngine()
+        repeat(8) {
+            val original = plain.respond("お風呂の時間だよ").english
+            val personalized = named.respond("お風呂の時間だよ", "Hana").english
+            assertEquals(original, personalized)
+            assertFalse(personalized.contains("Hana"))
+            assertFalse(personalized.contains("{name}"))
+        }
     }
-
 
     @Test
     fun repliesStayCompactAndBabyDirected() {
@@ -191,7 +195,8 @@ class LiteResponseEngineTest {
     @Test
     fun everyBakedReplyMatchesCompactLiteEnvelope() {
         LiteResponseEngine.allTemplatesForValidation().forEach { template ->
-            val text = template.replace("{name}", "Hana")
+            val text = template
+            assertFalse(text.contains("{name}"))
             val sentences = Regex("(?<=[.!?])\\s+")
                 .split(text.trim())
                 .filter { it.isNotBlank() }
@@ -249,19 +254,12 @@ class LiteResponseEngineTest {
     }
 
     @Test
-    fun configuredNameIsReusedAtFullLikeCadence() {
-        val engine = LiteResponseEngine()
-        val outputs = (0 until 7).map {
-            engine.respond("お風呂の時間だよ", "Hana").english
-        }
-        val nameTurns = outputs.mapIndexedNotNull { index, text ->
-            index.takeIf { text.contains("Hana") }
-        }
-
-        assertTrue(nameTurns.isNotEmpty())
-        assertEquals(0, nameTurns.first())
-        nameTurns.zipWithNext().forEach { (previous, next) ->
-            assertTrue("name repeated too soon", next - previous >= 3)
+    fun replySelectionDoesNotDependOnConfiguredName() {
+        val normal = LiteResponseEngine()
+        val named = LiteResponseEngine()
+        repeat(7) {
+            assertEquals(normal.respond("お風呂の時間だよ").english,
+                named.respond("お風呂の時間だよ", "Hana").english)
         }
     }
 
