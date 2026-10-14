@@ -100,7 +100,7 @@ internal object RuriCompositeReplies {
         "book|repeat" to listOf(
             "One more page? Let's read again. Turn the page.",
             "Let's open our book. See that little bird? Turn the page!",
-            "Look at the book! One more page? I'm right here!"
+            "Look at the book! One more page? Let's read, baby!"
         ),
         "book|start" to listOf(
             "Here comes our book. Let's begin reading. What comes next?",
@@ -125,7 +125,7 @@ internal object RuriCompositeReplies {
         "play|repeat" to listOf(
             "Let's play again! One more turn? Here comes your toy!",
             "Here's our little game. Want another turn? Let's play together.",
-            "Play it again? Roll, roll, roll! I'm right here!"
+            "Play it again? Roll, roll, roll! Your turn, baby!"
         ),
         "play|start" to listOf(
             "Ready to play? Let's get started. Here we go.",
@@ -133,7 +133,7 @@ internal object RuriCompositeReplies {
             "A toy for you! Ready, steady, go! Let's play!"
         ),
         "food|invitation" to listOf(
-            "Ready for food? One little bite! I'm right here!",
+            "Ready for food? One little bite! Look at your spoon!",
             "Ready for some food? Here's a little bite. We can go slowly.",
             "Would you like food? One little bite now. I'll stay near."
         ),
@@ -169,7 +169,7 @@ internal object RuriCompositeReplies {
         ),
         "drink|invitation" to listOf(
             "Want a little sip? Here is your drink. Sip if you like.",
-            "Ready for a sip? Sip, sip, sip! I'm right here!",
+            "Ready for a sip? Little by little! Here comes your drink!",
             "Here's a little drink. Take it slowly now. I'm here, sweetheart."
         ),
         "hands|praise" to listOf(
@@ -233,7 +233,7 @@ internal object RuriCompositeReplies {
             "One arm in! Other arm in! All dressed, baby!"
         ),
         "hands|invitation" to listOf(
-            "Little hands together! Squeeze, squeeze, squeeze! I'm right here!",
+            "Little hands together! Squeeze, squeeze, squeeze! Hold my hand!",
             "Give me your hand. Let's feel those fingers. Squeeze, squeeze!",
             "See those fingers? Wiggle, wiggle, wiggle! Let's play!"
         ),
@@ -343,7 +343,7 @@ internal object RuriCompositeReplies {
             "Good morning, baby! Eyes open wide! Hello, hello!"
         ),
         "sleep|finish_check" to listOf(
-            "Nap time all done? Hello, little eyes! I'm right here!",
+            "Nap time all done? Hello, little eyes! Hello again, baby!",
             "Had a nice rest? Eyes open now? Hello again, baby!",
             "All done resting? More cozy time? I'm right here!"
         ),
@@ -519,7 +519,7 @@ internal object RuriCompositeReplies {
         ),
         "milk|effort" to listOf(
             "Little sips, baby! Sip by sip! You're doing fine!",
-            "One little sip! Then another? I'm right here!",
+            "One little sip! Then another? You can rest!",
             "Sip, sip, sip! Nice little sips! No need to rush!"
         ),
         "food|effort" to listOf(
