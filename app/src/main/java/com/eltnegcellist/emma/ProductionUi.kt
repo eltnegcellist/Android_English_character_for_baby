@@ -549,7 +549,6 @@ internal fun EmmaSettingsScreen(
         mutableStateOf(AudienceMode.fromSaved(interactionPreferences.getString("audience_mode", null)))
     }
     var resetConfirmOpen by remember { mutableStateOf(false) }
-    var familySettingsOpen by remember { mutableStateOf(false) }
     var semanticDiagnosticInput by remember { mutableStateOf("お風呂入ろうね") }
 
     BackHandler {
@@ -612,18 +611,6 @@ internal fun EmmaSettingsScreen(
                 TextButton(onClick = onOpenAbout) { Text("英語学習に使える理由") }
             }
 
-            OutlinedButton(
-                onClick = { familySettingsOpen = !familySettingsOpen },
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(if (familySettingsOpen) "赤ちゃんの設定を閉じる ▲" else "赤ちゃんの性別を設定 ▼")
-            }
-            if (familySettingsOpen) {
-                ProductionFamilySettings(
-                    enabled = enabled,
-                )
-            }
             AppearanceSettings(enabled = enabled)
 
             Card(modifier = Modifier.fillMaxWidth()) {

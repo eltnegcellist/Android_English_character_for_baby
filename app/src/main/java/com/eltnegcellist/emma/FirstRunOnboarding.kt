@@ -14,15 +14,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -42,7 +37,6 @@ internal fun FirstRunOnboardingScreen(
     onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
 ) {
-    var familySettingsOpen by remember { mutableStateOf(false) }
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
             modifier = Modifier
@@ -163,19 +157,6 @@ internal fun FirstRunOnboardingScreen(
                     )
                 }
             }
-            OutlinedButton(
-                onClick = { familySettingsOpen = !familySettingsOpen },
-                enabled = !busy,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(if (familySettingsOpen) "赤ちゃんの設定を閉じる ▲" else "赤ちゃんの性別を設定（任意） ▼")
-            }
-            if (familySettingsOpen) {
-                ProductionFamilySettings(
-                    enabled = !busy,
-                )
-            }
-
             Text(
                 if (highPerformance) {
                     "Moonshine Smallで聞き取り、Ruri Semanticで話題を理解し、短い英語をKitten TTS / Kikiで読み上げます。"
