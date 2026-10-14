@@ -29,7 +29,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.eltnegcellist.emma.ai.AiCharacterName
 
 @Composable
 internal fun FirstRunOnboardingScreen(
@@ -38,14 +37,11 @@ internal fun FirstRunOnboardingScreen(
     phase: String,
     progressPercent: Int?,
     errorMessage: String?,
-    aiName: String,
-    onAiNameChange: (String) -> Unit,
     highPerformance: Boolean,
     onHighPerformanceChange: (Boolean) -> Unit,
     onPrepare: () -> Unit,
     onOpenAbout: () -> Unit,
 ) {
-    val resolvedAiName = AiCharacterName.resolve(aiName)
     var familySettingsOpen by remember { mutableStateOf(false) }
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
@@ -106,12 +102,12 @@ internal fun FirstRunOnboardingScreen(
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        "名前は $resolvedAiName。初回チュートリアルの中で声で自己紹介します。",
+                        "名前はEmma。初回チュートリアルの中で声で自己紹介します。",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                     )
                     Text(
-                        "初期名はEmma。設定から好きな名前へ変更できます。",
+                        "音声は固定の英文で再生します。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -172,13 +168,11 @@ internal fun FirstRunOnboardingScreen(
                 enabled = !busy,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(if (familySettingsOpen) "赤ちゃん・AIの名前設定を閉じる ▲" else "赤ちゃん・AIの名前を設定（任意） ▼")
+                Text(if (familySettingsOpen) "赤ちゃんの設定を閉じる ▲" else "赤ちゃんの性別を設定（任意） ▼")
             }
             if (familySettingsOpen) {
                 ProductionFamilySettings(
                     enabled = !busy,
-                    aiName = aiName,
-                    onAiNameChange = onAiNameChange,
                 )
             }
 
