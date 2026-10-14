@@ -18,7 +18,7 @@ internal object InteractionReplyBank {
             "I love you. My darling little one. So very much."
         ),
         "praise" to listOf(
-            "Well done! You did great. I'm proud of you!",
+            "Yay, you did it! Clap, clap, clap! Big cheers, baby!",
             "Good job! That's just right. You did so well!",
             "Look at you! Yay, you did it! Clap, clap!",
             "Yay, yay, yay! You did it! Well done, baby!",
@@ -42,7 +42,7 @@ internal object InteractionReplyBank {
             "Try, try, try! Look at you! I'm here!",
             "Try, try, try! Little by little! I'm here!",
             "Again, again! Little by little! I see you!",
-            "You're trying again. I can see that. I'm here with you.",
+            "One more try! Little by little! I'm here with you!",
             "Try, try, try! No rush, baby! I'm here!",
             "Look at you! Trying again! Yay, yay!",
             "Look at you! Try, try, try! I'm here!"
@@ -65,7 +65,7 @@ internal object InteractionReplyBank {
             "Ready to join me? Let's do this. We'll try together.",
             "Want to try this? Let's look together. Pick your favorite.",
             "Let's try it! Here we go! You and me!",
-            "Shall we go? Here we go! Together, together!"
+            "Ready to go? Step by step! You and me!"
         ),
         "start" to listOf(
             "Here we go! We're beginning now. Ready, little one?",
@@ -90,7 +90,7 @@ internal object InteractionReplyBank {
         "finish_check" to listOf(
             "All done? Is that everything? Let's have a look.",
             "All done now? Let's have a look! All done, baby?",
-            "All done? Look, look! Shall we check?",
+            "All done, baby? Look with me! One last check?",
             "Finished already? Let me see. Are we all done?",
             "All done now? Look with me! One more time?",
             "Are you done? Let's have a look. Is that everything?",
@@ -113,7 +113,7 @@ internal object InteractionReplyBank {
             "Is something bothering you? I'm right here. What do you need?",
             "What is it? Can you show me? I'll listen closely.",
             "What's happening, little one? I'll listen closely. Tell me more.",
-            "Do you need something? I'm with you. Let's find out.",
+            "Need something, baby? Tell me more! I'm here!",
             "Are you okay? Let's take a look. What happened, sweetheart?",
             "What's up, little one? I'm listening closely. What do you need?"
         ),
@@ -130,12 +130,12 @@ internal object InteractionReplyBank {
         "repeat" to listOf(
             "One more time? Let's try again. Ready to go?",
             "Again? Let's do that. One more time!",
-            "Shall we try again? Just once more. Ready to go?",
+            "Want another turn? One more try? Here we are!",
             "Let's do it again. Ready for more? We can start.",
-            "Once more? Let's try together. Shall we go?",
+            "Once more, baby? Ready, steady, go! You and me!",
             "One more go? Let's try it again. Here we go!",
             "Want to try again? Let's try once more. Ready, little one?",
-            "Let's have another go. We can try again. Shall we start?"
+            "One more turn! Try it again! Ready, little one?"
         ),
         "pause" to listOf(
             "Just a moment. I'll be right here. We can wait.",

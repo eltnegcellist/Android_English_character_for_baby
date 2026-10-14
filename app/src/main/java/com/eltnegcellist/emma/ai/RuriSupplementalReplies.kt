@@ -18,12 +18,12 @@ internal object RuriSupplementalReplies {
         "milk|inquiry" to listOf(
             "Want some more milk? Are you still hungry? Let's check together.",
             "How is your milk? Is it yummy? Smack those little lips!",
-            "Need another little sip? Shall we try? Take your time."
+            "One more little sip? Want to try? I'm right here!"
         ),
         "milk|repeat" to listOf(
             "Want another sip? We can try. No need to hurry.",
             "More milk, little one? Only if you like. I'm right here.",
-            "Want more milk? Just a little? Take your time."
+            "More milk, baby? One tiny sip? We can wait!"
         ),
         "drink|affection" to listOf(
             "A drink with you. My sweet little one. I love you.",
@@ -31,7 +31,7 @@ internal object RuriSupplementalReplies {
             "A little drink! Sip, sip, sip! I'm right here!"
         ),
         "drink|inquiry" to listOf(
-            "Would you like water? Are you thirsty? Let's find out.",
+            "Want some water? Feeling thirsty, baby? Here you go!",
             "Another sip for you? Do you want more? It's up to you.",
             "How is your drink? Is that enough? I'm here with you."
         ),
@@ -52,7 +52,7 @@ internal object RuriSupplementalReplies {
         ),
         "sleep|affection" to listOf(
             "Sleepy little sweetheart. I love you. I'm right here.",
-            "Time for cozy rest. You're so precious. I love you.",
+            "Cozy little baby! Night-night, night-night! I love you!",
             "Sweet dreams, little one. You're so loved. I'm beside you."
         ),
         "sleep|care" to listOf(
@@ -68,7 +68,7 @@ internal object RuriSupplementalReplies {
         "wake|reassurance" to listOf(
             "Hello, little sleepyhead! Open those bright eyes. I'll hold you close.",
             "Hello, little one. I'll stay close. We're together now.",
-            "You woke up. Take your time. I'm beside you."
+            "Good morning, baby! Eyes open wide! I'm beside you!"
         ),
         "bath|affection" to listOf(
             "Warm water together. My sweet little one. I love you.",
@@ -98,7 +98,7 @@ internal object RuriSupplementalReplies {
         "book|finish_check" to listOf(
             "Is our story done? One more page? Let's check together.",
             "Last page already? Are we finished? Let's look together.",
-            "Is that the end? Shall we check? One last look."
+            "One last page? Story all done? Let's look again!"
         ),
         "music|affection" to listOf(
             "A song for you. My sweet little one. I love you.",
@@ -106,7 +106,7 @@ internal object RuriSupplementalReplies {
             "This song is yours. I love you. Let's listen together."
         ),
         "music|finish_check" to listOf(
-            "Is our song done? Shall we listen? One more note?",
+            "Song all done? One more note? La, la, la!",
             "Song all done? One more tune? La, la, la!",
             "Is that the end? One more sound? Let's listen together."
         ),
@@ -117,11 +117,11 @@ internal object RuriSupplementalReplies {
         ),
         "play|finish_check" to listOf(
             "All done playing? One more game? Let's play or rest.",
-            "Is playtime over? Shall we stop? We can choose.",
+            "Playtime all done? One more game? Bye-bye, toy!",
             "Playtime all done? One more turn? Bye-bye, toy!"
         ),
         "clothes|affection" to listOf(
-            "Your cozy little clothes. You're so precious. I love you.",
+            "Cozy little clothes! Soft, soft, soft! I love you!",
             "All snug and warm. My sweet little one. I'm right here.",
             "A little outfit today. You're so lovely. I love you."
         ),
