@@ -410,29 +410,9 @@ class GemmaEmmaClient(context: Context) {
                 .getString(AI_CHARACTER_NAME_KEY, AiCharacterName.DEFAULT),
         )
 
-    private fun configuredBabyName(): String {
-        val raw = appContext
-            .getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
-            .getString(BABY_NAME_KEY, "")
-            .orEmpty()
-        return raw
-            .filterNot { it.isISOControl() }
-            .replace("\"", "")
-            .trim()
-            .take(MAX_BABY_NAME_CHARS)
-    }
-
-    private fun configuredSpokenBabyName(savedName: String): String {
-        val preferences = appContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
-        val overrideName = preferences
-            .getString(BABY_SPOKEN_NAME_KEY, "")
-            .orEmpty()
-        val baseSpokenName = BabyNamePronunciation.toSpokenEnglish(savedName, overrideName)
-        return BabyNamePronunciation.withChanSuffix(
-            baseSpokenName,
-            preferences.getBoolean(BABY_CHAN_SUFFIX_KEY, true),
-        )
-    }
+    // Full remains an experimental mode; no custom names are injected into English.
+    private fun configuredBabyName(): String = ""
+    private fun configuredSpokenBabyName(@Suppress("UNUSED_PARAMETER") savedName: String): String = ""
 
     private fun configuredBabyGender(): BabyGender {
         val saved = appContext
