@@ -1,6 +1,5 @@
 package com.eltnegcellist.emma
 
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,18 +9,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.eltnegcellist.emma.ai.BabyNamePronunciation
 import com.eltnegcellist.emma.ai.EnglishLevel
 import java.util.Locale
 
@@ -36,58 +28,12 @@ internal fun ProductionSpeechSettings(
     onPreview: () -> Unit,
     onStopPreview: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE) }
-    var babyName by remember { mutableStateOf(preferences.getString("baby_name", "").orEmpty()) }
-    var spokenBabyName by remember { mutableStateOf(preferences.getString("baby_spoken_name", "").orEmpty()) }
-    val resolvedSpokenName = BabyNamePronunciation.toSpokenEnglish(babyName, spokenBabyName)
-
     Card(Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("会話と声", style = MaterialTheme.typography.titleMedium)
-
-            Text("赤ちゃんの名前", style = MaterialTheme.typography.titleSmall)
-            OutlinedTextField(
-                value = babyName,
-                onValueChange = { value ->
-                    val sanitized = value.filterNot { it == '\n' || it == '\r' || it == '\t' }.take(30)
-                    babyName = sanitized
-                    preferences.edit().putString("baby_name", sanitized).apply()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = enabled,
-                singleLine = true,
-                label = { Text("名前（任意）") },
-                placeholder = { Text("例：はな / Hana") },
-            )
-            OutlinedTextField(
-                value = spokenBabyName,
-                onValueChange = { value ->
-                    val sanitized = value
-                        .filterNot { it == '\n' || it == '\r' || it == '\t' }
-                        .filter { it.isLetter() || it == '\'' || it == '’' || it == '-' || it == ' ' }
-                        .take(40)
-                    spokenBabyName = sanitized
-                    preferences.edit().putString("baby_spoken_name", sanitized).apply()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = enabled,
-                singleLine = true,
-                label = { Text("英語で呼ぶ名前（必要な場合だけ）") },
-                placeholder = { Text("例：Hana") },
-            )
-            Text(
-                when {
-                    babyName.isBlank() -> "名前は未設定です。"
-                    resolvedSpokenName.isNotBlank() -> "みつことばが呼ぶ名前：$resolvedSpokenName"
-                    else -> "読み方が必要な場合は英字で指定してください。"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
 
             Text("英語のむずかしさ", style = MaterialTheme.typography.titleSmall)
             EnglishLevel.entries.forEach { option ->
