@@ -100,7 +100,7 @@ class InteractionReplyBankTest {
             "You drank some milk! Good job, baby! I'm right here."
         ))
         assertTrue(RuriCompositeReplies.forAxes("milk","repeat")!!.contains(
-            "Want more milk? Just a little? Take your time."
+            "More milk, baby? One tiny sip? We can wait!"
         ))
         assertTrue(RuriCompositeReplies.forAxes("book","inquiry")!!.contains(
             "Look at this picture! What do you see? Let's look again!"
