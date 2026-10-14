@@ -5,6 +5,8 @@ import ai.moonshine.voice.TranscriberOption
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.eltnegcellist.emma.audio.WavMono16
+import com.eltnegcellist.emma.ai.RuriSemanticClassifier
+import com.eltnegcellist.emma.ai.RuriSemanticModelStore
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertTrue
@@ -64,6 +66,9 @@ class MoonshineAsrBiasReplayTest {
             Triple(wav.name,WavMono16.decode(wav.readBytes()),ref.readText().trim())
         }
         val output=JSONArray()
+        val ruriAvailable=RuriSemanticModelStore.isInstalled(context)
+        val ruri=if(ruriAvailable) RuriSemanticClassifier(context) else null
+        try {
         for(variant in variants){
             val options=listOf(
                 TranscriberOption("max_tokens_per_second",variant.rate.toString()),
@@ -79,21 +84,35 @@ class MoonshineAsrBiasReplayTest {
                     val latencyMs=(System.nanoTime()-start)/1_000_000L
                     val expected=normalized(reference)
                     val actual=normalized(transcript)
+                    val predicted=ruri?.predict(transcript)?.getOrNull()
+                    val acceptedTopic=predicted?.topic?.takeIf {
+                        it!="generic" && predicted.probability>=0.50 && predicted.margin>=0.05
+                    }
+                    val acceptedInteraction=predicted?.interaction?.takeIf {
+                        it!="none" && predicted.interactionProbability>=0.50
+                    }
                     output.put(JSONObject()
                         .put("file",filename).put("variant",variant.id)
                         .put("expected",reference).put("transcript",transcript)
                         .put("exact",actual==expected)
                         .put("char_errors",distance(expected,actual))
                         .put("reference_chars",expected.codePointCount(0,expected.length))
-                        .put("elapsed_ms",latencyMs))
+                        .put("elapsed_ms",latencyMs)
+                        .put("ruri_topic",acceptedTopic ?: JSONObject.NULL)
+                        .put("ruri_topic_probability",predicted?.probability ?: JSONObject.NULL)
+                        .put("ruri_interaction",acceptedInteraction ?: JSONObject.NULL)
+                        .put("ruri_interaction_probability",predicted?.interactionProbability ?: JSONObject.NULL)
+                        .put("both_generic",if(ruriAvailable) acceptedTopic==null&&acceptedInteraction==null else JSONObject.NULL))
                 }
             }finally{transcriber.close()}
         }
+        } finally {ruri?.close()}
         val result=File(context.filesDir,"asr-bias-lab/results.json")
         result.writeText(JSONObject()
             .put("status","RESEARCH_ONLY_ANDROID_DEVICE_AUDIO_REPLAY")
             .put("note","Fixed audio replay only; no microphone, VAD or field CER measured")
             .put("model",model.modelName)
+            .put("ruri_available",ruriAvailable)
             .put("variants",JSONArray(variants.map{it.id}))
             .put("results",output).toString(2))
         println("ASR_BIAS_REPLAY_DONE path="+result.absolutePath+" clips="+clips.size+" variants="+variants.size)
