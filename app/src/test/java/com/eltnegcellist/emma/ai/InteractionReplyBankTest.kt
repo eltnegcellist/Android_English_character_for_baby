@@ -25,13 +25,13 @@ class InteractionReplyBankTest {
             assertFalse(b.english.contains("{name}"))
         }
         val state = configured.exportRuriReplyDiversity()
-        assertTrue(state.startsWith("v3\\n"))
+        assertEquals("v3", state.lineSequence().first())
         val reloaded = RuriReplyDiversity()
         reloaded.restore(state)
         assertEquals(state, reloaded.snapshot())
         // Backward-compatibility for stored replies from releases with name cooldown.
         val old = RuriReplyDiversity()
-        old.restore("v2\\ncombined:milk|affection#0\\n\\nmilk|affection=0~0\\n8\\n2")
+        old.restore(listOf("v2", "combined:milk|affection#0", "", "milk|affection=0~0", "8", "2").joinToString(10.toChar().toString()))
         assertTrue(old.snapshot().contains("combined:milk|affection#0"))
     }
 
