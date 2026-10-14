@@ -103,6 +103,8 @@ android {
         targetSdk = 36
         versionCode = 129
         versionName = "1.9.46"
+        // Research instrumentation exists only in a separate test APK.
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Emma is distributed for physical Android devices.
         // Keep both 64-bit and legacy 32-bit ARM, but omit x86/x86_64 emulator/PC ABIs.
@@ -175,6 +177,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
     // Host-only native inference verifies the same Silero model/API without adding APK libraries.
     testImplementation("com.microsoft.onnxruntime:onnxruntime:1.23.2")
 

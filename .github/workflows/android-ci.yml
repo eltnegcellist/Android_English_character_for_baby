@@ -124,7 +124,7 @@ jobs:
       - name: Verify bundled Silero model and license
         run: python3 scripts/verify-silero-assets.py
       - name: Test and build
-        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug --stacktrace
+        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace
 
       - name: Prepare and verify APK
         id: apk
