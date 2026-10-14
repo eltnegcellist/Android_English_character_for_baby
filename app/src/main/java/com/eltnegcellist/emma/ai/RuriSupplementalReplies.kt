@@ -8,7 +8,7 @@ internal object RuriSupplementalReplies {
         "milk|affection" to listOf(
             "Milk time, sweetheart! You're so lovely. I love you.",
             "Milk time with you. My sweet little one. I love you.",
-            "Your milk is here. You're so precious. I'm right beside you."
+            "Milk is here! Sip, sip, sip! I love you!"
         ),
         "milk|start" to listOf(
             "Here comes your milk. Let's get comfy. Ready for a sip?",
@@ -27,8 +27,8 @@ internal object RuriSupplementalReplies {
         ),
         "drink|affection" to listOf(
             "A drink with you. My sweet little one. I love you.",
-            "Here is your drink. You're so precious. I love you.",
-            "A little drink together. You're my sweetheart. I'm right here."
+            "Here is your drink! Sip, sip, sip! I love you!",
+            "A little drink! Sip, sip, sip! I'm right here!"
         ),
         "drink|inquiry" to listOf(
             "Would you like water? Are you thirsty? Let's find out.",
@@ -73,10 +73,10 @@ internal object RuriSupplementalReplies {
         "bath|affection" to listOf(
             "Warm water together. My sweet little one. I love you.",
             "Bath time, sweetheart! You're so lovely. I'm right here.",
-            "Little splashes together. You're so precious. I love you."
+            "Splash, splash, splash! My sweet baby! I love you!"
         ),
         "bath|praise" to listOf(
-            "You're splashing water! That's so lovely. Well done, sweetheart.",
+            "Splash, splash, splash! Look at you! Yay, baby!",
             "Look at you! What lovely splashes! You're doing great.",
             "You're enjoying bath time! That's so lovely. Well done, sweetheart."
         ),
@@ -92,7 +92,7 @@ internal object RuriSupplementalReplies {
         ),
         "book|affection" to listOf(
             "Story time with you. My sweet little one. I love you.",
-            "A book together. You're so precious. Let's turn pages.",
+            "Book time, baby! Look, look, look! Turn the page!",
             "This story is ours. I love you. Stay close, sweetheart."
         ),
         "book|finish_check" to listOf(
@@ -102,23 +102,23 @@ internal object RuriSupplementalReplies {
         ),
         "music|affection" to listOf(
             "A song for you. My sweet little one. I love you.",
-            "Music time together. You're so precious. I'm right here.",
+            "Music time, baby! La, la, la! I'm right here!",
             "This song is yours. I love you. Let's listen together."
         ),
         "music|finish_check" to listOf(
             "Is our song done? Shall we listen? One more note?",
-            "Song finished already? Let's check together. Is that all?",
+            "Song all done? One more tune? La, la, la!",
             "Is that the end? One more sound? Let's listen together."
         ),
         "play|affection" to listOf(
-            "Playtime with you. You're so precious. I love you.",
+            "Playtime, baby! Look, look, look! I love you!",
             "My little playmate! I love your giggle. What a fun game!",
-            "We play together. You're my sweetheart. What lovely fun!"
+            "Play, play, play! My sweet baby! What fun!"
         ),
         "play|finish_check" to listOf(
             "All done playing? One more game? Let's play or rest.",
             "Is playtime over? Shall we stop? We can choose.",
-            "All finished playing? One last turn? What do you think?"
+            "Playtime all done? One more turn? Bye-bye, toy!"
         ),
         "clothes|affection" to listOf(
             "Your cozy little clothes. You're so precious. I love you.",
