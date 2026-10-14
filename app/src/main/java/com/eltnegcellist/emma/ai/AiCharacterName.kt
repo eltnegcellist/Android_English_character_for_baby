@@ -12,10 +12,10 @@ object AiCharacterName {
             .replace(Regex("\\s+"), " ")
             .take(MAX_CHARS)
 
-    fun resolve(raw: String?): String =
-        sanitizeForEditing(raw.orEmpty()).trim().ifBlank { DEFAULT }
+    // Fixed speaker identity: no per-user name replacement in recorded audio.
+    fun resolve(@Suppress("UNUSED_PARAMETER") raw: String?): String = DEFAULT
 
-    fun introduction(name: String): String = "Hi, I'm ${resolve(name)}."
+    fun introduction(@Suppress("UNUSED_PARAMETER") name: String): String = "Hi, I'm Emma."
 
     fun stripLeadingSpeakerLabel(text: String, name: String): String {
         val resolved = resolve(name)
