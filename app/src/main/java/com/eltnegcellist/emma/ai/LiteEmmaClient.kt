@@ -53,11 +53,6 @@ class LiteEmmaClient(
         }
         onTranscript(transcript)
 
-        val audience = AudienceMode.fromSaved(preferences.getString("audience_mode", null))
-        require(audience == AudienceMode.BABY) {
-            "みつことば Liteでは「呼びかけ」を使えます。AIも3者のやり取りへ継続参加する「会話」はFullを使ってください。"
-        }
-
         val semanticRequested = preferences.getBoolean("semantic_enabled", true)
         val semanticPrediction = if (
             semanticRequested &&

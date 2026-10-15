@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Check that public Android copy matches the Lite-only callout UI.
 
-This deliberately checks only public-facing labels. The hidden Full/dialogue
-developer controls and their setup screens remain available.
+This checks public Lite-only labels and enforces removal of hidden Full/Gemma options.
 """
 
 from pathlib import Path
@@ -21,9 +20,8 @@ CHECKS = {
             'Text("呼びかけを止める"',
             '2 / 3　ここから呼びかけを始めます',
             '「呼びかけを始める」を押してください。',
-            '実験用エンジン（Lite / Full）',
         ],
-        "forbidden": ['「会話を始める」', 'ここから会話を始めます'],
+        "forbidden": ['「会話を始める」', 'ここから会話を始めます', '実験用エンジン（Lite / Full）', 'Gemmaを入手', 'Full専用：発話先'],
     },
     "FirstRunOnboarding.kt": {
         "required": ['準備が終わると、そのまま呼びかけを始められます。'],

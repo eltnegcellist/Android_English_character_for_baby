@@ -66,14 +66,13 @@ separately licensed material such as Eigen under MPL-2.0.
 | Eigen provenance | ORT / native dependency surface | MPL-2.0 |
 | OkHttp | 4.12.0 | Apache-2.0 |
 | AndroidX WorkManager | 2.12.0 | Apache-2.0 |
-| LiteRT-LM / Gemma | Full only | respective distribution terms |
 
 ## Moonshine Voice / Japanese Streaming STT
 
 - Upstream: https://github.com/moonshine-ai/moonshine
 - Android package: `ai.moonshine:moonshine-voice:0.1.5`
 - Project/runtime license: MIT
-- Used for Japanese speech recognition in Lite and Full.
+- Used for Japanese speech recognition in Lite.
 
 Mitsukotoba uses the Streaming Japanese model family, not Moonshine's legacy
 non-commercial Japanese Base/Tiny models.
@@ -154,11 +153,9 @@ a cloud inference service. The copied notices and model card are under
 - License: Apache-2.0
 - Used for foreground/background model preparation and retry scheduling.
 
-## LiteRT-LM and Gemma
+## v1.9.48 Full/Gemma removal
 
-Full optionally uses LiteRT-LM and a local Gemma model. The model is downloaded
-separately and is not committed to this repository. Their applicable licenses
-and notices remain independent from the Kitten TTS GPL-removal work.
+Full and Gemma were removed from the Android source and runtime dependencies in v1.9.48. LiteRT-LM is no longer packaged. Legacy Gemma files stored in private app storage are removed upon upgrade; Moonshine, Ruri and recorded speech remain.
 
 ## v1.9.25 character colors
 
