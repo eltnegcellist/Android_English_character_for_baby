@@ -40,6 +40,7 @@ class MoonshineJapaneseAsr(
                         .onSuccess { applied.add(term) }
                         .onFailure { rejected.add(term) }
                 }
+                if (applied.isNotEmpty()) created.setKeyterms(applied)
                 DiagnosticStore.mark(
                     appContext, "moonshine_keyterms_result",
                     "model=${model.shortLabel} requested=${CHILDCARE_ASR_KEYTERMS.size} " +
