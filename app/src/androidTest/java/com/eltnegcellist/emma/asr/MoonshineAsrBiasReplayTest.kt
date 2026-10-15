@@ -77,7 +77,14 @@ class MoonshineAsrBiasReplayTest {
             val transcriber=Transcriber(options)
             try{
                 transcriber.loadFromFiles(MoonshineModelStore.directory(context,model).absolutePath+File.separator,model.arch)
-                if(variant.terms.isNotEmpty()) transcriber.setKeyterms(variant.terms)
+                val applied=mutableListOf<String>()
+                val rejected=mutableListOf<String>()
+                for(term in variant.terms){
+                    runCatching { transcriber.setKeyterms(applied+term) }
+                        .onSuccess { applied.add(term) }
+                        .onFailure { rejected.add(term) }
+                }
+                if(applied.isNotEmpty()) transcriber.setKeyterms(applied)
                 for((filename,clip,reference) in clips){
                     val start=System.nanoTime()
                     val transcript=transcriber.transcribeWithoutStreaming(clip.samples,clip.sampleRate)?.text().orEmpty().trim()
@@ -93,6 +100,9 @@ class MoonshineAsrBiasReplayTest {
                     }
                     output.put(JSONObject()
                         .put("file",filename).put("variant",variant.id)
+                        .put("keyterms_requested",variant.terms.size)
+                        .put("keyterms_applied",applied.size)
+                        .put("keyterms_skipped",JSONArray(rejected))
                         .put("expected",reference).put("transcript",transcript)
                         .put("exact",actual==expected)
                         .put("char_errors",distance(expected,actual))

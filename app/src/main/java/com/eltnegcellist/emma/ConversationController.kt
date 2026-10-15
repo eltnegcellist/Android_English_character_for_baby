@@ -20,7 +20,6 @@ import com.eltnegcellist.emma.audio.VoiceActivityEvent
 import com.eltnegcellist.emma.model.GemmaModelStore
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
-import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
 
 private const val NONVERBAL_RESPONSE_COOLDOWN_MS = 15_000L
@@ -143,7 +142,7 @@ internal class ConversationController(val context: Context) {
                     MoonshineModelStore.isInstalled(context, initialAsrModel) && PrerecordedVoiceStore.isReady(context)
                 ConversationEngineMode.FULL ->
                     MoonshineModelStore.isInstalled(context, initialAsrModel) &&
-                        KittenModelStore.isInstalled(context) &&
+                        PrerecordedVoiceStore.isReady(context) &&
                         GemmaModelStore.hasUsableModel(context)
             },
         )

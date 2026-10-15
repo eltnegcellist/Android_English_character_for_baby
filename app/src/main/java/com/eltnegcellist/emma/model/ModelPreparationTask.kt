@@ -5,7 +5,6 @@ import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.ai.RuriSemanticModelStore
 import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
-import com.eltnegcellist.emma.tts.KittenModelStore
 
 internal object ModelPreparationTask {
     fun run(
@@ -20,11 +19,10 @@ internal object ModelPreparationTask {
                 progress("Moonshine 日本語${asr.shortLabel}を準備しています…", p)
             }.getOrThrow()
         }
-        fun kitten() {
-            if (KittenModelStore.isInstalled(context)) return
-            KittenModelStore.downloadAndInstall(context) { p ->
-                progress("Kitten TTS Nano / Kikiを準備しています…", p)
-            }.getOrThrow()
+        fun recorded() {
+            check(PrerecordedVoiceStore.isReady(context)) {
+                "事前収録音源がAPKにありません。アプリを更新してください。"
+            }
         }
         fun gemma() {
             if (GemmaModelStore.hasUsableModel(context)) return
@@ -42,15 +40,15 @@ internal object ModelPreparationTask {
         when (kind) {
             ModelPreparationKind.LITE -> {
                 moonshine()
-                if (!PrerecordedVoiceStore.isAvailable(context)) kitten()
+                recorded()
                 val semanticEnabled = context
                     .getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
                     .getBoolean("semantic_enabled", true)
                 if (semanticEnabled) semantic()
             }
-            ModelPreparationKind.FULL -> { moonshine(); kitten(); gemma() }
+            ModelPreparationKind.FULL -> { moonshine(); recorded(); gemma() }
             ModelPreparationKind.ASR -> moonshine()
-            ModelPreparationKind.KITTEN -> kitten()
+            ModelPreparationKind.KITTEN -> recorded()
             ModelPreparationKind.GEMMA -> gemma()
             ModelPreparationKind.SEMANTIC -> semantic()
         }

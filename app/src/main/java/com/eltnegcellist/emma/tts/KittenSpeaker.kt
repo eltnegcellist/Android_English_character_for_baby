@@ -43,14 +43,8 @@ class KittenSpeaker(
             texts.forEach { text ->
                 if (!closed && generation == warmGeneration && !cache.containsKey(text.trim())) runCatching {
                     val recorded = PrerecordedVoiceStore.loadPcm(context, text)
-                    if (recorded != null) cache[text.trim()] = recorded
-                    else {
-                        check(KittenModelStore.isInstalled(context)) { "この英文の音声がありません。" }
-                        val active = engine ?: Engine(context).also { engine = it }
-                        val generated = active.generate(text.trim())
-                        require(generated.isNotEmpty() && generated.all(Float::isFinite))
-                        cache[text.trim()] = toPcm16(generated)
-                    }
+                        ?: error("この英文に対応する事前収録音源がありません。")
+                    cache[text.trim()] = recorded
                 }.onFailure { success = false }
             }
             main.post { if (!closed && generation == warmGeneration) onReady(success) }
@@ -70,14 +64,9 @@ class KittenSpeaker(
 
             runCatching {
                 val generationStarted = System.nanoTime()
-                val isRecorded = PrerecordedVoiceStore.hasText(context, text)
-                val pcm = cache[text.trim()] ?: (PrerecordedVoiceStore.loadPcm(context, text) ?: run {
-                    check(KittenModelStore.isInstalled(context)) { "この英文の音声がありません。" }
-                    val active = engine ?: Engine(context).also { engine = it }
-                    val generated = active.generate(text.trim())
-                    require(generated.isNotEmpty() && generated.all(Float::isFinite)) { "TTS returned invalid audio." }
-                    toPcm16(generated)
-                }).also { cache[text.trim()] = it }
+                val pcm = cache[text.trim()] ?: requireNotNull(PrerecordedVoiceStore.loadPcm(context, text)) {
+                    "この英文に対応する事前収録音源がありません。"
+                }.also { cache[text.trim()] = it }
                 val generationMs = (System.nanoTime() - generationStarted) / 1_000_000L
                 val firstAudioMs = play(id, pcm, SAMPLE_RATE, started)
                 val totalMs = (System.nanoTime() - started) / 1_000_000L
@@ -85,8 +74,7 @@ class KittenSpeaker(
                 DiagnosticStore.mark(
                     context,
                     "voice_playback",
-                    (if (isRecorded) "engine=prerecorded voice=Qwen3-1202 generationSeed=1202 playbackSpeed=1.0"
-                        else "engine=kitten voice=Kiki speed=$KITTEN_SPEED effectiveSpeed=$EFFECTIVE_SPEED") +
+                    "engine=prerecorded voice=Qwen3-1202 generationSeed=1202 playbackSpeed=1.0" +
                         " chars=" + text.length +
                         " samples=" + pcm.size +
                         " generationMs=" + generationMs +
