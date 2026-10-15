@@ -73,6 +73,9 @@ internal fun EmmaAvatar(
     var vividPalette by remember {
         mutableStateOf(EmmaVividPalette.fromSaved(preferences.getString("emma_vivid_palette", null)))
     }
+    val modeEnabled = state != EmmaVisualState.UNDERSTOOD &&
+        state != EmmaVisualState.THINKING &&
+        state != EmmaVisualState.SPEAKING
     var colorMenuExpanded by remember { mutableStateOf(false) }
     var vividMenuExpanded by remember { mutableStateOf(false) }
     var filledMenuExpanded by remember { mutableStateOf(false) }
