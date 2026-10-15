@@ -145,7 +145,7 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 
 公開するみつことばの基本体験は **Liteの「呼びかけ」だけ** です。親子の今の場面を手がかりに、AIが短い英語を差し込みます。親と赤ちゃんのやり取りが主役です。
 
-実験用のFullと「会話」はコードから削除せず、Android設定画面の隠し開発者設定からだけ利用できるようにしています。通常のトップ画面・初回設定では選択できません。
+v1.9.48からFull（Gemma）と3者会話は隠し設定も含め完全削除し、Liteの呼びかけだけに統一しました。
 
 ### 会話を自分で区切る
 
@@ -153,14 +153,7 @@ WHOの2019年ガイドラインは、1歳未満の乳児についてスクリー
 
 ### エディション
 
-通常ユーザー向けに提供するエディションは **Liteのみ** です。Fullは開発者設定でだけ有効化できる実験用エンジンとして維持します。
-
-| エディション | 応答方式 | 主な特徴 |
-| --- | --- | --- |
-| **Lite** | LiteResponseEngine | 軽量・予測可能・ローカル中心 |
-| **Full（開発者専用）** | Gemma + 会話履歴 | 実験用の生成応答 |
-
-LiteとFullは、音声認識と音声合成の基本構成を共有しています。主な違いは「みつことばが何を話すか」の決め方です。
+Android版は **Liteのみ** です（v1.9.48でFull/Gemmaを完全廃止）。
 
 ### みつことば Lite
 
@@ -184,56 +177,17 @@ Kitten TTS Nano 0.8 / Kiki
 
 Liteは、毎回生成AIに文章を作らせるのではなく、軽量な応答エンジンから場面に合う英語を選びます。
 
-### みつことば Full（開発者専用）
-
-FullはLiteと同じ音声入出力の仕組みに、応答生成用のGemmaを追加します。
-
-```text
-マイク
-  ├─→ Moonshine Japanese Tiny / Small Streaming
-  │      ↓
-  │   日本語文字起こし
-  │
-  └─→ 元音声
-             ↓
-        Gemma 4 E2B
-        + 直近の会話履歴
-             ↓
-        英語応答
-             ↓
-        Kitten TTS Nano / Kiki
-             ↓
-        みつことばアバター
-```
-
-言語内容の主な情報源はMoonshineの文字起こしです。元音声は、抑揚、笑い声、喃語、声の調子、泣き声など、文字だけでは失われる情報を補助的に渡すために使います。
-
-Fullでは追加で2GBを超えるGemmaモデルデータが必要です。
-
 ### 初回起動
 
 初回起動では自動的に **Lite**（既定はMoonshine Small + LiteResponseEngine + Kitten TTS）を選びます。Fullの案内や選択画面は表示しません。
 
-旧バージョンでFullを選択していた端末は、今回の変更後の初回起動時に一度だけLiteへ移行します。その後に開発者設定でFullを選び直した場合は保存されます。保存済みのGemmaモデルや会話履歴は移行時に削除しません。
+旧バージョンのFull選択はLiteへ移行し、ダウンロード済みのGemmaモデルのみ削除します。Moonshine・Ruriモデルと会話履歴は保持します。
 
-### 共通機能
+### Lite版の機能
 
-LiteとFullでは、次の機能を共通で利用します。
-
-- Moonshine Japanese Tiny / Small Streaming ASR
-- Kitten TTS Nano 0.8 / Kiki
-- 自動発話終了判定と自動応答
-- 赤ちゃんの名前・呼び方設定
-- 任意の `-chan` 付与
-- 家族・性別関連設定
-- 外観設定
-- 赤ちゃんの非言語音への反応
-- 画面スリープ防止設定
-
-エディションの違いはシンプルです。
-
-- **Lite** = 軽量な固定応答知識
-- **Full** = 文字起こし + 元音声の補助情報 + 会話履歴を使った生成応答
+- Moonshine Japanese ASR / Ruriによる話題・Interaction判定
+- 事前収録英語音声、画面オフの呼びかけ、履歴、開発者向け診断
+- Full/Gemmaによる自由生成や3者会話は廃止
 
 ### Web版
 
@@ -277,7 +231,6 @@ Web版もブラウザで完結する呼びかけアプリとして提供して�
 - Microsoft ONNX Runtime Android 1.23.2
 - OkHttp 4.12.0
 - AndroidX WorkManager 2.12.0
-- LiteRT-LM 0.16.0（Full）
 
 Moonshine 0.1.5のAndroid AARには独自に縮小した `libonnxruntime.so` が含まれます。みつことばではGradleのArtifact Transformでそのファイルだけを除去し、Kitten TTSにも必要なMicrosoft公式ONNX Runtime Android 1.23.2完全版をMoonshineとKittenで共有します。
 
@@ -298,7 +251,6 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | Eigen（ORT等の第三者依存） | 数値計算 | MPL-2.0 |
 | OkHttp 4.12.0 | モデルダウンロード | Apache-2.0 |
 | AndroidX WorkManager 2.12.0 | バックグラウンドモデル準備 | Apache-2.0 |
-| LiteRT-LM / Gemma | Full応答生成 | 各配布物の条件に従う |
 
 Android v1.9.42はv1.9.19で導入した非GPL TTS経路を維持しており、Kitten TTS実行経路では既知の **eSpeak NG / sherpa TTS依存を使用しません**。ただし「GPLフリー」と「permissive-only」は同義ではなく、MPL-2.0等の別ライセンスは残ります。
 
@@ -316,7 +268,7 @@ Android v1.9.42はv1.9.19で導入した非GPL TTS経路を維持しており、
 
 今後の機能変更は新しいバージョンとして公開し、v1.9.41を再現可能な安定基準版として保持します。
 
-Lite版では一度判定した育児の話題を、曖昧な発話に限り次の最大1ターンまで引き継ぎます。明確な新しい話題が出た場合はすぐ切り替え、保持が切れた後はジェネラルに戻ります。従来Lite・Ruri Semantic・Guardで共通です。Fullの補助TopicTrackerも、過去1ターンの具体的な話題だけを参照します。
+Lite版では一度判定した育児の話題を、曖昧な発話に限り次の最大1ターンまで引き継ぎます。明確な新しい話題が出た場合はすぐ切り替え、保持が切れた後はジェネラルに戻ります。従来Lite・Ruri Semantic・Guardで共通です。
 
 CIではSemantic実推論のAndroid/Web一致も検証します。固定14ケースをWeb WASMとAndroid相当のJava ONNX Runtimeで実際に推論し、token ID・raw topic・最終topicを完全一致、probability差0.025以下、margin差0.035以下、embedding cosine 0.995以上で検証します。これは分類精度のベンチマークではなく、両実装の回帰差を検出するためのテストです。
 
@@ -461,14 +413,7 @@ Mitsukotoba normally detects the end of speech automatically. If endpoint detect
 
 ### Editions
 
-The public Android experience uses **Lite only**. Full is retained as an experimental engine, accessible solely through hidden developer settings.
-
-| Edition | Response engine | Main purpose |
-| --- | --- | --- |
-| **Lite** | LiteResponseEngine | Lightweight, predictable, local-first |
-| **Full (developer-only)** | Gemma + recent conversation context | Experimental generated replies |
-
-Lite and Full share the same basic speech input/output stack. The main difference is how Mitsukotoba decides what to say.
+Android **Lite only**. Full/Gemma was removed in v1.9.48.
 
 ### Mitsukotoba Lite
 
@@ -492,56 +437,17 @@ Mitsukotoba avatar
 
 Lite stays compact and predictable by using a curated lightweight response engine instead of generating every utterance with a large model.
 
-### Mitsukotoba Full (developer-only)
-
-Full uses the same speech stack as Lite and adds Gemma for response generation.
-
-```text
-Microphone
-  ├─→ Moonshine Japanese Tiny / Small Streaming
-  │      ↓
-  │   Japanese transcript
-  │
-  └─→ Original audio
-             ↓
-        Gemma 4 E2B
-        + recent conversation history
-             ↓
-        English response
-             ↓
-        Kitten TTS Nano / Kiki
-             ↓
-        Mitsukotoba avatar
-```
-
-The Moonshine transcript is the primary source for linguistic meaning. Original audio is secondary context for information that text may lose, such as intonation, laughter, cooing, babbling, squealing, or crying.
-
-Full requires more than 2 GB of additional local Gemma model data.
-
 ### First Launch
 
 The first-run flow uses **Lite** by default (Moonshine Small + LiteResponseEngine + Kitten TTS), with no edition selector or Full promotion.
 
-An existing saved Full selection migrates to Lite once after the update. Full can still be reselected in hidden developer settings and will then persist. Existing Gemma models and history are not deleted.
+Existing Full selections migrate to Lite. Downloaded Gemma model files are removed while Moonshine, Ruri, and conversation history are preserved.
 
-### Shared Features
+### Lite Features
 
-Lite and Full share the following features:
-
-- Moonshine Japanese Tiny / Small Streaming ASR
-- Kitten TTS Nano 0.8 / Kiki
-- Automatic speech endpoint detection and reply flow
-- Baby-name pronunciation settings
-- Optional `-chan` suffix
-- Family / gender settings
-- Appearance settings
-- Non-verbal baby response behavior
-- Screen-awake preference
-
-The edition boundary is intentionally simple:
-
-- **Lite** = lightweight fixed response knowledge
-- **Full** = generative response using transcript + secondary audio context + recent conversation history
+- Moonshine Japanese ASR, Ruri semantic Topic/Interaction routing
+- Prerecorded English speech, screen-off callouts, local history and diagnostics
+- No Full/Gemma engine or developer dialogue toggle
 
 ### Web Edition
 
@@ -585,7 +491,6 @@ The current project uses:
 - Microsoft ONNX Runtime Android 1.23.2
 - OkHttp 4.12.0
 - AndroidX WorkManager 2.12.0
-- LiteRT-LM 0.16.0 for Full
 
 Moonshine 0.1.5's Android AAR contains a reduced `libonnxruntime.so`. Mitsukotoba removes only that native library through a Gradle Artifact Transform and lets Moonshine and Kitten share the official full Microsoft ONNX Runtime Android 1.23.2 runtime.
 
@@ -606,7 +511,6 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 | Eigen (third-party dependency provenance) | Numerical routines | MPL-2.0 |
 | OkHttp 4.12.0 | Resumable model downloads | Apache-2.0 |
 | AndroidX WorkManager 2.12.0 | Background model preparation | Apache-2.0 |
-| LiteRT-LM / Gemma | Full response generation | Subject to their respective distribution terms |
 
 Android v1.9.42 retains the non-GPL TTS path introduced in v1.9.19. The Kitten TTS execution path does **not use known eSpeak NG or sherpa TTS dependencies**. "GPL-free" does not mean "permissive-only"; separately licensed material such as MPL-2.0 components remains.
 
