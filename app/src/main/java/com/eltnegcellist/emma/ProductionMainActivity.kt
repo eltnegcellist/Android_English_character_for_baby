@@ -277,6 +277,7 @@ private fun ProductionEmmaApp() {
         modelReady = false
         status = ProductionEmmaStatus.MODEL_LOADING
         statusMessage = "みつことば Liteを起動しています…"
+        val requestedAsr = asrModel
         EmmaWorkQueue.execute {
             val result = lite.initialize(requestedAsr)
             mainHandler.post {
