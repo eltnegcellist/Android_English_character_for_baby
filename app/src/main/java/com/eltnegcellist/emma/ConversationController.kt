@@ -8,16 +8,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eltnegcellist.emma.ai.AiCharacterName
-import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
-import com.eltnegcellist.emma.ai.GemmaEmmaClient
 import com.eltnegcellist.emma.ai.LiteEmmaClient
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.audio.EndpointMode
 import com.eltnegcellist.emma.audio.AudioRingRecorder
 import com.eltnegcellist.emma.audio.VoiceActivityEvent
-import com.eltnegcellist.emma.model.GemmaModelStore
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
@@ -34,20 +31,6 @@ internal object ConversationRuntime {
 
 internal class ConversationController(val context: Context) {
     private val preferences = context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
-    private val initialEngineMode = run {
-        val migrationComplete = preferences.getBoolean("full_hidden_from_public_v1", false)
-        val resolved = ConversationEngineMode.forLaunch(
-            preferences.getString("conversation_engine_mode", null), migrationComplete,
-        )
-        if (!migrationComplete) {
-            preferences.edit()
-                .putBoolean("full_hidden_from_public_v1", true)
-                .putString("conversation_engine_mode", ConversationEngineMode.LITE.savedValue)
-                .putString("audience_mode", "BABY")
-                .apply()
-        }
-        resolved
-    }
     private val initialAsrModel = if (preferences.getBoolean("asr_model_manual", false)) MoonshineAsrModel.fromSaved(preferences.getString("asr_model", null)) else MoonshineAsrModel.SMALL
     private val onboardingOpen = !preferences.getBoolean("onboarding_completed_v4", false)
     val continueScreenOffState = mutableStateOf(preferences.getBoolean("continue_screen_off", false))
@@ -76,9 +59,6 @@ internal class ConversationController(val context: Context) {
     private val resolvedAiName get() = AiCharacterName.resolve(aiName)
     val englishLevelState = mutableStateOf(EnglishLevel.fromSaved(preferences.getString("level", null)))
     var englishLevel by englishLevelState
-
-    val engineModeState = mutableStateOf(initialEngineMode)
-    var engineMode by engineModeState
 
     val asrModelState = mutableStateOf(initialAsrModel)
     var asrModel by asrModelState
@@ -137,15 +117,8 @@ internal class ConversationController(val context: Context) {
     var pendingStartAfterPermission by pendingStartAfterPermissionState
 
     val modelPresentState = mutableStateOf(
-            when (initialEngineMode) {
-                ConversationEngineMode.LITE ->
-                    MoonshineModelStore.isInstalled(context, initialAsrModel) && PrerecordedVoiceStore.isReady(context)
-                ConversationEngineMode.FULL ->
-                    MoonshineModelStore.isInstalled(context, initialAsrModel) &&
-                        PrerecordedVoiceStore.isReady(context) &&
-                        GemmaModelStore.hasUsableModel(context)
-            },
-        )
+        MoonshineModelStore.isInstalled(context, initialAsrModel) && PrerecordedVoiceStore.isReady(context)
+    )
     var modelPresent by modelPresentState
 
     val modelReadyState = mutableStateOf(false)
@@ -193,11 +166,7 @@ internal class ConversationController(val context: Context) {
 
     val recorder = AudioRingRecorder(context.assets)
 
-    val gemma = GemmaEmmaClient(context)
-
     val lite = LiteEmmaClient(context)
-
-    val modelFile = GemmaModelStore.modelFile(context)
 
     val kitten = run {
         KittenSpeaker(
@@ -333,7 +302,6 @@ internal class ConversationController(val context: Context) {
 
         val ticket = session.ticket()
         val requestedLevel = englishLevel
-        val requestedMode = engineMode
         latestTranscript = ""
         latestEmmaText = ""
         generating = true
@@ -345,7 +313,7 @@ internal class ConversationController(val context: Context) {
         DiagnosticStore.mark(
             context,
             "manual_generic_response_started",
-            "mode=${requestedMode.label} reason=no_meaningful_speech",
+            "mode=Lite reason=no_meaningful_speech",
         )
 
         EmmaWorkQueue.execute {
@@ -367,7 +335,7 @@ internal class ConversationController(val context: Context) {
                             "",
                             spokenEnglish,
                             "generic",
-                            requestedMode.savedValue.lowercase(),
+                            "lite",
                         )
                     )
                     if (!speakEmma(spokenEnglish)) {
@@ -392,10 +360,7 @@ internal class ConversationController(val context: Context) {
 
     fun askEmma(automatic: Boolean = false) {
         if (!recording || generating || status == ProductionEmmaStatus.THINKING || status == ProductionEmmaStatus.SPEAKING) return
-        val activeReady = when (engineMode) {
-            ConversationEngineMode.LITE -> lite.isReady()
-            ConversationEngineMode.FULL -> gemma.isReady()
-        }
+        val activeReady = lite.isReady()
         if (!modelReady || !activeReady) {
             status = ProductionEmmaStatus.ERROR
             statusMessage = "みつことばがまだ準備できていません。"
@@ -422,35 +387,18 @@ internal class ConversationController(val context: Context) {
         DiagnosticStore.mark(
             context,
             "emma_turn_processing_started",
-            "mode=${engineMode.label} automatic=$automatic wavBytes=${wav.size}",
+            "mode=Lite automatic=$automatic wavBytes=${wav.size}",
         )
 
-        val requestedMode = engineMode
+
         EmmaWorkQueue.execute {
-            val result = when (requestedMode) {
-                ConversationEngineMode.LITE ->
-                    lite.createEnglishIsland(wav, requestedLevel) { transcript ->
-                        mainHandler.post {
-                            if (!disposed && session.accepts(ticket)) {
-                                latestTranscript = transcript
-                                statusMessage = "返答を選んでいます…"
-                            }
-                        }
+            val result = lite.createEnglishIsland(wav, requestedLevel) { transcript ->
+                mainHandler.post {
+                    if (!disposed && session.accepts(ticket)) {
+                        latestTranscript = transcript
+                        statusMessage = "返答を選んでいます…"
                     }
-                ConversationEngineMode.FULL ->
-                    gemma.createEnglishIsland(wav, requestedLevel) { transcript ->
-                        mainHandler.post {
-                            if (!disposed && session.accepts(ticket)) {
-                                val clearSpeech = transcript.replace("[不明]", "").trim()
-                                latestTranscript = if (clearSpeech.isEmpty()) {
-                                    "ことばではない声を聞きました"
-                                } else {
-                                    transcript.replace("[不明]", "…")
-                                }
-                                statusMessage = "返事を考えています…"
-                            }
-                        }
-                    }
+                }
             }
 
             mainHandler.post {
@@ -489,7 +437,7 @@ internal class ConversationController(val context: Context) {
                         if (infantVocalEvent) "${resolvedAiName}が赤ちゃんに話しかけています。" else "${resolvedAiName}が話しています。"
                     voiceError = null
                     playbackHistory.offer(HistoryEntry.create(sessionId, latestTranscript, spokenEnglish,
-                        if (requestedMode == ConversationEngineMode.LITE) lite.lastTopic else gemma.lastTopic, requestedMode.savedValue.lowercase()))
+                        lite.lastTopic, "lite"))
                     if (!speakEmma(spokenEnglish)) {
                         playbackHistory.cancel()
                         recorder.resumeBuffering(clearExisting = true)

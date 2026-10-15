@@ -59,8 +59,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import com.eltnegcellist.emma.ai.AudienceMode
-import com.eltnegcellist.emma.ai.ConversationEngineMode
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
@@ -506,13 +504,11 @@ internal fun EmmaSettingsScreen(
     modelPresent: Boolean,
     asrInstalled: Boolean,
     kittenInstalled: Boolean,
-    gemmaInstalled: Boolean,
     lastSpeechMillis: Long?,
     lastTtsGenerationMillis: Long?,
     lastTtsTotalMillis: Long?,
     lastEndpointToTtsRequestMillis: Long?,
     lastEndpointToFirstAudioMillis: Long?,
-    engineMode: ConversationEngineMode,
     asrModel: MoonshineAsrModel,
     semanticEnabled: Boolean,
     semanticInstalled: Boolean,
@@ -522,7 +518,6 @@ internal fun EmmaSettingsScreen(
     keepScreenOn: Boolean,
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
-    onEngineMode: (ConversationEngineMode) -> Unit,
     onAsrModel: (MoonshineAsrModel) -> Unit,
     onSemanticEnabled: (Boolean) -> Unit,
     onRunSemanticDiagnostic: (String) -> Unit,
@@ -531,23 +526,16 @@ internal fun EmmaSettingsScreen(
     onLevel: (EnglishLevel) -> Unit,
     onPreview: () -> Unit,
     onStopPreview: () -> Unit,
-    onDownloadGemma: () -> Unit,
-    onSelectGemma: () -> Unit,
     onPrepareLite: () -> Unit,
-    onLoadGemma: () -> Unit,
     onKeepScreenOn: (Boolean) -> Unit,
     onExportDiagnostics: () -> Unit,
     onExportCrashDetails: () -> Unit,
     onOpenTutorial: () -> Unit,
     onResetAllData: () -> Unit,
 ) {
-    val interactionPreferences = LocalContext.current.getSharedPreferences("emma_speech", Context.MODE_PRIVATE)
     var topicGuideOpen by remember { mutableStateOf(false) }
     var developerTapCount by remember { mutableStateOf(0) }
     var developerToolsVisible by remember { mutableStateOf(false) }
-    var developerAudienceMode by remember(engineMode) {
-        mutableStateOf(AudienceMode.fromSaved(interactionPreferences.getString("audience_mode", null)))
-    }
     var resetConfirmOpen by remember { mutableStateOf(false) }
     var semanticDiagnosticInput by remember { mutableStateOf("お風呂入ろうね") }
 
@@ -569,7 +557,7 @@ internal fun EmmaSettingsScreen(
             title = { Text("アプリデータをすべて削除") },
             text = {
                 Text(
-                    "赤ちゃん・AIの設定、初回設定情報、Moonshine / Kitten / Gemmaのモデルを含む、みつことばの端末内データをすべて削除します。次回起動時は初期設定とモデル取得が必要です。"
+                    "赤ちゃん・AIの設定、初回設定情報、Moonshine / Ruri / 収録音声を含む、みつことばの端末内データをすべて削除します。次回起動時は初期設定とモデル取得が必要です。"
                 )
             },
             confirmButton = {
@@ -740,7 +728,7 @@ internal fun EmmaSettingsScreen(
             }
 
             // Model repair for ordinary users is always Lite-only.
-            if (engineMode == ConversationEngineMode.LITE && (!modelReady || !kittenInstalled)) {
+            if (!modelReady || !kittenInstalled) {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text("音声モデルの再準備", style = MaterialTheme.typography.titleMedium)
@@ -791,62 +779,6 @@ internal fun EmmaSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Text("開発者設定", style = MaterialTheme.typography.titleMedium)
-                        // Full and dialogue are only accessible after unlocking developer settings.
-                        Text("実験用エンジン（Lite / Full）", style = MaterialTheme.typography.titleSmall)
-                        Text("一般公開はLiteの呼びかけのみです。Fullと対話は開発・検証用に残します。", style = MaterialTheme.typography.bodySmall)
-                        ConversationEngineMode.entries.forEach { option ->
-                            if (engineMode == option) {
-                                Button(onClick = {}, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                    Text("${option.label}（選択中）")
-                                }
-                            } else {
-                                OutlinedButton(onClick = { onEngineMode(option) }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                    Text("${option.label}へ切り替える")
-                                }
-                            }
-                        }
-                        if (engineMode == ConversationEngineMode.FULL) {
-                            Text("Full専用：発話先（開発用）", style = MaterialTheme.typography.titleSmall)
-                            AudienceMode.entries.forEach { option ->
-                                if (developerAudienceMode == option) {
-                                    Button(onClick = {}, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                        Text("${option.label}（選択中）")
-                                    }
-                                } else {
-                                    OutlinedButton(
-                                        onClick = {
-                                            developerAudienceMode = option
-                                            interactionPreferences.edit().putString("audience_mode", option.name).apply()
-                                        },
-                                        enabled = enabled,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) { Text("${option.label}に切り替える") }
-                                }
-                            }
-                            Text(developerAudienceMode.description, style = MaterialTheme.typography.bodySmall)
-                            if (!gemmaInstalled) {
-                                Text("FullのGemmaモデルは2GB超です。開発者向けのモデル準備が必要です。", style = MaterialTheme.typography.bodySmall)
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(onClick = onDownloadGemma, enabled = enabled, modifier = Modifier.weight(1f)) {
-                                        Text("Gemmaを入手")
-                                    }
-                                    OutlinedButton(onClick = onSelectGemma, enabled = enabled, modifier = Modifier.weight(1f)) {
-                                        Text("Gemmaを選択")
-                                    }
-                                }
-                            }
-                            if (!asrInstalled || !kittenInstalled) {
-                                OutlinedButton(onClick = onPrepareLite, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                    Text("音声認識と声を準備")
-                                }
-                            }
-                            if (gemmaInstalled && asrInstalled && kittenInstalled && !modelReady) {
-                                OutlinedButton(onClick = onLoadGemma, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                                    Text("Fullを起動")
-                                }
-                            }
-                        }
-
                         Text(
                             "診断・音声試聴・完全リセットなど、通常利用では不要な項目です。",
                             style = MaterialTheme.typography.bodySmall,
@@ -861,8 +793,6 @@ internal fun EmmaSettingsScreen(
                                 append("\nSemantic: ")
                                 append(if (semanticInstalled) "Ruri 70M INT8 / 準備済み" else "Ruri 70M INT8 / 未準備")
                                 append("\n音声: ").append(if (kittenInstalled) "準備済み" else "未準備")
-                                append("\nGemma: ").append(if (gemmaInstalled) "準備済み" else "未準備")
-                                append("\n現在のモード: みつことば ").append(engineMode.label)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -24,12 +24,6 @@ internal object ModelPreparationTask {
                 "事前収録音源がAPKにありません。アプリを更新してください。"
             }
         }
-        fun gemma() {
-            if (GemmaModelStore.hasUsableModel(context)) return
-            GemmaModelStore.downloadModel(context) { p ->
-                progress("Gemmaをダウンロードしています（2GB超）", p)
-            }.getOrThrow()
-        }
         fun semantic() {
             if (RuriSemanticModelStore.isInstalled(context)) return
             RuriSemanticModelStore.downloadAndInstall(context) { p ->
@@ -46,10 +40,8 @@ internal object ModelPreparationTask {
                     .getBoolean("semantic_enabled", true)
                 if (semanticEnabled) semantic()
             }
-            ModelPreparationKind.FULL -> { moonshine(); recorded(); gemma() }
             ModelPreparationKind.ASR -> moonshine()
             ModelPreparationKind.KITTEN -> recorded()
-            ModelPreparationKind.GEMMA -> gemma()
             ModelPreparationKind.SEMANTIC -> semantic()
         }
         progress("準備ができました", 100)

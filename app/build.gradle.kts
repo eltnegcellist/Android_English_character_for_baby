@@ -101,8 +101,8 @@ android {
         applicationId = "com.eltnegcellist.emma"
         minSdk = 28
         targetSdk = 36
-        versionCode = 130
-        versionName = "1.9.47"
+        versionCode = 131
+        versionName = "1.9.48"
         // Research instrumentation exists only in a separate test APK.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -175,8 +175,6 @@ dependencies {
     add(moonshineRaw.name, "ai.moonshine:moonshine-voice:0.1.5")
     implementation(files(strippedMoonshine))
 
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.0")
-    implementation("androidx.documentfile:documentfile:1.1.0")
     implementation("androidx.work:work-runtime-ktx:2.12.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
