@@ -42,7 +42,6 @@ import com.eltnegcellist.emma.model.ModelPreparationManager
 import com.eltnegcellist.emma.model.ModelPreparationStatus
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
-import com.eltnegcellist.emma.tts.KittenModelStore
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.ui.EmmaTheme
 import com.eltnegcellist.emma.ui.EmmaVisualState
@@ -175,7 +174,7 @@ private fun ProductionEmmaApp() {
                 (
                     !GemmaModelStore.hasUsableModel(context) ||
                         !MoonshineModelStore.isInstalled(context, initialAsrModel) ||
-                        !KittenModelStore.isInstalled(context)
+                        !PrerecordedVoiceStore.isReady(context)
                 ),
         )
     }
@@ -291,7 +290,7 @@ private fun ProductionEmmaApp() {
             MoonshineModelStore.isInstalled(context, selectedAsr) && PrerecordedVoiceStore.isReady(context)
         ConversationEngineMode.FULL ->
             MoonshineModelStore.isInstalled(context, selectedAsr) &&
-                KittenModelStore.isInstalled(context) &&
+                PrerecordedVoiceStore.isReady(context) &&
                 GemmaModelStore.hasUsableModel(context)
     }
 
@@ -303,8 +302,8 @@ private fun ProductionEmmaApp() {
             modelReady = false
             status = ProductionEmmaStatus.ERROR
             statusMessage = when (engineMode) {
-                ConversationEngineMode.LITE -> "みつことば LiteのMoonshineとKitten TTSを先に準備してください。"
-                ConversationEngineMode.FULL -> "みつことば FullのMoonshine・Kitten・Gemmaを先に準備してください。"
+                ConversationEngineMode.LITE -> "みつことば LiteのMoonshineと収録音声を先に準備してください。"
+                ConversationEngineMode.FULL -> "みつことば FullのMoonshine・収録音声・Gemmaを先に準備してください。"
             }
             settingsOpen = true
             return
@@ -364,7 +363,7 @@ private fun ProductionEmmaApp() {
             ConversationEngineMode.LITE ->
                 if (modelPresent) "Lite / ${asrModel.shortLabel}を選びました。起動します…" else "Liteの音声モデルを準備してください。"
             ConversationEngineMode.FULL ->
-                if (modelPresent) "Full / ${asrModel.shortLabel}を選びました。起動します…" else "Fullを選びました。Moonshine・Kitten・Gemmaを準備してください。"
+                if (modelPresent) "Full / ${asrModel.shortLabel}を選びました。起動します…" else "Fullを選びました。Moonshine・収録音声・Gemmaを準備してください。"
         }
 
         EmmaWorkQueue.execute {
@@ -793,7 +792,7 @@ private fun ProductionEmmaApp() {
             (
                 !GemmaModelStore.hasUsableModel(context) ||
                         !MoonshineModelStore.isInstalled(context, initialAsrModel) ||
-                        !KittenModelStore.isInstalled(context)
+                        !PrerecordedVoiceStore.isReady(context)
             )
         ) {
             fullSetupOpen = true
@@ -961,7 +960,7 @@ private fun ProductionEmmaApp() {
             gemmaNeeded = !GemmaModelStore.hasUsableModel(context),
             moonshineNeeded = !MoonshineModelStore.isInstalled(context, asrModel),
             asrModel = asrModel,
-            kittenNeeded = !KittenModelStore.isInstalled(context),
+            kittenNeeded = !PrerecordedVoiceStore.isReady(context),
             onPrepare = ::startFullAutomaticSetup,
             onCancel = {
                 fullSetupOpen = false
@@ -972,7 +971,7 @@ private fun ProductionEmmaApp() {
                         (
                 !GemmaModelStore.hasUsableModel(context) ||
                         !MoonshineModelStore.isInstalled(context, asrModel) ||
-                        !KittenModelStore.isInstalled(context)
+                        !PrerecordedVoiceStore.isReady(context)
             )
                     ) {
                         settingsOpen = true
@@ -1028,7 +1027,7 @@ private fun ProductionEmmaApp() {
                         (
                             !GemmaModelStore.hasUsableModel(context) ||
                                 !MoonshineModelStore.isInstalled(context, targetAsr) ||
-                                !KittenModelStore.isInstalled(context)
+                                !PrerecordedVoiceStore.isReady(context)
                         )
                     ) {
                         fullSetupError = null
