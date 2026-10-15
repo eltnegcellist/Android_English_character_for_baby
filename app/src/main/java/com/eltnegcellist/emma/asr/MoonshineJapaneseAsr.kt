@@ -32,14 +32,22 @@ class MoonshineJapaneseAsr(
             val root = MoonshineModelStore.directory(appContext, model).absolutePath + File.separator
             created.loadFromFiles(root, model.arch)
             if (useChildcareKeyterms) {
-                runCatching { created.setKeyterms(CHILDCARE_ASR_KEYTERMS) }
-                    .onFailure { error ->
-                        DiagnosticStore.mark(
-                            appContext,
-                            "moonshine_keyterms_skipped",
-                            "model=${model.shortLabel} error=${error.message ?: error.javaClass.simpleName}",
-                        )
-                    }
+                // One unsupported token (e.g. 喃語) must not disable every childcare term.
+                val applied = mutableListOf<String>()
+                val rejected = mutableListOf<String>()
+                for (term in CHILDCARE_ASR_KEYTERMS) {
+                    runCatching { created.setKeyterms(applied + term) }
+                        .onSuccess { applied.add(term) }
+                        .onFailure { rejected.add(term) }
+                }
+                DiagnosticStore.mark(
+                    appContext, "moonshine_keyterms_result",
+                    "model=${model.shortLabel} requested=${CHILDCARE_ASR_KEYTERMS.size} " +
+                        "applied=${applied.size} skipped=${rejected.joinToString("|")}",
+                )
+                if (applied.isEmpty()) {
+                    DiagnosticStore.mark(appContext, "moonshine_keyterms_skipped", "model=${model.shortLabel} none_supported")
+                }
             }
             transcriber = created
         }
@@ -88,6 +96,7 @@ class MoonshineJapaneseAsr(
             "着替え", "抱っこ", "おてて", "あんよ", "にこにこ", "泣く",
             "ぐずぐず", "喃語", "クーイング", "げっぷ", "吐き戻し", "おもちゃ",
             "お散歩", "ベビーカー", "離乳食", "絵本", "音楽",
+            "しゃっくり", "ご機嫌", "くしゃみ", "あくび",
         )
     }
 }
