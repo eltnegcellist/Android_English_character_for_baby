@@ -21,7 +21,8 @@ internal object PrerecordedVoiceStore {
         context.assets.open(MANIFEST).use { it.read() >= 0 }
     }.getOrDefault(false)
 
-    fun isReady(context: Context): Boolean = isAvailable(context) || KittenModelStore.isInstalled(context)
+    // The 1,105 recorded clips ship in APK assets: no user download required.
+    fun isReady(context: Context): Boolean = isAvailable(context)
 
     fun hasText(context: Context, text: String): Boolean =
         isAvailable(context) && catalog(context).containsKey(normalize(text))
