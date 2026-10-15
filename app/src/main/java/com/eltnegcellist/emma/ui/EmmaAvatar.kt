@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -41,7 +40,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.eltnegcellist.emma.ai.AudienceMode
 import kotlinx.coroutines.delay
 import kotlin.math.max
 
@@ -63,9 +61,6 @@ internal fun EmmaAvatar(
 ) {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("emma_speech", Context.MODE_PRIVATE).also(::migrateLegacyEmmaColors) }
-    var audienceMode by remember {
-        mutableStateOf(AudienceMode.fromSaved(preferences.getString("audience_mode", null)))
-    }
     var colorMode by remember {
         mutableStateOf(EmmaColorMode.fromSaved(preferences.getString("emma_color_mode", null)))
     }
@@ -82,9 +77,6 @@ internal fun EmmaAvatar(
     var vividMenuExpanded by remember { mutableStateOf(false) }
     var filledMenuExpanded by remember { mutableStateOf(false) }
     var softMenuExpanded by remember { mutableStateOf(false) }
-    val modeEnabled = state != EmmaVisualState.UNDERSTOOD &&
-        state != EmmaVisualState.THINKING &&
-        state != EmmaVisualState.SPEAKING
 
     // Keep a clear acknowledgement smile on screen long enough for a baby to register it,
     // while the real processing state is free to move on to THINKING immediately.
@@ -170,37 +162,6 @@ internal fun EmmaAvatar(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text("AIは誰に話す？", style = MaterialTheme.typography.titleSmall)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-        ) {
-            if (audienceMode == AudienceMode.BABY) {
-                Button(onClick = {}, enabled = modeEnabled) { Text("赤ちゃんへ") }
-            } else {
-                OutlinedButton(
-                    onClick = {
-                        audienceMode = AudienceMode.BABY
-                        preferences.edit().putString("audience_mode", AudienceMode.BABY.name).apply()
-                    },
-                    enabled = modeEnabled,
-                ) { Text("赤ちゃんへ") }
-            }
-
-            if (audienceMode == AudienceMode.PARENT) {
-                Button(onClick = {}, enabled = modeEnabled) { Text("親へ") }
-            } else {
-                OutlinedButton(
-                    onClick = {
-                        audienceMode = AudienceMode.PARENT
-                        preferences.edit().putString("audience_mode", AudienceMode.PARENT.name).apply()
-                    },
-                    enabled = modeEnabled,
-                ) { Text("親へ") }
-            }
-        }
-        Text(audienceMode.description, style = MaterialTheme.typography.bodySmall)
-
         Box(
             modifier = Modifier.fillMaxWidth().aspectRatio(1f),
             contentAlignment = Alignment.Center,
