@@ -149,14 +149,16 @@ internal fun EmmaHomeScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (recording) {
-                        Button(
+                        OutlinedButton(
                             onClick = onManualRespond,
                             enabled = modelReady && !busy,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(min = 64.dp)
+                                .heightIn(min = 44.dp)
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                        ) { Text("今すぐAIが返事する") }
+                        ) {
+                            Text("今すぐAIが返事する", style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                     Row(
                         Modifier.fillMaxWidth(),
@@ -261,38 +263,26 @@ internal fun EmmaHomeScreen(
                     }
                 }
             }
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
-                shape = MaterialTheme.shapes.extraLarge,
-            ) {
-                Text(
-                    aiName,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-            }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // The status replaces the old always-visible Emma name badge.
+            // Preserve voice and model state, but don't repeat spoken English.
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     Surface(
                         color = statusColor(visualState),
-                        shape = MaterialTheme.shapes.extraSmall,
+                        shape = RoundedCornerShape(50),
                     ) {
                         Text(
                             statusTitle,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.labelMedium,
                             color = statusTextColor(visualState),
                         )
                     }
                     if (showBusyIndicator) CircularProgressIndicator(strokeWidth = 2.dp)
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(statusMessage, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 voiceError?.let {
                     Spacer(Modifier.height(4.dp))
                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
