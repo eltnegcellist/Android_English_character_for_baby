@@ -762,6 +762,11 @@ private fun ProductionEmmaApp() {
         EmmaSettingsScreen(
             endpointMode = runtime.endpointMode,
             onEndpointMode = runtime::updateEndpointMode,
+            autoRespond = autoRespond,
+            onToggleAutoRespond = { next ->
+                autoRespond = next
+                preferences.edit().putBoolean("auto_respond", next).apply()
+            },
             featureSettings = { FeatureSettings(runtime) { stopSession(); autoStartPending=false; featureScreen="history" } },
             level = englishLevel,
             enabled = !busy && !recording,
@@ -857,7 +862,6 @@ private fun ProductionEmmaApp() {
             recording = recording,
             modelReady = modelReady,
             busy = busy,
-            autoRespond = autoRespond,
             latestTranscript = latestTranscript,
             latestEmmaText = latestEmmaText,
             latestTopic = latestTopic,
@@ -875,14 +879,6 @@ private fun ProductionEmmaApp() {
             onOpenPlay = { stopSession(); autoStartPending=false; featureScreen="play" },
             onStartSession = ::startSession,
             onStopSession = ::stopSession,
-            onToggleAutoRespond = {
-                autoRespond = it
-                preferences.edit().putBoolean("auto_respond", it).apply()
-                if (recording && !busy) {
-                    status = ProductionEmmaStatus.LISTENING
-                    statusMessage = if (it) "普通に話しかけてください。" else "手動モードです。「今すぐAIが返事する」で返します。"
-                }
-            },
             onManualRespond = { askEmma(automatic = false) },
             tutorialStep = tutorialStep,
             tutorialIntroReady = screenIntroductionPlayed,
