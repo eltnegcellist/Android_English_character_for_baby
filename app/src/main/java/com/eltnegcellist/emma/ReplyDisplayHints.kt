@@ -42,6 +42,7 @@ internal object ReplyDisplayHints {
         "inquiry" to ("たずねる" to "どうしたのかな？"),
         "reassurance" to ("安心" to "そばにいるよ。"),
         "repeat" to ("もう一度" to "もう一回やってみる？"),
+        "pause" to ("ひと休み" to "少し休もうね。"),
     )
 
     fun fromScene(scene: String): ReplyDisplayHint {
