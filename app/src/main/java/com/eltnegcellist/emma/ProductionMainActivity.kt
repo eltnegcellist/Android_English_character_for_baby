@@ -719,13 +719,13 @@ private fun ProductionEmmaApp() {
         ProductionEmmaStatus.ERROR -> EmmaVisualState.ERROR
     }
     val statusTitle = when (status) {
-        ProductionEmmaStatus.IDLE -> if (modelReady) "準備完了" else "待機中"
+        ProductionEmmaStatus.IDLE -> if (modelReady) "Emmaはおやすみ中" else "準備中"
         ProductionEmmaStatus.MODEL_IMPORTING -> "準備中"
         ProductionEmmaStatus.MODEL_LOADING -> "起動中"
-        ProductionEmmaStatus.LISTENING, ProductionEmmaStatus.ENDPOINT_WAIT -> "聞いています"
+        ProductionEmmaStatus.LISTENING, ProductionEmmaStatus.ENDPOINT_WAIT -> "Emmaが聞いています"
         ProductionEmmaStatus.UNDERSTOOD -> "聞きました"
-        ProductionEmmaStatus.THINKING -> "考えています"
-        ProductionEmmaStatus.SPEAKING -> "話しています"
+        ProductionEmmaStatus.THINKING -> "Emmaが考えています"
+        ProductionEmmaStatus.SPEAKING -> "Emmaが話しています"
         ProductionEmmaStatus.ERROR -> "確認してください"
     }
 
@@ -869,7 +869,6 @@ private fun ProductionEmmaApp() {
             backgroundPreparationActive = backgroundPreparationActive,
             backgroundPreparationPhase = backgroundPreparationPhase,
             backgroundPreparationPercent = backgroundPreparationPercent,
-            onOpenAbout = { aboutOpen = true },
             onOpenSettings = {
                 if (recording || generating || pendingStartAfterPermission || status == ProductionEmmaStatus.SPEAKING) {
                     stopSession()
