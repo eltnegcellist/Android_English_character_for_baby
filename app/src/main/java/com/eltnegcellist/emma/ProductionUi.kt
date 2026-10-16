@@ -161,8 +161,7 @@ internal fun EmmaHomeScreen(
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    "呼びかけを始める",
+                                Text("呼びかけを始める",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                 )
@@ -200,8 +199,7 @@ internal fun EmmaHomeScreen(
                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 9.dp),
                                 modifier = Modifier.weight(0.35f).heightIn(min = 60.dp),
                             ) {
-                                Text(
-                                    "呼びかけを止める",
+                                Text("呼びかけを止める",
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.labelSmall,
                                 )
