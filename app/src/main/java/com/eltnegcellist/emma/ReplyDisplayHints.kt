@@ -56,8 +56,8 @@ internal object ReplyDisplayHints {
             "interaction" -> route.getOrNull(1)
             else -> null
         }
-        val topic = topics[topicId]
-        val interaction = interactions[interactionId]
+        val topic = topicId?.let { topics[it] }
+        val interaction = interactionId?.let { interactions[it] }
         val note = listOfNotNull(topic?.second, interaction?.second).joinToString(" ")
             .ifEmpty { "赤ちゃんへのやさしい呼びかけ。" }
         return ReplyDisplayHint(topic?.first ?: interaction?.first ?: "ふだんのことば", note)
