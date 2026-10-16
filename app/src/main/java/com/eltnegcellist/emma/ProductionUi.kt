@@ -233,13 +233,31 @@ internal fun EmmaHomeScreen(
                 }
             }
 
-            CompactEmmaAvatar(
-                state = visualState,
-                mouthLevel = mouthLevel,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned { tutorialAvatarBounds = it.boundsInRoot() },
-            )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                CompactEmmaAvatar(
+                    state = visualState,
+                    mouthLevel = mouthLevel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onGloballyPositioned { tutorialAvatarBounds = it.boundsInRoot() },
+                )
+                if (latestEmmaText.isNotBlank()) {
+                    Surface(
+                        modifier = Modifier.align(Alignment.TopStart).padding(10.dp),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.93f),
+                        shape = MaterialTheme.shapes.extraLarge,
+                        tonalElevation = 1.dp,
+                    ) {
+                        Text(
+                            ReplyDisplayHints.fromScene(latestTopic).topicLabel,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
             Surface(
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
                 shape = MaterialTheme.shapes.extraLarge,
@@ -469,12 +487,6 @@ private fun ConversationExchange(emmaText: String, route: String) {
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-            Text(
-                hint.topicLabel,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold,
-            )
             // The three English sentences remain together; no per-sentence cards or replay buttons.
             Text(
                 emmaText,
