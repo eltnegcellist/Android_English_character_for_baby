@@ -123,6 +123,7 @@ private fun ProductionEmmaApp() {
     }
     var asrModel by runtime.asrModelState
     var latestTranscript by runtime.latestTranscriptState
+    var latestTopic by runtime.latestTopicState
     var autoRespond by runtime.autoRespondState
     var keepScreenOn by remember { mutableStateOf(preferences.getBoolean("keep_screen_on", true)) }
     val resolvedAiName = AiCharacterName.DEFAULT
@@ -859,6 +860,7 @@ private fun ProductionEmmaApp() {
             autoRespond = autoRespond,
             latestTranscript = latestTranscript,
             latestEmmaText = latestEmmaText,
+            latestTopic = latestTopic,
             aiName = resolvedAiName,
             backgroundPreparationActive = backgroundPreparationActive,
             backgroundPreparationPhase = backgroundPreparationPhase,
