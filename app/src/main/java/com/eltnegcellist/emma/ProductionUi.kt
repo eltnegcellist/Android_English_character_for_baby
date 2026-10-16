@@ -100,7 +100,6 @@ internal fun EmmaHomeScreen(
     backgroundPreparationActive: Boolean,
     backgroundPreparationPhase: String,
     backgroundPreparationPercent: Int?,
-    onOpenAbout: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenPlay: () -> Unit,
     onStartSession: () -> Unit,
@@ -136,7 +135,9 @@ internal fun EmmaHomeScreen(
                         fontWeight = FontWeight.SemiBold,
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        TextButton(onClick = onOpenAbout) { Text("英語学習") }
+                        TextButton(onClick = onOpenPlay, enabled = modelReady && tutorialStep == null) {
+                            Text("☝ 押して聞く", style = MaterialTheme.typography.labelLarge)
+                        }
                         TextButton(onClick = onOpenSettings) { Text("設定") }
                     }
                 }
@@ -148,47 +149,63 @@ internal fun EmmaHomeScreen(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (recording) {
-                        OutlinedButton(
-                            onClick = onManualRespond,
-                            enabled = modelReady && !busy,
+                    if (!recording) {
+                        // A single large invitation when Emma is asleep.
+                        Button(
+                            onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
+                            enabled = tutorialStartButtonEnabled(modelReady, busy, tutorialStep),
+                            shape = RoundedCornerShape(22.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(min = 44.dp)
+                                .heightIn(min = 96.dp)
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
                         ) {
-                            Text("今すぐAIが返事する", style = MaterialTheme.typography.bodyMedium)
-                        }
-                    }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        OutlinedButton(
-                            onClick = onOpenPlay,
-                            enabled = modelReady && tutorialStep == null,
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
-                            modifier = Modifier.weight(0.28f).heightIn(min = 64.dp),
-                        ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("☝")
-                                Text("押して聞く", style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center)
+                                Text(
+                                    "呼びかけを始める",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "ここを押してEmmaとおしゃべり",
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
                             }
                         }
-                        if (!recording) {
+                    } else {
+                        // In a running conversation, responding matters more than stopping.
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Button(
-                                onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
-                                enabled = tutorialStartButtonEnabled(modelReady, busy, tutorialStep),
-                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp)
+                                onClick = onManualRespond,
+                                enabled = modelReady && !busy,
+                                shape = RoundedCornerShape(18.dp),
+                                modifier = Modifier.weight(1f).heightIn(min = 66.dp)
                                     .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                            ) { Text("呼びかけを始める", textAlign = TextAlign.Center) }
-                        } else {
+                            ) {
+                                Text(
+                                    "今すぐAIが返事する",
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
                             OutlinedButton(
                                 onClick = onStopSession,
-                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp),
-                            ) { Text("呼びかけを止める", textAlign = TextAlign.Center) }
+                                shape = RoundedCornerShape(16.dp),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 9.dp),
+                                modifier = Modifier.weight(0.35f).heightIn(min = 60.dp),
+                            ) {
+                                Text(
+                                    "呼びかけを止める",
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
                         }
                     }
                 }
@@ -254,7 +271,7 @@ internal fun EmmaHomeScreen(
                         shadowElevation = 3.dp,
                     ) {
                         Text(
-                            "✦  " + ReplyDisplayHints.fromScene(latestTopic).topicLabel,
+                            ReplyDisplayHints.fromScene(latestTopic).topicLabel,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
@@ -477,7 +494,7 @@ private fun ConversationExchange(emmaText: String, route: String) {
                 color = Color(0xFF44304F),
             )
             Text(
-                "ことばのヒント： " + hint.japaneseNote,
+                hint.japaneseNote,
                 style = MaterialTheme.typography.labelSmall,
                 color = Color(0xFF826D91),
             )
