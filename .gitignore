@@ -22,3 +22,7 @@ secrets.properties
 .env
 .env.*
 !.env.example
+
+# Issue #101: local caregiver WAV, transcripts and adjudication must never be committed
+.private-eval/
+asr-bias-lab/
