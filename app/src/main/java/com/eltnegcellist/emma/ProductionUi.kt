@@ -495,7 +495,7 @@ private fun ConversationExchange(emmaText: String, route: String) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                hint.japaneseNote,
+                "内容の目安：" + hint.japaneseNote,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
