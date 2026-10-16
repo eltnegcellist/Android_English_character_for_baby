@@ -92,6 +92,7 @@ internal fun EmmaHomeScreen(
     autoRespond: Boolean,
     latestTranscript: String,
     latestEmmaText: String,
+    latestTopic: String,
     aiName: String,
     backgroundPreparationActive: Boolean,
     backgroundPreparationPhase: String,
@@ -277,11 +278,10 @@ internal fun EmmaHomeScreen(
                 }
             }
 
-            if (latestEmmaText.isNotBlank() || latestTranscript.isNotBlank()) {
+            if (latestEmmaText.isNotBlank()) {
                 ConversationExchange(
-                    transcript = latestTranscript,
                     emmaText = latestEmmaText,
-                    aiName = aiName,
+                    route = latestTopic,
                 )
             }
 
@@ -457,37 +457,36 @@ private fun EmmaCoachMarkOverlay(
 }
 
 @Composable
-private fun ConversationExchange(transcript: String, emmaText: String, aiName: String) {
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (transcript.isNotBlank()) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth(0.88f),
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text("あなた", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(4.dp))
-                        Text(transcript, style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-            }
-        }
-        if (emmaText.isNotBlank()) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth(0.88f),
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text(aiName, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Spacer(Modifier.height(4.dp))
-                        Text(emmaText, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    }
-                }
-            }
+private fun ConversationExchange(emmaText: String, route: String) {
+    val hint = ReplyDisplayHints.fromScene(route)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.large,
+        tonalElevation = 1.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Text(
+                hint.topicLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            // The three English sentences remain together; no per-sentence cards or replay buttons.
+            Text(
+                emmaText,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                hint.japaneseNote,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
