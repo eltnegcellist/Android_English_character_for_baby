@@ -8,6 +8,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -47,9 +49,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.boundsInRoot
@@ -89,7 +93,6 @@ internal fun EmmaHomeScreen(
     recording: Boolean,
     modelReady: Boolean,
     busy: Boolean,
-    autoRespond: Boolean,
     latestTranscript: String,
     latestEmmaText: String,
     latestTopic: String,
@@ -102,7 +105,6 @@ internal fun EmmaHomeScreen(
     onOpenPlay: () -> Unit,
     onStartSession: () -> Unit,
     onStopSession: () -> Unit,
-    onToggleAutoRespond: (Boolean) -> Unit,
     onManualRespond: () -> Unit,
     tutorialStep: Int?,
     tutorialIntroReady: Boolean,
@@ -244,16 +246,17 @@ internal fun EmmaHomeScreen(
                 if (latestEmmaText.isNotBlank()) {
                     Surface(
                         modifier = Modifier.align(Alignment.TopStart).padding(10.dp),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.93f),
-                        shape = MaterialTheme.shapes.extraLarge,
-                        tonalElevation = 1.dp,
+                        color = Color(0xFFFFF6FF),
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(1.dp, Color(0xFFDDBCE9)),
+                        shadowElevation = 3.dp,
                     ) {
                         Text(
-                            ReplyDisplayHints.fromScene(latestTopic).topicLabel,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            "✦  " + ReplyDisplayHints.fromScene(latestTopic).topicLabel,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = Color(0xFF7945A1),
                         )
                     }
                 }
@@ -301,24 +304,6 @@ internal fun EmmaHomeScreen(
                     emmaText = latestEmmaText,
                     route = latestTopic,
                 )
-            }
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-                shape = MaterialTheme.shapes.large,
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("自動で返事", style = MaterialTheme.typography.titleSmall)
-                        Text("話し終わりを検出してAIが返します", style = MaterialTheme.typography.bodySmall)
-                    }
-                    Switch(checked = autoRespond, onCheckedChange = onToggleAutoRespond, enabled = visualState != EmmaVisualState.SPEAKING)
-                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -479,25 +464,32 @@ private fun ConversationExchange(emmaText: String, route: String) {
     val hint = ReplyDisplayHints.fromScene(route)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 1.dp,
+        shape = RoundedCornerShape(22.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, Color(0xFFE1C8EA)),
+        shadowElevation = 3.dp,
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier
+                .background(
+                    Brush.linearGradient(
+                        listOf(Color(0xFFFFFEFD), Color(0xFFFFF7FC), Color(0xFFF8F2FF))
+                    )
+                )
+                .padding(horizontal = 15.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp),
         ) {
-            // The three English sentences remain together; no per-sentence cards or replay buttons.
+            // All three English sentences stay together. Emma remains the visual focus.
             Text(
                 emmaText,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = Color(0xFF44304F),
             )
             Text(
-                "内容の目安：" + hint.japaneseNote,
+                "ことばのヒント： " + hint.japaneseNote,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color(0xFF826D91),
             )
         }
     }
@@ -507,6 +499,8 @@ private fun ConversationExchange(emmaText: String, route: String) {
 internal fun EmmaSettingsScreen(
     endpointMode: EndpointMode,
     onEndpointMode: (EndpointMode) -> Unit,
+    autoRespond: Boolean,
+    onToggleAutoRespond: (Boolean) -> Unit,
     featureSettings: @Composable () -> Unit,
     level: EnglishLevel,
     enabled: Boolean,
@@ -611,6 +605,39 @@ internal fun EmmaSettingsScreen(
             }
 
             AppearanceSettings(enabled = enabled)
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text("呼びかけの設定", style = MaterialTheme.typography.titleMedium)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("自動で返事", style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                "話し終わりを検出してEmmaが返事をします",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = autoRespond,
+                            onCheckedChange = onToggleAutoRespond,
+                            enabled = enabled,
+                        )
+                    }
+                    Text(
+                        "オフの場合は、会話画面の「今すぐAIが返事する」を使えます。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
