@@ -1,8 +1,8 @@
 package com.eltnegcellist.emma.asr
 
 import android.content.Context
-import ai.moonshine.voice.JNI
 import ai.moonshine.voice.Transcriber
+import ai.moonshine.voice.TranscriberOption
 import com.eltnegcellist.emma.audio.WavMono16
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import java.io.File
@@ -18,45 +18,30 @@ class MoonshineJapaneseAsr(
 
     fun isReady(): Boolean = transcriber != null
 
-    fun initialize(
-        model: MoonshineAsrModel,
-        useChildcareKeyterms: Boolean,
-    ): Result<Unit> = runCatching {
+    fun initialize(model: MoonshineAsrModel): Result<Unit> = runCatching {
         require(MoonshineModelStore.isInstalled(appContext, model)) {
             "Moonshine 日本語${model.shortLabel}がまだ導入されていません。"
         }
 
         synchronized(lock) {
             transcriber?.close()
-            val created = Transcriber()
+            // Silero already supplies a complete utterance. Running the SDK's
+            // VAD again can discard speech; Japanese needs a 13 token/s guard.
+            val created = Transcriber(listOf(
+                TranscriberOption("vad_threshold", "0"),
+                TranscriberOption("vad_max_segment_duration", "1000"),
+                TranscriberOption("max_tokens_per_second", "13.0"),
+            ))
             val root = MoonshineModelStore.directory(appContext, model).absolutePath + File.separator
             created.loadFromFiles(root, model.arch)
-            if (useChildcareKeyterms) {
-                // One unsupported token (e.g. 喃語) must not disable every childcare term.
-                val applied = mutableListOf<String>()
-                val rejected = mutableListOf<String>()
-                for (term in CHILDCARE_ASR_KEYTERMS) {
-                    runCatching { created.setKeyterms(applied + term) }
-                        .onSuccess { applied.add(term) }
-                        .onFailure { rejected.add(term) }
-                }
-                if (applied.isNotEmpty()) created.setKeyterms(applied)
-                DiagnosticStore.mark(
-                    appContext, "moonshine_keyterms_result",
-                    "model=${model.shortLabel} requested=${CHILDCARE_ASR_KEYTERMS.size} " +
-                        "applied=${applied.size} skipped=${rejected.joinToString("|")}",
-                )
-                if (applied.isEmpty()) {
-                    DiagnosticStore.mark(appContext, "moonshine_keyterms_skipped", "model=${model.shortLabel} none_supported")
-                }
-            }
             transcriber = created
         }
 
         DiagnosticStore.mark(
             appContext,
             "lite_asr_initialized",
-            "engine=moonshine model=${model.modelName} language=ja childcareKeyterms=$useChildcareKeyterms",
+            "engine=moonshine model=${model.modelName} language=ja " +
+                "internalVad=false maxTokensPerSecond=13.0 childcareKeyterms=false",
         )
     }
 
@@ -88,16 +73,5 @@ class MoonshineJapaneseAsr(
             transcriber?.close()
             transcriber = null
         }
-    }
-
-    private companion object {
-        val CHILDCARE_ASR_KEYTERMS = listOf(
-            "沐浴", "お風呂", "ミルク", "母乳", "おっぱい", "哺乳瓶", "授乳",
-            "ねんね", "おやすみ", "昼寝", "おむつ", "うんち", "おしっこ",
-            "着替え", "抱っこ", "おてて", "あんよ", "にこにこ", "泣く",
-            "ぐずぐず", "喃語", "クーイング", "げっぷ", "吐き戻し", "おもちゃ",
-            "お散歩", "ベビーカー", "離乳食", "絵本", "音楽",
-            "しゃっくり", "ご機嫌", "くしゃみ", "あくび",
-        )
     }
 }
