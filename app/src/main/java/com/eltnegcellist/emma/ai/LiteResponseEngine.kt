@@ -47,8 +47,8 @@ internal class LiteResponseEngine {
         semantic: SemanticTopicPrediction? = null,
         interactionEnabled: Boolean = true,
     ): LiteResponse {
-        val topic = semantic?.let { p ->
-            findScene(p.topic.takeUnless { it == "generic" || p.margin < 0.05 || p.probability < 0.50 })
+        val normalTopic = semantic?.let { p ->
+            findScene(p.topic.takeUnless { it == "generic" || !p.margin.isFinite() || !p.probability.isFinite() || p.margin < 0.05 || p.probability < 0.50 })
         }
         val interaction = if (interactionEnabled && semantic != null &&
             semantic.interactionProbability >= 0.50 &&
@@ -56,6 +56,15 @@ internal class LiteResponseEngine {
             semantic.interaction in InteractionReplyBank.replies) {
             semantic.interaction
         } else null
+        // Preserve the normal 50%/5pt decision. Rescue only when both axes
+        // abstain; missing/disabled Interaction predictions are not eligible.
+        val topicRescued = normalTopic == null && interaction == null && interactionEnabled &&
+            semantic != null && semantic.topic != "generic" &&
+            semantic.probability.isFinite() && semantic.margin.isFinite() &&
+            semantic.probability >= 0.30 && semantic.margin >= 0.10 &&
+            semantic.interactionProbability.isFinite() &&
+            (semantic.interaction == "none" || semantic.interaction in InteractionReplyBank.replies)
+        val topic = normalTopic ?: if (topicRescued) findScene(semantic?.topic) else null
         val pair = RuriCompositeReplies.forAxes(topic?.id, interaction)
         val chosen = replyDiversity.select(
             topic = topic?.id, interaction = interaction, pair = pair,
@@ -73,6 +82,7 @@ internal class LiteResponseEngine {
             else -> "generic"
         }
         val routingReason = when {
+            topicRescued && topic != null -> "topic_rescued_both_generic"
             chosen?.reason == "topic_only" && !interactionEnabled -> "interaction_disabled"
             chosen?.reason == "topic_only" && semantic?.interaction == "none" -> "interaction_none"
             chosen?.reason == "topic_only" && semantic?.interaction != null &&
