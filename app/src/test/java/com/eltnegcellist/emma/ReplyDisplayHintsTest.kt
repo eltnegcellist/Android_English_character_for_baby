@@ -6,6 +6,14 @@ import org.junit.Test
 
 class ReplyDisplayHintsTest {
     @Test
+    fun openingGreetingUsesRealEmmaIntroductionAndAnAccurateJapaneseLine() {
+        val hint = ReplyDisplayHints.fromScene("intro")
+        assertEquals("ごあいさつ", hint.topicLabel)
+        assertEquals("こんにちは、エマだよ。", hint.japaneseNote)
+        assertEquals("Hi, I'm Emma.", com.eltnegcellist.emma.ai.AiCharacterName.introduction("Emma"))
+    }
+
+    @Test
     fun combinedRouteKeepsTopicVisibleAndAddsInteractionContext() {
         val hint = ReplyDisplayHints.fromScene("combined:milk:affection")
         assertEquals("ミルク・授乳", hint.topicLabel)
