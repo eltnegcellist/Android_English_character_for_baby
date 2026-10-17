@@ -40,7 +40,7 @@ class LiteEmmaClient(
     fun resetConversationContext() = responses.resetConversationContext()
 
     fun initialize(model: MoonshineAsrModel): Result<Unit> =
-        asr.initialize(model, useChildcareKeyterms = true)
+        asr.initialize(model)
 
     fun createEnglishIsland(
         wavAudio: ByteArray,
