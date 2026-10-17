@@ -63,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
@@ -115,6 +116,19 @@ internal fun EmmaHomeScreen(
     var tutorialActionBounds by remember { mutableStateOf<Rect?>(null) }
     var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
     val homeScrollState = rememberScrollState()
+
+    // Show the actual tutorial voice line even before the first conversation.
+    // Retain the most recently spoken reply while the next ASR turn is pending.
+    var lastVisibleEnglish by remember { mutableStateOf(AiCharacterName.introduction(aiName)) }
+    var lastVisibleRoute by remember { mutableStateOf("intro") }
+    LaunchedEffect(latestEmmaText, latestTopic) {
+        if (latestEmmaText.isNotBlank()) {
+            lastVisibleEnglish = latestEmmaText
+            lastVisibleRoute = latestTopic
+        }
+    }
+    val displayEnglish = latestEmmaText.ifBlank { lastVisibleEnglish }
+    val displayRoute = if (latestEmmaText.isNotBlank()) latestTopic else lastVisibleRoute
 
     Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { overlayOrigin = it.boundsInRoot().topLeft }) {
         Scaffold(
@@ -260,7 +274,7 @@ internal fun EmmaHomeScreen(
                         .fillMaxWidth()
                         .onGloballyPositioned { tutorialAvatarBounds = it.boundsInRoot() },
                 )
-                if (latestEmmaText.isNotBlank()) {
+                if (displayEnglish.isNotBlank()) {
                     Surface(
                         modifier = Modifier.align(Alignment.TopStart).padding(10.dp),
                         color = Color(0xFFFFF6FF),
@@ -269,7 +283,7 @@ internal fun EmmaHomeScreen(
                         shadowElevation = 3.dp,
                     ) {
                         Text(
-                            ReplyDisplayHints.fromScene(latestTopic).topicLabel,
+                            ReplyDisplayHints.fromScene(displayRoute).topicLabel,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
@@ -304,12 +318,10 @@ internal fun EmmaHomeScreen(
                 }
             }
 
-            if (latestEmmaText.isNotBlank()) {
-                ConversationExchange(
-                    emmaText = latestEmmaText,
-                    route = latestTopic,
-                )
-            }
+            ConversationExchange(
+                emmaText = displayEnglish,
+                route = displayRoute,
+            )
 
             Spacer(Modifier.height(8.dp))
         }
