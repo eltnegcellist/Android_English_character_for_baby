@@ -46,6 +46,7 @@ internal object ReplyDisplayHints {
     )
 
     fun fromScene(scene: String): ReplyDisplayHint {
+        if (scene == "intro") return ReplyDisplayHint("ごあいさつ", "こんにちは、エマだよ。")
         val route = scene.split(':')
         val topicId = when (route.firstOrNull()) {
             "combined" -> route.getOrNull(1)
