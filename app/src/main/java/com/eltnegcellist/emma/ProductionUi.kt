@@ -8,6 +8,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -47,9 +49,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.boundsInRoot
@@ -59,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.tts.KittenSpeaker
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
@@ -89,19 +94,17 @@ internal fun EmmaHomeScreen(
     recording: Boolean,
     modelReady: Boolean,
     busy: Boolean,
-    autoRespond: Boolean,
     latestTranscript: String,
     latestEmmaText: String,
+    latestTopic: String,
     aiName: String,
     backgroundPreparationActive: Boolean,
     backgroundPreparationPhase: String,
     backgroundPreparationPercent: Int?,
-    onOpenAbout: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenPlay: () -> Unit,
     onStartSession: () -> Unit,
     onStopSession: () -> Unit,
-    onToggleAutoRespond: (Boolean) -> Unit,
     onManualRespond: () -> Unit,
     tutorialStep: Int?,
     tutorialIntroReady: Boolean,
@@ -113,6 +116,19 @@ internal fun EmmaHomeScreen(
     var tutorialActionBounds by remember { mutableStateOf<Rect?>(null) }
     var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
     val homeScrollState = rememberScrollState()
+
+    // Show the actual tutorial voice line even before the first conversation.
+    // Retain the most recently spoken reply while the next ASR turn is pending.
+    var lastVisibleEnglish by remember { mutableStateOf(AiCharacterName.introduction(aiName)) }
+    var lastVisibleRoute by remember { mutableStateOf("intro") }
+    LaunchedEffect(latestEmmaText, latestTopic) {
+        if (latestEmmaText.isNotBlank()) {
+            lastVisibleEnglish = latestEmmaText
+            lastVisibleRoute = latestTopic
+        }
+    }
+    val displayEnglish = latestEmmaText.ifBlank { lastVisibleEnglish }
+    val displayRoute = if (latestEmmaText.isNotBlank()) latestTopic else lastVisibleRoute
 
     Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { overlayOrigin = it.boundsInRoot().topLeft }) {
         Scaffold(
@@ -133,7 +149,9 @@ internal fun EmmaHomeScreen(
                         fontWeight = FontWeight.SemiBold,
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        TextButton(onClick = onOpenAbout) { Text("英語学習") }
+                        TextButton(onClick = onOpenPlay, enabled = modelReady && tutorialStep == null) {
+                            Text("☝ 押して聞く", style = MaterialTheme.typography.labelLarge)
+                        }
                         TextButton(onClick = onOpenSettings) { Text("設定") }
                     }
                 }
@@ -145,45 +163,61 @@ internal fun EmmaHomeScreen(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (recording) {
+                    if (!recording) {
+                        // A single large invitation when Emma is asleep.
                         Button(
-                            onClick = onManualRespond,
-                            enabled = modelReady && !busy,
+                            onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
+                            enabled = tutorialStartButtonEnabled(modelReady, busy, tutorialStep),
+                            shape = RoundedCornerShape(22.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(min = 64.dp)
+                                .heightIn(min = 96.dp)
                                 .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                        ) { Text("今すぐAIが返事する") }
-                    }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        OutlinedButton(
-                            onClick = onOpenPlay,
-                            enabled = modelReady && tutorialStep == null,
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
-                            modifier = Modifier.weight(0.28f).heightIn(min = 64.dp),
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("☝")
-                                Text("押して聞く", style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center)
+                                Text("呼びかけを始める",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "ここを押してEmmaとおしゃべり",
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
                             }
                         }
-                        if (!recording) {
+                    } else {
+                        // In a running conversation, responding matters more than stopping.
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Button(
-                                onClick = if (tutorialStep == 1) onTutorialStartSession else onStartSession,
-                                enabled = tutorialStartButtonEnabled(modelReady, busy, tutorialStep),
-                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp)
+                                onClick = onManualRespond,
+                                enabled = modelReady && !busy,
+                                shape = RoundedCornerShape(18.dp),
+                                modifier = Modifier.weight(1f).heightIn(min = 66.dp)
                                     .onGloballyPositioned { tutorialActionBounds = it.boundsInRoot() },
-                            ) { Text("呼びかけを始める", textAlign = TextAlign.Center) }
-                        } else {
+                            ) {
+                                Text(
+                                    "今すぐAIが返事する",
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
                             OutlinedButton(
                                 onClick = onStopSession,
-                                modifier = Modifier.weight(0.72f).heightIn(min = 64.dp),
-                            ) { Text("呼びかけを止める", textAlign = TextAlign.Center) }
+                                shape = RoundedCornerShape(16.dp),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 9.dp),
+                                modifier = Modifier.weight(0.35f).heightIn(min = 60.dp),
+                            ) {
+                                Text("呼びかけを止める",
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
                         }
                     }
                 }
@@ -232,76 +266,62 @@ internal fun EmmaHomeScreen(
                 }
             }
 
-            CompactEmmaAvatar(
-                state = visualState,
-                mouthLevel = mouthLevel,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned { tutorialAvatarBounds = it.boundsInRoot() },
-            )
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
-                shape = MaterialTheme.shapes.extraLarge,
-            ) {
-                Text(
-                    aiName,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+            Box(modifier = Modifier.fillMaxWidth()) {
+                CompactEmmaAvatar(
+                    state = visualState,
+                    mouthLevel = mouthLevel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onGloballyPositioned { tutorialAvatarBounds = it.boundsInRoot() },
                 )
+                if (displayEnglish.isNotBlank()) {
+                    Surface(
+                        modifier = Modifier.align(Alignment.TopStart).padding(10.dp),
+                        color = Color(0xFFFFF6FF),
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(1.dp, Color(0xFFDDBCE9)),
+                        shadowElevation = 3.dp,
+                    ) {
+                        Text(
+                            ReplyDisplayHints.fromScene(displayRoute).topicLabel,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF7945A1),
+                        )
+                    }
+                }
             }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // The status replaces the old always-visible Emma name badge.
+            // Preserve voice and model state, but don't repeat spoken English.
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     Surface(
                         color = statusColor(visualState),
-                        shape = MaterialTheme.shapes.extraSmall,
+                        shape = RoundedCornerShape(50),
                     ) {
                         Text(
                             statusTitle,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.labelMedium,
                             color = statusTextColor(visualState),
                         )
                     }
                     if (showBusyIndicator) CircularProgressIndicator(strokeWidth = 2.dp)
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(statusMessage, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 voiceError?.let {
                     Spacer(Modifier.height(4.dp))
                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
             }
 
-            if (latestEmmaText.isNotBlank() || latestTranscript.isNotBlank()) {
-                ConversationExchange(
-                    transcript = latestTranscript,
-                    emmaText = latestEmmaText,
-                    aiName = aiName,
-                )
-            }
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-                shape = MaterialTheme.shapes.large,
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("自動で返事", style = MaterialTheme.typography.titleSmall)
-                        Text("話し終わりを検出してAIが返します", style = MaterialTheme.typography.bodySmall)
-                    }
-                    Switch(checked = autoRespond, onCheckedChange = onToggleAutoRespond, enabled = visualState != EmmaVisualState.SPEAKING)
-                }
-            }
+            ConversationExchange(
+                emmaText = displayEnglish,
+                route = displayRoute,
+            )
 
             Spacer(Modifier.height(8.dp))
         }
@@ -457,37 +477,37 @@ private fun EmmaCoachMarkOverlay(
 }
 
 @Composable
-private fun ConversationExchange(transcript: String, emmaText: String, aiName: String) {
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (transcript.isNotBlank()) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth(0.88f),
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text("あなた", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(4.dp))
-                        Text(transcript, style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-            }
-        }
-        if (emmaText.isNotBlank()) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth(0.88f),
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text(aiName, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Spacer(Modifier.height(4.dp))
-                        Text(emmaText, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    }
-                }
-            }
+private fun ConversationExchange(emmaText: String, route: String) {
+    val hint = ReplyDisplayHints.fromScene(route)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, Color(0xFFE1C8EA)),
+        shadowElevation = 3.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .background(
+                    Brush.linearGradient(
+                        listOf(Color(0xFFFFFEFD), Color(0xFFFFF7FC), Color(0xFFF8F2FF))
+                    )
+                )
+                .padding(horizontal = 15.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
+            // All three English sentences stay together. Emma remains the visual focus.
+            Text(
+                emmaText,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF44304F),
+            )
+            Text(
+                hint.japaneseNote,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color(0xFF826D91),
+            )
         }
     }
 }
@@ -496,6 +516,8 @@ private fun ConversationExchange(transcript: String, emmaText: String, aiName: S
 internal fun EmmaSettingsScreen(
     endpointMode: EndpointMode,
     onEndpointMode: (EndpointMode) -> Unit,
+    autoRespond: Boolean,
+    onToggleAutoRespond: (Boolean) -> Unit,
     featureSettings: @Composable () -> Unit,
     level: EnglishLevel,
     enabled: Boolean,
@@ -600,6 +622,39 @@ internal fun EmmaSettingsScreen(
             }
 
             AppearanceSettings(enabled = enabled)
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text("呼びかけの設定", style = MaterialTheme.typography.titleMedium)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("自動で返事", style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                "話し終わりを検出してEmmaが返事をします",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = autoRespond,
+                            onCheckedChange = onToggleAutoRespond,
+                            enabled = enabled,
+                        )
+                    }
+                    Text(
+                        "オフの場合は、会話画面の「今すぐAIが返事する」を使えます。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(

@@ -66,6 +66,9 @@ internal class ConversationController(val context: Context) {
     val latestTranscriptState = mutableStateOf("")
     var latestTranscript by latestTranscriptState
 
+    val latestTopicState = mutableStateOf("generic")
+    var latestTopic by latestTopicState
+
     val endpointModeState = mutableStateOf(EndpointMode.fromSaved(preferences.getString("endpoint_mode", null)))
     var endpointMode by endpointModeState
 
@@ -326,6 +329,7 @@ internal class ConversationController(val context: Context) {
                 result.onSuccess { english ->
                     val spokenEnglish = AiCharacterName.stripLeadingSpeakerLabel(english, resolvedAiName)
                     latestEmmaText = spokenEnglish
+                    latestTopic = "generic"
                     status = ProductionEmmaStatus.SPEAKING
                     statusMessage = "${resolvedAiName}が話しています。"
                     voiceError = null
@@ -432,6 +436,7 @@ internal class ConversationController(val context: Context) {
 
                     val spokenEnglish = AiCharacterName.stripLeadingSpeakerLabel(english, resolvedAiName)
                     latestEmmaText = spokenEnglish
+                    latestTopic = lite.lastTopic
                     status = ProductionEmmaStatus.SPEAKING
                     statusMessage =
                         if (infantVocalEvent) "${resolvedAiName}が赤ちゃんに話しかけています。" else "${resolvedAiName}が話しています。"
