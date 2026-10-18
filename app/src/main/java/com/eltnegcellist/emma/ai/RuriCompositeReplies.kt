@@ -393,7 +393,7 @@ internal object RuriCompositeReplies {
             "We're outside together. We have time. I'm here with you."
         ),
         "food|finish_check" to listOf(
-            "All done eating? Wipe, wipe, wipe? Let's have a look!",
+            "All done eating? Wipe, wipe? Let's have a look!",
             "Food all done? One last bite? All done, baby?",
             "All done eating? Last little bite? Let's have a look!"
         ),
@@ -429,7 +429,7 @@ internal object RuriCompositeReplies {
         ),
         "hug|affection" to listOf(
             "I love this cuddle. You're my treasure. Stay close, little one.",
-            "Cuddle, cuddle, cuddle! My sweet baby! I love you!",
+            "Cuddle, cuddle! My sweet baby! I love you!",
             "A cuddle with you! You're warm and cozy. I love you!"
         ),
         "hug|care" to listOf(
@@ -520,7 +520,7 @@ internal object RuriCompositeReplies {
         "milk|effort" to listOf(
             "Little sips, baby! Sip by sip! You're doing fine!",
             "One little sip! Then another? You can rest!",
-            "Sip, sip, sip! Nice little sips! No need to rush!"
+            "Sip, sip! Nice little sips! No need to rush!"
         ),
         "food|effort" to listOf(
             "One tiny bite! Taste, taste, taste! I'll stay close!",

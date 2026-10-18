@@ -14,7 +14,7 @@ internal object RuriFrequentReplyVariants {
         ),
         "milk|praise" to listOf(
             "One more sip! Sip, sip, sip! Hooray, baby!",
-            "Little sips, baby! Sip, sip, sip! High five!",
+            "Little sips, baby! Sip, sip! High five!",
             "You drank your milk! Little sips add up. Well done, baby!",
             "See what you did! Milk time went well. What a happy moment!",
             "You took little sips! Look at you go! Good job, baby!"
