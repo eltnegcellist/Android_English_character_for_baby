@@ -86,30 +86,7 @@ internal fun FirstRunOnboardingScreen(
                 )
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        "AIキャラクター",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(
-                        "名前はEmma。初回チュートリアルの中で声で自己紹介します。",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                    )
-                    Text(
-                        "音声は固定の英文で再生します。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
+
 
             Text("初期設定では会話履歴を端末内に残します。録音は保存しません。画面を閉じると会話は停止します。画面を閉じても続けたい場合は設定でオンにできます。履歴の保存も設定で変更できます。", style = MaterialTheme.typography.bodySmall)
 
