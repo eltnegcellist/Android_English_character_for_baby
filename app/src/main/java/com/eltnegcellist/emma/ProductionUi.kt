@@ -83,6 +83,9 @@ internal fun tutorialStartButtonEnabled(
 internal fun tutorialHighlightsAction(tutorialStep: Int?): Boolean =
     tutorialStep != null && tutorialStep != 0
 
+internal fun tutorialStepAfterIntroduction(tutorialStep: Int?): Int? =
+    if (tutorialStep == 0) 1 else tutorialStep
+
 @Composable
 internal fun EmmaHomeScreen(
     visualState: EmmaVisualState,
@@ -441,7 +444,7 @@ private fun EmmaCoachMarkOverlay(
                         0 -> if (introReady) {
                             "${aiName}の自己紹介が終わりました。明るく表示されている顔が、赤ちゃんへ英語で話しかけます。"
                         } else {
-                            "${aiName}が自己紹介しています。声が終わるまでそのまま聞いてください。"
+                            "${aiName}が自己紹介しています。声が終わると自動で次のステップへ進みます。"
                         }
                         1 -> "画面下で光っている「呼びかけを始める」を押してください。マイクが始まり、親子の場面に合わせた英語の呼びかけを開始します。"
                         else -> "赤ちゃんへ普段どおり日本語で話しかけてみてください。話し終わったら、必要に応じて明るく表示されている「今すぐAIが返事する」を押すと、その時点までの言葉をもとに${aiName}が返事します。「自動で返事」がオンの場合は、押さなくても話し終わりを検出して自動で返事します。"
