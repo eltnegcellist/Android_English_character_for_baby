@@ -181,3 +181,13 @@ Brightens Vivid and Filled colors, adds gradient explanations, and uses a 60-sec
 - Bundled ONNX model: 2,327,524 bytes; SHA-256 `1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3`.
 - Model and notice are bundled together; see `app/src/main/assets/vad/model-provenance.json` and `LICENSE-SILERO-VAD-MIT.txt` in that directory.
 - Runs through the existing full ONNX Runtime Android 1.23.2. This adds no eSpeak or sherpa TTS dependency.
+
+## Multilingual Whisper Small and E5
+
+Non-Japanese mode packages a local Transformers.js 3.8.1 (Apache-2.0) /
+ONNX Runtime Web 1.30.0 (MIT) worker. It downloads pinned multilingual
+Whisper Small (OpenAI MIT; Xenova conversion Apache-2.0) and multilingual E5
+Small (Microsoft MIT) only when needed. No speech is sent to cloud inference.
+See `app/src/main/assets/multilingual/licenses/multilingual/NOTICE.md`, the
+included license copies and pinned `src/multilingual/assets.json`.
+Japanese native Moonshine/Ruri assets and notices remain unchanged.

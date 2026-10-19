@@ -39,7 +39,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import com.eltnegcellist.emma.LocalizedText as Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
@@ -63,6 +63,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import com.eltnegcellist.emma.ai.AiCharacterName
 import com.eltnegcellist.emma.ai.EnglishLevel
 import com.eltnegcellist.emma.tts.KittenSpeaker
@@ -85,6 +87,7 @@ internal fun tutorialHighlightsAction(tutorialStep: Int?): Boolean =
 
 @Composable
 internal fun EmmaHomeScreen(
+    languagePicker: @Composable () -> Unit = {},
     visualState: EmmaVisualState,
     mouthLevel: Float,
     statusTitle: String,
@@ -145,14 +148,16 @@ internal fun EmmaHomeScreen(
                 ) {
                     Text(
                         "みつことば",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = if(AppLanguage.language=="ja") MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        TextButton(onClick = onOpenPlay, enabled = modelReady && tutorialStep == null) {
-                            Text("☝ 押して聞く", style = MaterialTheme.typography.labelLarge)
+                        languagePicker()
+                        TextButton(onClick = onOpenPlay, enabled = modelReady && tutorialStep == null,
+                            modifier=Modifier.semantics { contentDescription=AppLanguage.translate("押して聞く") }) {
+                            Text(if(AppLanguage.language=="ja") "☝ 押して聞く" else "☝", style = MaterialTheme.typography.labelLarge)
                         }
-                        TextButton(onClick = onOpenSettings) { Text("設定") }
+                        TextButton(onClick = onOpenSettings,modifier=Modifier.semantics { contentDescription=AppLanguage.translate("設定") }) { Text(if(AppLanguage.language=="ja") "設定" else "⚙") }
                     }
                 }
             }
@@ -503,7 +508,7 @@ private fun ConversationExchange(emmaText: String, route: String) {
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFF44304F),
             )
-            Text(
+            if(AppLanguage.language=="ja") Text(
                 hint.japaneseNote,
                 style = MaterialTheme.typography.labelSmall,
                 color = Color(0xFF826D91),
@@ -514,6 +519,7 @@ private fun ConversationExchange(emmaText: String, route: String) {
 
 @Composable
 internal fun EmmaSettingsScreen(
+    languagePicker: @Composable () -> Unit = {},
     endpointMode: EndpointMode,
     onEndpointMode: (EndpointMode) -> Unit,
     autoRespond: Boolean,
@@ -621,6 +627,7 @@ internal fun EmmaSettingsScreen(
                 TextButton(onClick = onOpenAbout) { Text("英語学習に使える理由") }
             }
 
+            languagePicker()
             AppearanceSettings(enabled = enabled)
 
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -698,6 +705,7 @@ internal fun EmmaSettingsScreen(
 
             featureSettings()
 
+            if (AppLanguage.language == "ja") {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("音声認識", style = MaterialTheme.typography.titleMedium)
@@ -780,6 +788,11 @@ internal fun EmmaSettingsScreen(
                         Text("話題の判定方法・話題一覧を見る")
                     }
                 }
+            }
+
+            } else {
+                Text("Whisper Small · E5", style = MaterialTheme.typography.titleMedium)
+                Text("この端末で音声を処理します。モデルは必要なときだけ取得し、保存済みのものは再利用します。")
             }
 
             // Model repair for ordinary users is always Lite-only.

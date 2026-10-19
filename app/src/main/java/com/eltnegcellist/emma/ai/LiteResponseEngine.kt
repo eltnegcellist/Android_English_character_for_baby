@@ -47,18 +47,19 @@ internal class LiteResponseEngine {
         semantic: SemanticTopicPrediction? = null,
         interactionEnabled: Boolean = true,
     ): LiteResponse {
+        val e5=semantic?.mode=="multilingual"
         val normalTopic = semantic?.let { p ->
-            findScene(p.topic.takeUnless { it == "generic" || !p.margin.isFinite() || !p.probability.isFinite() || p.margin < 0.05 || p.probability < 0.50 })
+            findScene(p.topic.takeUnless { it == "generic" || !p.margin.isFinite() || !p.probability.isFinite() || p.margin < (if(e5) 0.0 else 0.05) || p.probability < (if(e5) 0.0 else 0.50) })
         }
         val interaction = if (interactionEnabled && semantic != null &&
-            semantic.interactionProbability >= 0.50 &&
+            semantic.interactionProbability.isFinite() && semantic.interactionProbability >= (if(e5) 0.0 else 0.50) &&
             semantic.interaction != "none" &&
             semantic.interaction in InteractionReplyBank.replies) {
             semantic.interaction
         } else null
         // Preserve the normal 50%/5pt decision. Rescue only when both axes
         // abstain; missing/disabled Interaction predictions are not eligible.
-        val topicRescued = normalTopic == null && interaction == null && interactionEnabled &&
+        val topicRescued = !e5 && normalTopic == null && interaction == null && interactionEnabled &&
             semantic != null && semantic.topic != "generic" &&
             semantic.probability.isFinite() && semantic.margin.isFinite() &&
             semantic.probability >= 0.30 && semantic.margin >= 0.10 &&

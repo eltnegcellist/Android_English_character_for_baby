@@ -120,7 +120,7 @@ internal class ConversationController(val context: Context) {
     var pendingStartAfterPermission by pendingStartAfterPermissionState
 
     val modelPresentState = mutableStateOf(
-        MoonshineModelStore.isInstalled(context, initialAsrModel) && PrerecordedVoiceStore.isReady(context)
+        (if(AppLanguage.selected(context)=="ja") MoonshineModelStore.isInstalled(context, initialAsrModel) else MultilingualRuntime.isCached(context)) && PrerecordedVoiceStore.isReady(context)
     )
     var modelPresent by modelPresentState
 

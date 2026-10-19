@@ -15,7 +15,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import com.eltnegcellist.emma.LocalizedText as Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,6 +30,17 @@ internal fun AboutEmmaScreen(
 ) {
     val uriHandler = LocalUriHandler.current
     BackHandler { onBack() }
+    if(AppLanguage.language!="ja") {
+        Scaffold { padding -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(padding).padding(20.dp),
+            verticalArrangement=Arrangement.spacedBy(16.dp)) {
+            TextButton(onClick=onBack) { Text("← 戻る") }
+            Text("説明",style=MaterialTheme.typography.headlineMedium)
+            Text("会話は翻訳ではなく、親・赤ちゃん・Emmaが同じ時間を共有するためのものです。短い英語を日々の育児に添えます。")
+            Text("この端末で音声を処理します。モデルは必要なときだけ取得し、保存済みのものは再利用します。")
+            Text("初期設定では会話履歴を端末内に残します。録音は保存しません。設定でオフにできます。")
+        }}
+        return
+    }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(

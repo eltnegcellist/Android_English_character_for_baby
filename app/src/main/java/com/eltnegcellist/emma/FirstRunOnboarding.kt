@@ -16,7 +16,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import com.eltnegcellist.emma.LocalizedText as Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun FirstRunOnboardingScreen(
+    languagePicker: @Composable () -> Unit = {},
     busy: Boolean,
     ready: Boolean,
     phase: String,
@@ -48,6 +49,7 @@ internal fun FirstRunOnboardingScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             MitsukotobaBrandMark()
+            languagePicker()
             Text(
                 "いつもの日本語から、赤ちゃんへの英語が生まれる。",
                 style = MaterialTheme.typography.headlineSmall,
@@ -131,41 +133,7 @@ internal fun FirstRunOnboardingScreen(
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("モデル性能", style = MaterialTheme.typography.titleMedium)
-                        Text("高性能モデルを使う", style = MaterialTheme.typography.labelLarge)
-                        Text(
-                            if (highPerformance) {
-                                "Moonshine Smallで日本語を聞き取り、意味で育児の話題を理解します。"
-                            } else {
-                                "Moonshine Tinyで日本語を聞き取り、軽量な従来判定を使います。"
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(
-                        checked = highPerformance,
-                        onCheckedChange = onHighPerformanceChange,
-                        enabled = !busy,
-                    )
-                }
-            }
-            Text(
-                if (highPerformance) {
-                    "Moonshine Smallで聞き取り、Ruri Semanticで話題を理解し、短い英語をKitten TTS / Kikiで読み上げます。"
-                } else {
-                    "Moonshine Tinyで聞き取り、軽量な話題判定で英語を選び、Kitten TTS / Kikiで読み上げます。"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Text(if (AppLanguage.language == "ja") "Moonshine Small · Ruri" else "Whisper Small · E5 · ~387 MB", style = MaterialTheme.typography.bodySmall)
 
             when {
                 busy -> {
@@ -194,6 +162,7 @@ internal fun FirstRunOnboardingScreen(
                 else -> {
                     Button(
                         onClick = onPrepare,
+                        enabled = !AppLanguage.choiceRequired.value,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(if (errorMessage == null) "みつことばを準備する" else "もう一度準備する")

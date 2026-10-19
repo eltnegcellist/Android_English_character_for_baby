@@ -60,6 +60,7 @@ internal fun shouldRequestConversationNotificationPermission(
 class ProductionMainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppLanguage.initialize(this)
 
         // Emma's speech is ordinary media playback, not call/VoIP audio.
         // Keep hardware volume keys attached to the media stream while the app
@@ -260,7 +261,7 @@ private fun ProductionEmmaApp() {
     fun speakEmma(text: String) = runtime.speakEmma(text)
 
     fun liteModelsPresent(selectedAsr: MoonshineAsrModel = asrModel): Boolean =
-        MoonshineModelStore.isInstalled(context, selectedAsr) && PrerecordedVoiceStore.isReady(context)
+        (if(AppLanguage.language=="ja") MoonshineModelStore.isInstalled(context, selectedAsr) else MultilingualRuntime.isCached(context)) && PrerecordedVoiceStore.isReady(context)
 
     fun loadModel() {
         if (disposed) return
@@ -279,10 +280,11 @@ private fun ProductionEmmaApp() {
         status = ProductionEmmaStatus.MODEL_LOADING
         statusMessage = "みつことば Liteを起動しています…"
         val requestedAsr = asrModel
+        val requestedLanguage=AppLanguage.language
         EmmaWorkQueue.execute {
             val result = lite.initialize(requestedAsr)
             mainHandler.post {
-                if (disposed || asrModel != requestedAsr) return@post
+                if (disposed || asrModel != requestedAsr || AppLanguage.language!=requestedLanguage) return@post
                 result.onSuccess {
                     modelReady = true
                     kittenInstalled = PrerecordedVoiceStore.isReady(context)
@@ -460,17 +462,18 @@ private fun ProductionEmmaApp() {
 
     fun startFirstRunSetup() {
         if (disposed || firstRunBusy) return
+        if(AppLanguage.choiceRequired.value) return
 
-        val requestedAsr = if (highPerformance) MoonshineAsrModel.SMALL else MoonshineAsrModel.TINY
+        val requestedAsr = MoonshineAsrModel.SMALL
         asrModel = requestedAsr
         asrModelManuallySelected = !highPerformance
-        semanticEnabled = highPerformance
+        semanticEnabled = true
         preferences.edit()
             .putString("asr_model", requestedAsr.savedValue)
             .putBoolean("asr_model_manual", !highPerformance)
             .putBoolean("first_run_start_tiny", !highPerformance)
             .putBoolean("first_run_high_performance", highPerformance)
-            .putBoolean("semantic_enabled", highPerformance)
+            .putBoolean("semantic_enabled", true)
             .putString("conversation_engine_mode", "LITE")
             .apply()
         preferences.edit().putString("audience_mode", "BABY").apply()
@@ -699,6 +702,17 @@ private fun ProductionEmmaApp() {
         return
     }
 
+    val activeLanguage=AppLanguage.language
+    fun changeLanguage(next: String) {
+        if(firstRunBusy || liteSetupBusy || status==ProductionEmmaStatus.MODEL_LOADING || disposed) return
+        stopSession();autoStartPending=false
+        if(AppLanguage.language!="ja" && next=="ja") MultilingualRuntime.get(context).release()
+        lite.close();AppLanguage.select(next)
+        semanticEnabled=true;preferences.edit().putBoolean("semantic_enabled",true).apply()
+        modelReady=false;modelPresent=liteModelsPresent()
+        if(!onboardingOpen) startLiteAutomaticSetup()
+    }
+    val languagePicker: @Composable () -> Unit = { LanguagePicker(enabled=!firstRunBusy&&!liteSetupBusy&&status!=ProductionEmmaStatus.MODEL_LOADING,onSelect=::changeLanguage) }
     val blockingModelPreparation = firstRunBusy || liteSetupBusy
     val busy = blockingModelPreparation || generating ||
         status == ProductionEmmaStatus.MODEL_IMPORTING ||
@@ -735,6 +749,7 @@ private fun ProductionEmmaApp() {
         )
     } else if (onboardingOpen) {
         FirstRunOnboardingScreen(
+            languagePicker=languagePicker,
             busy = firstRunBusy,
             ready = firstRunReady,
             phase = firstRunPhase,
@@ -760,6 +775,7 @@ private fun ProductionEmmaApp() {
         )
     } else if (settingsOpen) {
         EmmaSettingsScreen(
+            languagePicker=languagePicker,
             endpointMode = runtime.endpointMode,
             onEndpointMode = runtime::updateEndpointMode,
             autoRespond = autoRespond,
@@ -773,7 +789,7 @@ private fun ProductionEmmaApp() {
             previewing = !recording && status == ProductionEmmaStatus.SPEAKING,
             modelReady = modelReady,
             modelPresent = modelPresent,
-            asrInstalled = MoonshineModelStore.isInstalled(context, asrModel),
+            asrInstalled = if(activeLanguage=="ja") MoonshineModelStore.isInstalled(context, asrModel) else MultilingualRuntime.isCached(context),
             kittenInstalled = kittenInstalled,
             lastSpeechMillis = lastSpeechMillis,
             lastTtsGenerationMillis = lastTtsGenerationMillis,
@@ -782,7 +798,7 @@ private fun ProductionEmmaApp() {
             lastEndpointToFirstAudioMillis = lastEndpointToFirstAudioMillis,
             asrModel = asrModel,
             semanticEnabled = semanticEnabled,
-            semanticInstalled = RuriSemanticModelStore.isInstalled(context),
+            semanticInstalled = if(activeLanguage=="ja") RuriSemanticModelStore.isInstalled(context) else MultilingualRuntime.isCached(context),
             semanticDebugBusy = semanticDebugBusy,
             semanticDebugResult = semanticDebugResult,
             semanticDebugEnglish = semanticDebugEnglish,
@@ -853,6 +869,7 @@ private fun ProductionEmmaApp() {
         )
     } else {
         EmmaHomeScreen(
+            languagePicker={LanguagePicker(enabled=!busy,compact=true,onSelect=::changeLanguage)},
             visualState = visualState,
             mouthLevel = mouthLevel,
             statusTitle = statusTitle,
