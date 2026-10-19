@@ -200,8 +200,10 @@ internal class ConversationController(val context: Context) {
                     if (screenIntroductionPlaying) {
                         screenIntroductionPlaying = false
                         screenIntroductionPlayed = true
+                        // Move to the conversation-start action only after playback ends.
+                        tutorialStep = tutorialStepAfterIntroduction(tutorialStep)
                         status = ProductionEmmaStatus.IDLE
-                        statusMessage = "自己紹介が終わりました。"
+                        statusMessage = "自己紹介が終わりました。呼びかけを始めてください。"
                     } else {
                         if (recording) recorder.resumeBuffering(clearExisting = true)
                         status = if (recording) ProductionEmmaStatus.LISTENING else ProductionEmmaStatus.IDLE

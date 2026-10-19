@@ -1,10 +1,19 @@
 package com.eltnegcellist.emma
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TutorialStartButtonTest {
+    @Test
+    fun finishedIntroductionMovesOnlyFirstStepToConversationStart() {
+        assertEquals(1, tutorialStepAfterIntroduction(0))
+        assertEquals(1, tutorialStepAfterIntroduction(1))
+        assertEquals(2, tutorialStepAfterIntroduction(2))
+        assertEquals(null, tutorialStepAfterIntroduction(null))
+    }
+
     @Test
     fun tutorialStepTwoButtonStaysEnabledWhenOnlyBusyIsStale() {
         assertTrue(tutorialStartButtonEnabled(modelReady = true, busy = true, tutorialStep = 1))
