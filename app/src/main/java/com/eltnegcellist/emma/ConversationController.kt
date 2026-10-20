@@ -345,6 +345,11 @@ internal class ConversationController(val context: Context) {
                 }
             }
             japaneseGreetingTts = player
+            // A missing Android TTS completion callback must never keep the
+            // microphone suspended indefinitely.
+            mainHandler.postDelayed({
+                finishJapaneseResumeGreeting(generation, ticket)
+            }, 8_000L)
         } catch (error: Exception) {
             finishJapaneseResumeGreeting(generation, ticket)
         }
