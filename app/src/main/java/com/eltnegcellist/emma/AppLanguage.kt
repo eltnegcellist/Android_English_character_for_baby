@@ -11,6 +11,7 @@ internal object AppLanguage {
     val languageState = mutableStateOf("ja")
     val choiceRequired = mutableStateOf(false)
     val language get() = languageState.value
+    val productName get() = if (language == "ja") "みつことば" else "CooTrio"
     private var context: Context? = null
     private var catalogue = emptyMap<String,List<String>>()
     fun initialize(context: Context) {

@@ -147,7 +147,7 @@ internal fun EmmaHomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        "みつことば",
+                        AppLanguage.productName,
                         style = if(AppLanguage.language=="ja") MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -825,7 +825,7 @@ internal fun EmmaSettingsScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                "みつことば Android",
+                "${AppLanguage.productName} Android",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .clickable {
