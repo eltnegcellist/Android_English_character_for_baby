@@ -53,15 +53,24 @@ internal fun MitsukotobaBrandMark(
             )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            BrandLetter("み", Color(0xFFF06E72))
-            BrandLetter("つ", Color(0xFF8E6552))
-            BrandLetter("こ", Color(0xFFF3B943))
-            BrandLetter("と", Color(0xFF62C7A0))
-            BrandLetter("ば", Color(0xFF765548))
+        if (AppLanguage.language == "ja") {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                BrandLetter("み", Color(0xFFF06E72))
+                BrandLetter("つ", Color(0xFF8E6552))
+                BrandLetter("こ", Color(0xFFF3B943))
+                BrandLetter("と", Color(0xFF62C7A0))
+                BrandLetter("ば", Color(0xFF765548))
+            }
+        } else {
+            Text(
+                text = AppLanguage.productName,
+                color = Color(0xFF765548),
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 42.sp,
+            )
         }
     }
 }

@@ -5,6 +5,13 @@ import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineJapaneseAsr
 import com.eltnegcellist.emma.tts.DiagnosticStore
 import java.util.Locale
+import com.eltnegcellist.emma.AppLanguage
+import com.eltnegcellist.emma.MultilingualRuntime
+import com.eltnegcellist.emma.audio.WavMono16
+import org.json.JSONObject
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import android.util.Base64
 
 internal data class LiteDiagnosticComparison(
     val ruleScene: String,
@@ -35,26 +42,41 @@ class LiteEmmaClient(
     private val debugSemanticResponses = LiteResponseEngine()
     private val debugGuardResponses = LiteResponseEngine()
 
-    fun isReady(): Boolean = asr.isReady()
+    fun isReady(): Boolean = if(AppLanguage.selected(appContext)=="ja") asr.isReady() else MultilingualRuntime.get(appContext).ready
 
     fun resetConversationContext() = responses.resetConversationContext()
 
     fun initialize(model: MoonshineAsrModel): Result<Unit> =
-        asr.initialize(model)
+        if(AppLanguage.selected(appContext)=="ja") asr.initialize(model) else MultilingualRuntime.get(appContext).prepare()
 
     fun createEnglishIsland(
         wavAudio: ByteArray,
         level: EnglishLevel,
         onTranscript: (String) -> Unit,
     ): Result<String> = runCatching {
-        val transcript = asr.transcribe(wavAudio).getOrThrow().trim()
-        require(MeaningfulJapaneseUtterance.isMeaningful(transcript)) {
+        val language=AppLanguage.selected(appContext)
+        val foreign=language!="ja"
+        val multilingual=if(foreign) MultilingualRuntime.get(appContext) else null
+        val transcript = if(multilingual!=null) {
+            val pcm=WavMono16.decode(wavAudio);require(pcm.sampleRate==16000)
+            val buffer=ByteBuffer.allocate(pcm.samples.size*4).order(ByteOrder.LITTLE_ENDIAN)
+            pcm.samples.forEach { buffer.putFloat(it) }
+            multilingual.request("transcribe",JSONObject().put("language",language)
+                .put("base64",Base64.encodeToString(buffer.array(),Base64.NO_WRAP))).getString("text").trim()
+        }else asr.transcribe(wavAudio).getOrThrow().trim()
+        require(if(foreign) transcript.any { it.isLetterOrDigit() } else MeaningfulJapaneseUtterance.isMeaningful(transcript)) {
             "意味のある発話を聞き取れませんでした。"
         }
         onTranscript(transcript)
 
         val semanticRequested = preferences.getBoolean("semantic_enabled", true)
-        val semanticPrediction = if (
+        val semanticPrediction = if(multilingual!=null) {
+            val result=multilingual.request("predict",JSONObject().put("text",transcript))
+            val topic=result.getJSONObject("topic");val interaction=result.getJSONObject("interaction")
+            SemanticTopicPrediction(topic.getString("id"),topic.getDouble("probability"),topic.getDouble("margin"),
+                mode="multilingual",interaction=interaction.getString("id"),
+                interactionProbability=interaction.getDouble("probability"),interactionMargin=interaction.getDouble("margin"))
+        }else if (
             semanticRequested &&
             RuriSemanticModelStore.isInstalled(appContext)
         ) {

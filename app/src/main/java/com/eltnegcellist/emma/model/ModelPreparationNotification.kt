@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import com.eltnegcellist.emma.AppLanguage
 
 internal object ModelPreparationNotification {
     const val CHANNEL_ID = "model_preparation"
@@ -13,8 +14,8 @@ internal object ModelPreparationNotification {
     fun build(context: Context, phase: String, percent: Int?): Notification {
         ensureChannel(context)
         return Notification.Builder(context, CHANNEL_ID)
-            .setContentTitle("みつことばを準備しています")
-            .setContentText(phase)
+            .setContentTitle(AppLanguage.translate("みつことばを準備しています"))
+            .setContentText(AppLanguage.translate(phase))
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -32,9 +33,9 @@ internal object ModelPreparationNotification {
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
-                "モデルの準備",
+                AppLanguage.translate("モデルの準備"),
                 NotificationManager.IMPORTANCE_LOW,
-            ).apply { description = "音声認識・音声・Full会話モデルのダウンロード進捗" },
+            ).apply { description = AppLanguage.translate("音声認識・音声・Full会話モデルのダウンロード進捗") },
         )
     }
 }

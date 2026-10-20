@@ -1,0 +1,19 @@
+{
+  "runtime": "transformers.js-3.8.1",
+  "models": {
+    "e5": {
+      "id": "Xenova/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+      "dtype": "q8",
+      "license": "MIT"
+    },
+    "whisper": {
+      "id": "Xenova/whisper-small",
+      "revision": "2d67713f236afa48a18992566e7647f6ca848e13",
+      "dtype": "q8",
+      "license": "Apache-2.0"
+    }
+  },
+  "modelBytes": 387269693,
+  "weightsBundled": false
+}

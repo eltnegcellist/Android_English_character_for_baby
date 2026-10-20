@@ -308,10 +308,10 @@ internal fun HistoryScreen(runtime: ConversationController, onExit: () -> Unit) 
                                 }
                             }
                             Text("聞き取った言葉", style = MaterialTheme.typography.labelSmall)
-                            Text(entry.japaneseText, style = MaterialTheme.typography.bodyMedium)
+                            androidx.compose.material3.Text(entry.japaneseText, style = MaterialTheme.typography.bodyMedium)
                             Spacer(Modifier.height(4.dp))
                             Text("再生した英語", style = MaterialTheme.typography.labelSmall)
-                            Text(entry.englishText, style = MaterialTheme.typography.titleMedium)
+                            androidx.compose.material3.Text(entry.englishText, style = MaterialTheme.typography.titleMedium)
                         }
                     }
                 }

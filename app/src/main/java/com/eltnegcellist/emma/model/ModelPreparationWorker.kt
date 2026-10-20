@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.eltnegcellist.emma.asr.MoonshineAsrModel
+import com.eltnegcellist.emma.AppLanguage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -15,6 +16,7 @@ internal class ModelPreparationWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(appContext, params) {
     override suspend fun doWork(): Result {
+        AppLanguage.initialize(applicationContext)
         val kind = inputData.getString(KEY_KIND)
             ?.let { runCatching { ModelPreparationKind.valueOf(it) }.getOrNull() }
             ?: return Result.failure()

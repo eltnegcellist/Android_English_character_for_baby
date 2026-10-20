@@ -5,6 +5,8 @@ import com.eltnegcellist.emma.asr.MoonshineAsrModel
 import com.eltnegcellist.emma.asr.MoonshineModelStore
 import com.eltnegcellist.emma.ai.RuriSemanticModelStore
 import com.eltnegcellist.emma.tts.PrerecordedVoiceStore
+import com.eltnegcellist.emma.AppLanguage
+import com.eltnegcellist.emma.MultilingualRuntime
 
 internal object ModelPreparationTask {
     fun run(
@@ -13,6 +15,14 @@ internal object ModelPreparationTask {
         asr: MoonshineAsrModel,
         progress: (String, Int?) -> Unit,
     ): Result<Unit> = runCatching {
+        if(AppLanguage.selected(context)!="ja") {
+            check(PrerecordedVoiceStore.isReady(context)) { "Prerecorded voices are missing from the APK" }
+            MultilingualRuntime.get(context).prepare { percent ->
+                progress(AppLanguage.translate("モデルを準備しています…"),percent)
+            }.getOrThrow()
+            progress(AppLanguage.translate("モデルの準備ができました"),100)
+            return@runCatching
+        }
         fun moonshine() {
             if (MoonshineModelStore.isInstalled(context, asr)) return
             MoonshineModelStore.downloadAndInstall(context, asr) { p ->
