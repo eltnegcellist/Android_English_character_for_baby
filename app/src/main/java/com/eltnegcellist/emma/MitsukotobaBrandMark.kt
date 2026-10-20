@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,15 +54,25 @@ internal fun MitsukotobaBrandMark(
             )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            BrandLetter("み", Color(0xFFF06E72))
-            BrandLetter("つ", Color(0xFF8E6552))
-            BrandLetter("こ", Color(0xFFF3B943))
-            BrandLetter("と", Color(0xFF62C7A0))
-            BrandLetter("ば", Color(0xFF765548))
+        val appName = stringResource(R.string.app_name)
+        if (appName == "みつことば") {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                BrandLetter("み", Color(0xFFF06E72))
+                BrandLetter("つ", Color(0xFF8E6552))
+                BrandLetter("こ", Color(0xFFF3B943))
+                BrandLetter("と", Color(0xFF62C7A0))
+                BrandLetter("ば", Color(0xFF765548))
+            }
+        } else {
+            Text(
+                text = appName,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 42.sp,
+                color = Color(0xFF765548),
+            )
         }
     }
 }

@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -147,7 +148,7 @@ internal fun EmmaHomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        "みつことば",
+                        stringResource(R.string.app_name),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -815,7 +816,7 @@ internal fun EmmaSettingsScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                "みつことば Android",
+                "${stringResource(R.string.app_name)} Android",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .clickable {
