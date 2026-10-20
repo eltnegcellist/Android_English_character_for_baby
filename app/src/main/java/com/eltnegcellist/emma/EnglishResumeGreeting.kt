@@ -27,7 +27,7 @@ internal object EnglishResumeGreeting {
         val phrases = category.getJSONArray("phrases")
         val sentences = (0 until phrases.length()).flatMap { i ->
             phrases.getString(i).split(Regex("(?<=[.!?])\\s+"))
-                .map(String::trim).filter(String::isNotEmpty)
+                .map { it.trim() }.filter { it.isNotEmpty() }
         }.toSet()
         recordedCandidates.filter { it in sentences && PrerecordedVoiceStore.hasText(context, it) }
     }.getOrDefault(emptyList())
