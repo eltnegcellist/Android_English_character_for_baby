@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import java.util.Locale
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -40,6 +43,10 @@ internal class ConversationController(val context: Context) {
     val history = ConversationHistory(context)
     private val playbackHistory = PlaybackHistoryGate<HistoryEntry>()
     private var sessionId = ""
+    private var hasStartedConversation = false
+    private var previousJapaneseGreeting: String? = null
+    private var japaneseGreetingTts: TextToSpeech? = null
+    private var japaneseGreetingGeneration = 0
     var uiVisible = false
     var onStopped: (() -> Unit)? = null
     var startRequested = false
@@ -274,6 +281,11 @@ internal class ConversationController(val context: Context) {
                 if (recorder.endpointFallbackReason != null) {
                     statusMessage += " 声の判定を準備できなかったため、今回は従来方式を使います。"
                 }
+                val isRestart = hasStartedConversation
+                hasStartedConversation = true
+                if (isRestart && AppLanguage.selected(context) == "ja" && tutorialStep == null) {
+                    speakJapaneseResumeGreeting()
+                }
             }
             .onFailure {
                 stopSession()
@@ -282,7 +294,92 @@ internal class ConversationController(val context: Context) {
             }
     }
 
+    /** The Qwen3 recorded bank has no Japanese clips. This greeting-only
+     *  path uses Android's Japanese speech engine; normal English replies stay
+     *  on the existing prerecorded playback path.
+     */
+    private fun speakJapaneseResumeGreeting() {
+        val ticket = session.ticket()
+        val generation = ++japaneseGreetingGeneration
+        val text = JapaneseResumeGreeting.choose(previousJapaneseGreeting)
+        previousJapaneseGreeting = text
+        recorder.pauseBuffering()
+        recorder.clear()
+        status = ProductionEmmaStatus.SPEAKING
+        statusMessage = "Emmaが挨拶しています。"
+        try {
+            lateinit var player: TextToSpeech
+            player = TextToSpeech(context) { initStatus ->
+                mainHandler.post {
+                    if (generation != japaneseGreetingGeneration || !session.accepts(ticket) || disposed) {
+                        return@post
+                    }
+                    if (initStatus != TextToSpeech.SUCCESS) {
+                        finishJapaneseResumeGreeting(generation, ticket)
+                        return@post
+                    }
+                    val languageStatus = player.setLanguage(Locale.JAPAN)
+                    if (languageStatus == TextToSpeech.LANG_MISSING_DATA ||
+                        languageStatus == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        finishJapaneseResumeGreeting(generation, ticket)
+                        return@post
+                    }
+                    player.setAudioAttributes(
+                        android.media.AudioAttributes.Builder()
+                            .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build()
+                    )
+                    player.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                        override fun onStart(utteranceId: String?) = Unit
+                        override fun onDone(utteranceId: String?) {
+                            mainHandler.post { finishJapaneseResumeGreeting(generation, ticket) }
+                        }
+                        @Deprecated("Deprecated in Java")
+                        override fun onError(utteranceId: String?) {
+                            mainHandler.post { finishJapaneseResumeGreeting(generation, ticket) }
+                        }
+                    })
+                    val result = player.speak(text, TextToSpeech.QUEUE_FLUSH, null, "resume-$generation")
+                    if (result != TextToSpeech.SUCCESS) finishJapaneseResumeGreeting(generation, ticket)
+                }
+            }
+            japaneseGreetingTts = player
+            // A missing Android TTS completion callback must never keep the
+            // microphone suspended indefinitely.
+            mainHandler.postDelayed({
+                finishJapaneseResumeGreeting(generation, ticket)
+            }, 8_000L)
+        } catch (error: Exception) {
+            finishJapaneseResumeGreeting(generation, ticket)
+        }
+    }
+
+    private fun finishJapaneseResumeGreeting(generation: Int, ticket: Long) {
+        if (generation != japaneseGreetingGeneration) return
+        cancelJapaneseResumeGreeting()
+        if (disposed || !recording || !session.accepts(ticket)) return
+        recorder.resumeBuffering(clearExisting = true)
+        status = ProductionEmmaStatus.LISTENING
+        statusMessage = if (autoRespond) {
+            "普通に話しかけてください。"
+        } else {
+            "話したところで「今すぐAIが返事する」を押してください。"
+        }
+    }
+
+    private fun cancelJapaneseResumeGreeting() {
+        japaneseGreetingGeneration++
+        val player = japaneseGreetingTts
+        japaneseGreetingTts = null
+        player?.runCatching {
+            stop()
+            shutdown()
+        }
+    }
+
     fun stopSession() {
+        cancelJapaneseResumeGreeting()
         releaseAudio()
         startRequested = false
         playbackHistory.cancel()
