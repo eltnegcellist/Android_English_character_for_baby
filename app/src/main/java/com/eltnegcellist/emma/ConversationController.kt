@@ -40,6 +40,8 @@ internal class ConversationController(val context: Context) {
     val history = ConversationHistory(context)
     private val playbackHistory = PlaybackHistoryGate<HistoryEntry>()
     private var sessionId = ""
+    private var hasStartedConversation = false
+    private var previousEnglishGreeting: String? = null
     var uiVisible = false
     var onStopped: (() -> Unit)? = null
     var startRequested = false
@@ -275,6 +277,27 @@ internal class ConversationController(val context: Context) {
                 }
                 if (recorder.endpointFallbackReason != null) {
                     statusMessage += " 声の判定を準備できなかったため、今回は従来方式を使います。"
+                }
+                val isRestart = hasStartedConversation
+                hasStartedConversation = true
+                if (isRestart && tutorialStep == null) {
+                    val greeting = EnglishResumeGreeting.choose(context, previousEnglishGreeting)
+                    if (greeting != null) {
+                        previousEnglishGreeting = greeting
+                        latestEmmaText = greeting
+                        latestTopic = "greeting"
+                        recorder.pauseBuffering()
+                        recorder.clear()
+                        status = ProductionEmmaStatus.SPEAKING
+                        statusMessage = "Emmaが英語で挨拶しています。"
+                        // Use the regular English recording player only.
+                        // Its onDone callback resumes recording automatically.
+                        if (!speakEmma(greeting)) {
+                            recorder.resumeBuffering(clearExisting = true)
+                            status = ProductionEmmaStatus.LISTENING
+                            statusMessage = "普通に話しかけてください。"
+                        }
+                    }
                 }
             }
             .onFailure {
